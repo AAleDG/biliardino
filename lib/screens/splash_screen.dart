@@ -104,8 +104,8 @@ class _SplashScreenState extends State<SplashScreen>
                   final height = constraints.maxHeight;
                   const startMargin = -40.0;
                   final endX = width * 0.5;
-                  final x = startMargin +
-                      _ballProgress.value * (endX - startMargin);
+                  final x =
+                      startMargin + _ballProgress.value * (endX - startMargin);
                   const ballSize = 32.0;
                   const ballRadius = ballSize / 2;
                   final distance = endX - startMargin;
@@ -158,22 +158,20 @@ class _BackgroundGradient extends StatelessWidget {
   const _BackgroundGradient();
 
   @override
-  Widget build(BuildContext context) {
-    return const DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            NttColors.surfaceDark,
-            NttColors.primaryDeep,
-            NttColors.surfaceDark,
-          ],
-          stops: [0.0, 0.55, 1.0],
+  Widget build(BuildContext context) => const DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              NttColors.surfaceDark,
+              NttColors.primaryDeep,
+              NttColors.surfaceDark,
+            ],
+            stops: [0.0, 0.55, 1.0],
+          ),
         ),
-      ),
-    );
-  }
+      );
 }
 
 class _Ball extends StatelessWidget {
@@ -358,15 +356,13 @@ class _Tagline extends StatelessWidget {
   const _Tagline();
 
   @override
-  Widget build(BuildContext context) {
-    return const Text(
-      'OFFICE LEAGUE',
-      style: TextStyle(
-        color: NttColors.textFaint,
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 6,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const Text(
+        'OFFICE LEAGUE',
+        style: TextStyle(
+          color: NttColors.textFaint,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 6,
+        ),
+      );
 }

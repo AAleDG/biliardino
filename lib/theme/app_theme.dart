@@ -222,16 +222,14 @@ class AppTheme {
         textColor: NttColors.textPrimary,
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) return NttColors.accent;
-          return NttColors.textFaint;
-        }),
-        trackColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return NttColors.accent.withOpacity(0.4);
-          }
-          return NttColors.surfaceHigh;
-        }),
+        thumbColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected)
+                ? NttColors.accent
+                : NttColors.textFaint),
+        trackColor: WidgetStateProperty.resolveWith((states) =>
+            states.contains(WidgetState.selected)
+                ? NttColors.accent.withOpacity(0.4)
+                : NttColors.surfaceHigh),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: NttColors.accent,

@@ -21,10 +21,8 @@ class _NewMatchScreenState extends State<NewMatchScreen> {
   int _score2 = 0;
   bool _kickedOff = false;
 
-  List<String> _team(int t) => _assignment.entries
-      .where((e) => e.value == t)
-      .map((e) => e.key)
-      .toList();
+  List<String> _team(int t) =>
+      _assignment.entries.where((e) => e.value == t).map((e) => e.key).toList();
 
   void _setTeam(String id, int team) {
     setState(() {
@@ -353,8 +351,8 @@ class _Setup extends StatelessWidget {
                 final t2Full = team2.length >= 2 && a != 2;
                 return Card(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     child: Row(
                       children: [
                         PlayerAvatar(name: p.name),
@@ -878,15 +876,13 @@ class _SectionLabel extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: NttColors.textMuted,
-        fontSize: 11,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 3,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Text(
+        text,
+        style: const TextStyle(
+          color: NttColors.textMuted,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 3,
+        ),
+      );
 }

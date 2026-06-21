@@ -8,15 +8,11 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
   Database? _db;
 
-  Future<Database> get _database async {
-    _db ??= await _open();
-    return _db!;
-  }
+  Future<Database> get _database async => _db ??= await _open();
 
-  Future<Database> _open() async {
-    final path = join(await getDatabasesPath(), 'biliardino.db');
-    return openDatabase(path, version: 1, onCreate: _onCreate);
-  }
+  Future<Database> _open() async =>
+      openDatabase(join(await getDatabasesPath(), 'biliardino.db'),
+          version: 1, onCreate: _onCreate);
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
@@ -42,32 +38,28 @@ class DatabaseHelper {
     ''');
   }
 
-  Future<List<Player>> getPlayers() async {
-    final db = await _database;
-    final rows = await db.query('players', orderBy: 'name COLLATE NOCASE');
-    return rows.map(Player.fromMap).toList();
-  }
+  Future<List<Player>> getPlayers() async =>
+      (await (await _database).query('players', orderBy: 'name COLLATE NOCASE'))
+          .map(Player.fromMap)
+          .toList();
 
-  Future<void> insertPlayer(Player p) async {
-    final db = await _database;
-    await db.insert('players', p.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
-  }
+  Future<void> insertPlayer(Player p) async => (await _database).insert(
+        'players',
+        p.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
 
-  Future<void> updatePlayer(Player p) async {
-    final db = await _database;
-    await db.update('players', p.toMap(), where: 'id = ?', whereArgs: [p.id]);
-  }
+  Future<void> updatePlayer(Player p) async => (await _database)
+      .update('players', p.toMap(), where: 'id = ?', whereArgs: [p.id]);
 
-  Future<List<GameMatch>> getMatches() async {
-    final db = await _database;
-    final rows = await db.query('matches', orderBy: 'played_at DESC');
-    return rows.map(GameMatch.fromMap).toList();
-  }
+  Future<List<GameMatch>> getMatches() async =>
+      (await (await _database).query('matches', orderBy: 'played_at DESC'))
+          .map(GameMatch.fromMap)
+          .toList();
 
-  Future<void> insertMatch(GameMatch m) async {
-    final db = await _database;
-    await db.insert('matches', m.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace);
-  }
+  Future<void> insertMatch(GameMatch m) async => (await _database).insert(
+        'matches',
+        m.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
 }

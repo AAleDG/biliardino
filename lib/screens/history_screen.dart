@@ -111,8 +111,7 @@ class _MatchTimelineTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final winColor =
-        match.winningTeam == 1 ? NttColors.team1 : NttColors.team2;
+    final winColor = match.winningTeam == 1 ? NttColors.team1 : NttColors.team2;
     final tileAnim = CurvedAnimation(
       parent: anim,
       curve: Interval(
@@ -204,8 +203,7 @@ class _TimelineRail extends StatelessWidget {
               decoration: BoxDecoration(
                 color: dotColor,
                 shape: BoxShape.circle,
-                border:
-                    Border.all(color: NttColors.surfaceDark, width: 3),
+                border: Border.all(color: NttColors.surfaceDark, width: 3),
                 boxShadow: [
                   BoxShadow(color: dotColor.withOpacity(0.75), blurRadius: 10),
                 ],
@@ -252,8 +250,7 @@ class _MatchCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.schedule,
-                        size: 12, color: NttColors.textFaint),
+                    Icon(Icons.schedule, size: 12, color: NttColors.textFaint),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
@@ -354,9 +351,7 @@ class _TeamLine extends StatelessWidget {
             names.join(' & '),
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: isWinner
-                  ? NttColors.textPrimary
-                  : NttColors.textMuted,
+              color: isWinner ? NttColors.textPrimary : NttColors.textMuted,
               fontSize: 14,
               fontWeight: isWinner ? FontWeight.w700 : FontWeight.w500,
             ),
@@ -381,33 +376,31 @@ class _Empty extends StatelessWidget {
   const _Empty();
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.history, size: 64, color: NttColors.textFaint),
-            SizedBox(height: 16),
-            Text(
-              'Nessuna partita',
-              style: TextStyle(
-                color: NttColors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
+  Widget build(BuildContext context) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.history, size: 64, color: NttColors.textFaint),
+              SizedBox(height: 16),
+              Text(
+                'Nessuna partita',
+                style: TextStyle(
+                  color: NttColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1,
+                ),
               ),
-            ),
-            SizedBox(height: 6),
-            Text(
-              'Quando registri partite le vedrai qui.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: NttColors.textMuted),
-            ),
-          ],
+              SizedBox(height: 6),
+              Text(
+                'Quando registri partite le vedrai qui.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: NttColors.textMuted),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 }

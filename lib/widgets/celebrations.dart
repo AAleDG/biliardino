@@ -183,8 +183,7 @@ class _GoalOverlayState extends State<_GoalOverlay>
                                     height: 1,
                                     shadows: [
                                       Shadow(
-                                          color: widget.color,
-                                          blurRadius: 28),
+                                          color: widget.color, blurRadius: 28),
                                       Shadow(
                                         color: widget.color.withOpacity(0.7),
                                         blurRadius: 60,
@@ -272,8 +271,7 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
       duration: const Duration(seconds: 6),
     )..forward();
     final rng = math.Random();
-    _specs =
-        List.generate(90, (_) => _ConfettiSpec.random(rng, widget.color));
+    _specs = List.generate(90, (_) => _ConfettiSpec.random(rng, widget.color));
   }
 
   Animation<double> _interval(double begin, double end,
@@ -330,8 +328,8 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
             child: LayoutBuilder(
               builder: (context, constraints) => Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 24),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                       maxWidth: constraints.maxWidth - 48,
@@ -339,119 +337,119 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                    _staggered(
-                      trophyAnim,
-                      scale: true,
-                      child: Icon(
-                        Icons.emoji_events,
-                        size: 116,
-                        color: widget.color,
-                        shadows: [
-                          Shadow(color: widget.color, blurRadius: 36),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    _staggered(
-                      titleAnim,
-                      slideUp: true,
-                      child: const FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'VITTORIA',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 44,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 8,
+                        _staggered(
+                          trophyAnim,
+                          scale: true,
+                          child: Icon(
+                            Icons.emoji_events,
+                            size: 116,
+                            color: widget.color,
+                            shadows: [
+                              Shadow(color: widget.color, blurRadius: 36),
+                            ],
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    _staggered(
-                      teamAnim,
-                      slideUp: true,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 22, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: widget.color,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: widget.color.withOpacity(0.55),
-                              blurRadius: 26,
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          widget.teamLabel,
-                          style: const TextStyle(
-                            color: NttColors.surfaceDark,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 4,
-                            fontSize: 17,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _staggered(
-                      teamAnim,
-                      child: Text(
-                        widget.playerNames.join('  &  '),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    _staggered(
-                      scoreAnim,
-                      scale: true,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          '${widget.winnerScore} — ${widget.loserScore}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 60,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 2,
-                            height: 1,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 40),
-                    _staggered(
-                      buttonAnim,
-                      slideUp: true,
-                      child: SizedBox(
-                        width: 220,
-                        child: ElevatedButton(
-                          onPressed: widget.onContinue,
-                          style: ElevatedButton.styleFrom(
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 16),
-                            textStyle: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 2.5,
+                        const SizedBox(height: 10),
+                        _staggered(
+                          titleAnim,
+                          slideUp: true,
+                          child: const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'VITTORIA',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 44,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 8,
+                              ),
                             ),
                           ),
-                          child: const Text('CONTINUA'),
                         ),
-                      ),
+                        const SizedBox(height: 28),
+                        _staggered(
+                          teamAnim,
+                          slideUp: true,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 22, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: widget.color,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: widget.color.withOpacity(0.55),
+                                  blurRadius: 26,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              widget.teamLabel,
+                              style: const TextStyle(
+                                color: NttColors.surfaceDark,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 4,
+                                fontSize: 17,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _staggered(
+                          teamAnim,
+                          child: Text(
+                            widget.playerNames.join('  &  '),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        _staggered(
+                          scoreAnim,
+                          scale: true,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              '${widget.winnerScore} — ${widget.loserScore}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 60,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 2,
+                                height: 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        _staggered(
+                          buttonAnim,
+                          slideUp: true,
+                          child: SizedBox(
+                            width: 220,
+                            child: ElevatedButton(
+                              onPressed: widget.onContinue,
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                textStyle: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 2.5,
+                                ),
+                              ),
+                              child: const Text('CONTINUA'),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
                 ),
               ),
             ),
@@ -538,15 +536,12 @@ class _ConfettiSpec {
   Offset positionAt(double t, Size canvasSize) {
     final effT = math.max(0.0, t - startDelay);
     final dx = startXNorm * canvasSize.width + velocity.dx * effT;
-    final dy =
-        startYOffset + velocity.dy * effT + 420 * effT * effT * 0.5;
+    final dy = startYOffset + velocity.dy * effT + 420 * effT * effT * 0.5;
     return Offset(dx, dy);
   }
 
-  double rotationAt(double t) {
-    final effT = math.max(0.0, t - startDelay);
-    return initialRotation + rotationSpeed * effT;
-  }
+  double rotationAt(double t) =>
+      initialRotation + rotationSpeed * math.max(0.0, t - startDelay);
 }
 
 class _ConfettiPainter extends CustomPainter {

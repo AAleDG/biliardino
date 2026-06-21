@@ -21,7 +21,8 @@ void main() {
     expect(find.byType(MaterialApp), findsOneWidget);
   });
 
-  testWidgets('Le schermate principali non generano overflow su schermo piccolo',
+  testWidgets(
+      'Le schermate principali non generano overflow su schermo piccolo',
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(320, 568);
     tester.view.devicePixelRatio = 1;
