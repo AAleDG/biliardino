@@ -1,16 +1,31 @@
 # biliardino
 
-A new Flutter project.
+Flutter app for tracking office table football matches.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- Manage players and office presence.
+- Compose two-player teams.
+- Track live scores and save match results.
+- Browse match history.
+- View leaderboard standings.
 
-A few resources to get you started if this is your first Flutter project:
+## Development
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Use the Flutter version installed at:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```sh
+/Users/alessandroantonio.delgaudio/fvm/versions/3.44.1/bin/flutter
+```
+
+Run tests:
+
+```sh
+/Users/alessandroantonio.delgaudio/fvm/versions/3.44.1/bin/flutter test
+```
+
+Build for iOS simulator:
+
+```sh
+/Users/alessandroantonio.delgaudio/fvm/versions/3.44.1/bin/flutter build ios --simulator
+```
