@@ -38,10 +38,11 @@ class DatabaseHelper {
     ''');
   }
 
-  Future<List<Player>> getPlayers() async =>
-      (await (await _database).query('players', orderBy: 'name COLLATE NOCASE'))
-          .map(Player.fromMap)
-          .toList();
+  Future<List<Player>> getPlayers() async {
+    final db = await _database;
+    final rows = await db.query('players', orderBy: 'name COLLATE NOCASE');
+    return rows.map(Player.fromMap).toList();
+  }
 
   Future<void> insertPlayer(Player p) async => (await _database).insert(
         'players',
@@ -52,10 +53,11 @@ class DatabaseHelper {
   Future<void> updatePlayer(Player p) async => (await _database)
       .update('players', p.toMap(), where: 'id = ?', whereArgs: [p.id]);
 
-  Future<List<GameMatch>> getMatches() async =>
-      (await (await _database).query('matches', orderBy: 'played_at DESC'))
-          .map(GameMatch.fromMap)
-          .toList();
+  Future<List<GameMatch>> getMatches() async {
+    final db = await _database;
+    final rows = await db.query('matches', orderBy: 'played_at DESC');
+    return rows.map(GameMatch.fromMap).toList();
+  }
 
   Future<void> insertMatch(GameMatch m) async => (await _database).insert(
         'matches',
