@@ -28,12 +28,10 @@ class BiliardinoApp extends StatelessWidget {
   const BiliardinoApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'NTT Biliardino',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark(),
-      home: const SplashScreen(),
-    );
-  }
+  Widget build(BuildContext context) => MaterialApp(
+        title: 'NTT Biliardino',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.dark(),
+        home: const SplashScreen(),
+      );
 }

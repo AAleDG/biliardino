@@ -52,13 +52,13 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   const _SectionLabel('CLASSIFICA COMPLETA'),
                   const SizedBox(height: 8),
                   ...ranked.sublist(3).asMap().entries.map(
-                    (e) => _LeaderRow(
-                      rank: e.key + 4,
-                      stats: e.value,
-                      anim: _ctrl,
-                      delay: 0.5 + math.min(e.key, 8) * 0.05,
-                    ),
-                  ),
+                        (e) => _LeaderRow(
+                          rank: e.key + 4,
+                          stats: e.value,
+                          anim: _ctrl,
+                          delay: 0.5 + math.min(e.key, 8) * 0.05,
+                        ),
+                      ),
                 ],
               ],
             ),
@@ -389,50 +389,46 @@ class _SectionLabel extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: NttColors.textMuted,
-        fontSize: 11,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 3,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Text(
+        text,
+        style: const TextStyle(
+          color: NttColors.textMuted,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 3,
+        ),
+      );
 }
 
 class _Empty extends StatelessWidget {
   const _Empty();
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.leaderboard, size: 64, color: NttColors.textFaint),
-            SizedBox(height: 16),
-            Text(
-              'Nessuna partita giocata',
-              style: TextStyle(
-                color: NttColors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
+  Widget build(BuildContext context) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.leaderboard, size: 64, color: NttColors.textFaint),
+              SizedBox(height: 16),
+              Text(
+                'Nessuna partita giocata',
+                style: TextStyle(
+                  color: NttColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1,
+                ),
               ),
-            ),
-            SizedBox(height: 6),
-            Text(
-              'Registra una partita per vedere la classifica.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: NttColors.textMuted),
-            ),
-          ],
+              SizedBox(height: 6),
+              Text(
+                'Registra una partita per vedere la classifica.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: NttColors.textMuted),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 }

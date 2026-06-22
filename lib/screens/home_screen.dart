@@ -50,71 +50,69 @@ class _BottomNav extends StatelessWidget {
   final ValueChanged<int> onSelected;
 
   @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: NttColors.surfaceMid,
-      elevation: 0,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final tabWidth = constraints.maxWidth / 4;
-              return SizedBox(
-                height: 3,
-                child: Stack(
-                  children: [
-                    AnimatedPositioned(
-                      duration: const Duration(milliseconds: 380),
-                      curve: Curves.easeOutCubic,
-                      left: tabWidth * index + tabWidth * 0.30,
-                      width: tabWidth * 0.40,
-                      height: 3,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: NttColors.accent,
-                          borderRadius: BorderRadius.circular(2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: NttColors.accent,
-                              blurRadius: 10,
-                            ),
-                          ],
+  Widget build(BuildContext context) => Material(
+        color: NttColors.surfaceMid,
+        elevation: 0,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final tabWidth = constraints.maxWidth / 4;
+                return SizedBox(
+                  height: 3,
+                  child: Stack(
+                    children: [
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 380),
+                        curve: Curves.easeOutCubic,
+                        left: tabWidth * index + tabWidth * 0.30,
+                        width: tabWidth * 0.40,
+                        height: 3,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: NttColors.accent,
+                            borderRadius: BorderRadius.circular(2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: NttColors.accent,
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                );
+              },
+            ),
+            NavigationBar(
+              selectedIndex: index,
+              onDestinationSelected: onSelected,
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.people_outline),
+                  selectedIcon: Icon(Icons.people),
+                  label: 'Giocatori',
                 ),
-              );
-            },
-          ),
-          NavigationBar(
-            selectedIndex: index,
-            onDestinationSelected: onSelected,
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.people_outline),
-                selectedIcon: Icon(Icons.people),
-                label: 'Giocatori',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.sports_soccer_outlined),
-                selectedIcon: Icon(Icons.sports_soccer),
-                label: 'Partita',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.history),
-                label: 'Storico',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.leaderboard_outlined),
-                selectedIcon: Icon(Icons.leaderboard),
-                label: 'Classifica',
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+                NavigationDestination(
+                  icon: Icon(Icons.sports_soccer_outlined),
+                  selectedIcon: Icon(Icons.sports_soccer),
+                  label: 'Partita',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.history),
+                  label: 'Storico',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.leaderboard_outlined),
+                  selectedIcon: Icon(Icons.leaderboard),
+                  label: 'Classifica',
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
 }

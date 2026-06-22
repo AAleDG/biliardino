@@ -171,9 +171,8 @@ class _PresenceBadge extends StatelessWidget {
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
-            boxShadow: isPresent
-                ? [BoxShadow(color: color, blurRadius: 6)]
-                : null,
+            boxShadow:
+                isPresent ? [BoxShadow(color: color, blurRadius: 6)] : null,
           ),
         ),
         const SizedBox(width: 6),
@@ -198,58 +197,54 @@ class _Pill extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.14),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.4)),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.6,
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.14),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.4)),
         ),
-      ),
-    );
-  }
+        child: Text(
+          text,
+          style: TextStyle(
+            color: color,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.6,
+          ),
+        ),
+      );
 }
 
 class _Empty extends StatelessWidget {
   const _Empty();
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            Icon(Icons.people_outline, size: 64, color: NttColors.textFaint),
-            SizedBox(height: 16),
-            Text(
-              'Nessun giocatore',
-              style: TextStyle(
-                color: NttColors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
+  Widget build(BuildContext context) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.people_outline, size: 64, color: NttColors.textFaint),
+              SizedBox(height: 16),
+              Text(
+                'Nessun giocatore',
+                style: TextStyle(
+                  color: NttColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1,
+                ),
               ),
-            ),
-            SizedBox(height: 6),
-            Text(
-              'Aggiungi il primo player con il pulsante in basso.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: NttColors.textMuted),
-            ),
-          ],
+              SizedBox(height: 6),
+              Text(
+                'Aggiungi il primo player con il pulsante in basso.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: NttColors.textMuted),
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
 }
