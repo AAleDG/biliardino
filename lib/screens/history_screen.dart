@@ -41,7 +41,6 @@ class _HistoryScreenState extends State<HistoryScreen>
     final matches = _filterId == null
         ? state.matchesSorted
         : state.matchesForPlayer(_filterId!);
-
     return Scaffold(
       appBar: AppBar(title: const Text('STORICO')),
       body: Column(
