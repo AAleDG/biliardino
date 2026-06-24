@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../cubits/players/players_cubit.dart';
+import '../cubits/players/players_state.dart';
 import '../models/player.dart';
-import '../state/app_state.dart';
 import '../theme/app_theme.dart';
 import '../widgets/avatar.dart';
 
@@ -11,38 +12,90 @@ class PlayersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<AppState>();
-    final players = state.players;
-    final presentCount = players.where((p) => p.isPresent).length;
+    return BlocBuilder<PlayersCubit, PlayersState>(
+      builder: (context, state) {
+        final players = state.players;
+        final presentCount = state.present.length;
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('GIOCATORI')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddDialog(context),
-        icon: const Icon(Icons.person_add_alt_1),
-        label: const Text('NUOVO'),
-      ),
-      body: players.isEmpty
-          ? const _Empty()
-          : Column(
-              children: [
-                _summary(presentCount, players.length),
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 96),
-                    itemCount: players.length,
-                    itemBuilder: (_, i) => _PlayerRow(
-                      player: players[i],
-                      onToggle: () => state.togglePresent(players[i]),
+        return Scaffold(
+          appBar: AppBar(title: const Text('GIOCATORI')),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => _showAddDialog(context),
+            icon: const Icon(Icons.person_add_alt_1),
+            label: const Text('NUOVO'),
+          ),
+          body: players.isEmpty
+              ? const _Empty()
+              : Column(
+                  children: [
+                    _Summary(
+                      presentCount: presentCount,
+                      total: players.length,
                     ),
-                  ),
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 96),
+                        itemCount: players.length,
+                        itemBuilder: (_, i) => _PlayerRow(
+                          player: players[i],
+                          onToggle: () => context
+                              .read<PlayersCubit>()
+                              .togglePresent(players[i]),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+        );
+      },
     );
   }
+}
 
-  Widget _summary(int presentCount, int total) {
+void _showAddDialog(BuildContext rootContext) {
+  final cubit = rootContext.read<PlayersCubit>();
+  final controller = TextEditingController();
+  void submit(BuildContext ctx) {
+    final name = controller.text.trim();
+    if (name.isNotEmpty) {
+      cubit.addPlayer(name);
+      Navigator.pop(ctx);
+    }
+  }
+
+  showDialog<void>(
+    context: rootContext,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Nuovo giocatore'),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        decoration: const InputDecoration(labelText: 'Nome'),
+        onSubmitted: (_) => submit(ctx),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Annulla'),
+        ),
+        ElevatedButton(
+          onPressed: () => submit(ctx),
+          child: const Text('Aggiungi'),
+        ),
+      ],
+    ),
+  );
+}
+
+class _Summary extends StatelessWidget {
+  const _Summary({required this.presentCount, required this.total});
+
+  final int presentCount;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
     final ready = presentCount >= 4;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
@@ -59,41 +112,6 @@ class PlayersScreen extends StatelessWidget {
                 ? 'Pronti a giocare'
                 : 'Servono ${4 - presentCount} per giocare',
             color: ready ? NttColors.success : NttColors.textFaint,
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAddDialog(BuildContext context) {
-    final controller = TextEditingController();
-    void submit(BuildContext ctx) {
-      final name = controller.text.trim();
-      if (name.isNotEmpty) {
-        context.read<AppState>().addPlayer(name);
-        Navigator.pop(ctx);
-      }
-    }
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Nuovo giocatore'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(labelText: 'Nome'),
-          onSubmitted: (_) => submit(ctx),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Annulla'),
-          ),
-          ElevatedButton(
-            onPressed: () => submit(ctx),
-            child: const Text('Aggiungi'),
           ),
         ],
       ),
