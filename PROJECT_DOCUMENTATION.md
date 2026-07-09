@@ -253,7 +253,7 @@ Prompt per questa documentazione, noto:
   - ciano/accent;
   - arancio per squadra 2;
   - superfici dark.
-- Material 3.
+- Material 3
 - Componenti con animazioni leggere.
 - Attenzione a overflow e nomi lunghi nei test widget.
 
