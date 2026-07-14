@@ -88,8 +88,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Nessuna partita trovata'), findsOneWidget);
-    expect(
-        find.text('Tutti i risultati · Elena Riserva Straordinaria'),
+    expect(find.text('Tutti i risultati · Elena Riserva Straordinaria'),
         findsWidgets);
     expect(find.text('Cambia filtro per consultare altri risultati.'),
         findsOneWidget);
@@ -116,8 +115,7 @@ void main() {
 
     expect(find.text('Ultimi 30 giorni'), findsNothing);
     expect(
-        find.text(
-            'Tutti i risultati · Alessandro Antonio Delgaudio · Vinte'),
+        find.text('Tutti i risultati · Alessandro Antonio Delgaudio · Vinte'),
         findsWidgets);
     expect(find.text('10'), findsOneWidget);
     expect(find.text('6'), findsNothing);

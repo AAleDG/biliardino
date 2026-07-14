@@ -14,7 +14,7 @@ class PlayerRepository {
       StreamController<List<Player>>.broadcast();
   List<Player> _cache = const [];
 
-  List<Player> get players => List.unmodifiable(_cache);
+  List<Player> get players => _cache;
 
   Stream<List<Player>> watchPlayers() async* {
     yield _cache;
@@ -22,8 +22,7 @@ class PlayerRepository {
   }
 
   Future<void> load() async {
-    _cache = await _db.getPlayers();
-    _controller.add(_cache);
+    _publish(await _db.getPlayers());
   }
 
   Future<void> addPlayer(String name) async {
@@ -45,11 +44,19 @@ class PlayerRepository {
   }
 
   Future<void> _reload() async {
-    _cache = await _db.getPlayers();
-    _controller.add(_cache);
+    _publish(await _db.getPlayers());
+  }
+
+  void _publish(List<Player> players) {
+    _cache = List.unmodifiable(players);
+    if (!_controller.isClosed) {
+      _controller.add(_cache);
+    }
   }
 
   Future<void> dispose() async {
-    await _controller.close();
+    if (!_controller.isClosed) {
+      await _controller.close();
+    }
   }
 }

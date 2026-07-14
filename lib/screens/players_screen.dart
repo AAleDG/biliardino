@@ -12,7 +12,16 @@ class PlayersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PlayersCubit, PlayersState>(
+    return BlocConsumer<PlayersCubit, PlayersState>(
+      listenWhen: (previous, current) =>
+          current.feedback != null && current.feedback != previous.feedback,
+      listener: (context, state) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text(_feedbackText(state.feedback!))),
+          );
+      },
       builder: (context, state) {
         final players = state.players;
         final presentCount = state.present.length;
@@ -20,7 +29,7 @@ class PlayersScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(title: const Text('GIOCATORI')),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showAddDialog(context),
+            onPressed: state.isMutating ? null : () => _showAddDialog(context),
             icon: const Icon(Icons.person_add_alt_1),
             label: const Text('NUOVO'),
           ),
@@ -38,9 +47,13 @@ class PlayersScreen extends StatelessWidget {
                         itemCount: players.length,
                         itemBuilder: (_, i) => _PlayerRow(
                           player: players[i],
-                          onToggle: () => context
-                              .read<PlayersCubit>()
-                              .togglePresent(players[i]),
+                          onToggle: state.isMutating
+                              ? null
+                              : () async {
+                                  await context
+                                      .read<PlayersCubit>()
+                                      .togglePresent(players[i]);
+                                },
                         ),
                       ),
                     ),
@@ -52,14 +65,25 @@ class PlayersScreen extends StatelessWidget {
   }
 }
 
+String _feedbackText(PlayersFeedback feedback) {
+  switch (feedback) {
+    case PlayersFeedback.addFailed:
+      return 'Impossibile aggiungere il giocatore. Riprova.';
+    case PlayersFeedback.presenceUpdateFailed:
+      return 'Impossibile aggiornare la presenza. Riprova.';
+  }
+}
+
 void _showAddDialog(BuildContext rootContext) {
   final cubit = rootContext.read<PlayersCubit>();
   final controller = TextEditingController();
-  void submit(BuildContext ctx) {
+  Future<void> submit(BuildContext ctx) async {
     final name = controller.text.trim();
     if (name.isNotEmpty) {
-      cubit.addPlayer(name);
-      Navigator.pop(ctx);
+      final added = await cubit.addPlayer(name);
+      if (added && ctx.mounted) {
+        Navigator.pop(ctx);
+      }
     }
   }
 
@@ -123,7 +147,7 @@ class _PlayerRow extends StatelessWidget {
   const _PlayerRow({required this.player, required this.onToggle});
 
   final Player player;
-  final VoidCallback onToggle;
+  final VoidCallback? onToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -163,7 +187,10 @@ class _PlayerRow extends StatelessWidget {
                   ],
                 ),
               ),
-              Switch(value: player.isPresent, onChanged: (_) => onToggle()),
+              Switch(
+                value: player.isPresent,
+                onChanged: onToggle == null ? null : (_) => onToggle!(),
+              ),
             ],
           ),
         ),
@@ -218,9 +245,9 @@ class _Pill extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.14),
+          color: color.withValues(alpha: 0.14),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.4)),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
         ),
         child: Text(
           text,
@@ -238,12 +265,12 @@ class _Empty extends StatelessWidget {
   const _Empty();
 
   @override
-  Widget build(BuildContext context) => Center(
+  Widget build(BuildContext context) => const Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: const [
+            children: [
               Icon(Icons.people_outline, size: 64, color: NttColors.textFaint),
               SizedBox(height: 16),
               Text(

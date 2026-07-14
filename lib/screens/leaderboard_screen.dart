@@ -85,8 +85,7 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                                     rank: e.key + 4,
                                     stats: e.value,
                                     anim: _ctrl,
-                                    delay:
-                                        0.5 + math.min(e.key, 8) * 0.05,
+                                    delay: 0.5 + math.min(e.key, 8) * 0.05,
                                   ),
                                 ),
                               ),
@@ -366,7 +365,6 @@ class _HudAvatar extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(color: accent, width: 1.5),
-           
           ),
           child: Text(
             initial,
@@ -387,8 +385,7 @@ class _HudAvatar extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: accent,
-              border:
-                  Border.all(color: NttColors.surfaceDark, width: 2),
+              border: Border.all(color: NttColors.surfaceDark, width: 2),
             ),
             child: Text(
               '$rank',

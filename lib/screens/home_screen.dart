@@ -64,7 +64,7 @@ class _BottomNav extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: NttColors.accent,
                             borderRadius: BorderRadius.circular(2),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                 color: NttColors.accent,
                                 blurRadius: 10,

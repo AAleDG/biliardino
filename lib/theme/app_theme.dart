@@ -92,7 +92,7 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: NttColors.surfaceMid,
-        indicatorColor: NttColors.accent.withOpacity(0.18),
+        indicatorColor: NttColors.accent.withValues(alpha: 0.18),
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         height: 68,
@@ -119,11 +119,11 @@ class AppTheme {
         margin: const EdgeInsets.symmetric(vertical: 6),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: BorderSide(color: Colors.white.withOpacity(0.06)),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
         ),
       ),
       dividerTheme: DividerThemeData(
-        color: Colors.white.withOpacity(0.08),
+        color: Colors.white.withValues(alpha: 0.08),
         thickness: 1,
         space: 24,
       ),
@@ -228,7 +228,7 @@ class AppTheme {
                 : NttColors.textFaint),
         trackColor: WidgetStateProperty.resolveWith((states) =>
             states.contains(WidgetState.selected)
-                ? NttColors.accent.withOpacity(0.4)
+                ? NttColors.accent.withValues(alpha: 0.4)
                 : NttColors.surfaceHigh),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(

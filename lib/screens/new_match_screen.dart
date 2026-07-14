@@ -34,8 +34,7 @@ class _NewMatchView extends StatelessWidget {
     return MultiBlocListener(
       listeners: [
         BlocListener<NewMatchCubit, NewMatchState>(
-          listenWhen: (p, n) =>
-              n.lastGoal != null && n.lastGoal != p.lastGoal,
+          listenWhen: (p, n) => n.lastGoal != null && n.lastGoal != p.lastGoal,
           listener: (ctx, state) {
             final goal = state.lastGoal!;
             Celebrations.showGoal(
@@ -50,9 +49,8 @@ class _NewMatchView extends StatelessWidget {
               n.lastVictory != null && n.lastVictory != p.lastVictory,
           listener: (ctx, state) {
             final victory = state.lastVictory!;
-            final color = victory.winningTeam == 1
-                ? NttColors.team1
-                : NttColors.team2;
+            final color =
+                victory.winningTeam == 1 ? NttColors.team1 : NttColors.team2;
             Celebrations.showVictory(
               ctx,
               color: color,
@@ -89,7 +87,9 @@ class _NewMatchView extends StatelessWidget {
                   ? IconButton(
                       icon: const Icon(Icons.arrow_back),
                       tooltip: 'Torna alla composizione',
-                      onPressed: () => _confirmExit(context, cubit),
+                      onPressed: state.isSaving
+                          ? null
+                          : () => _confirmExit(context, cubit),
                     )
                   : null,
               actions: showScoreboard
@@ -97,7 +97,9 @@ class _NewMatchView extends StatelessWidget {
                       IconButton(
                         icon: const Icon(Icons.restart_alt),
                         tooltip: 'Azzera punteggio',
-                        onPressed: () => _confirmResetScore(context, cubit),
+                        onPressed: state.isSaving
+                            ? null
+                            : () => _confirmResetScore(context, cubit),
                       ),
                     ]
                   : null,
@@ -105,15 +107,14 @@ class _NewMatchView extends StatelessWidget {
             body: showScoreboard
                 ? _Scoreboard(
                     team1Names: state.team1
-                        .map((id) =>
-                            StatsService.playerName(state.players, id))
+                        .map((id) => StatsService.playerName(state.players, id))
                         .toList(),
                     team2Names: state.team2
-                        .map((id) =>
-                            StatsService.playerName(state.players, id))
+                        .map((id) => StatsService.playerName(state.players, id))
                         .toList(),
                     score1: state.score1,
                     score2: state.score2,
+                    isSaving: state.isSaving,
                     onAddGoal: cubit.addGoal,
                     onRemoveGoal: cubit.removeGoal,
                     onEditScore: (team) => _editScoreDialog(context, team),
@@ -141,6 +142,12 @@ String _feedbackText(NewMatchFeedback kind) {
       return 'Niente pareggi al biliardino: serve un vincitore.';
     case NewMatchFeedback.noGoals:
       return 'Inserisci almeno un gol prima di registrare.';
+    case NewMatchFeedback.invalidTeams:
+      return 'Servono due squadre valide con quattro giocatori presenti.';
+    case NewMatchFeedback.saveFailed:
+      return 'Impossibile salvare la partita. Riprova.';
+    case NewMatchFeedback.playersUnavailable:
+      return 'La partita è stata annullata: un giocatore non è più presente.';
   }
 }
 
@@ -249,12 +256,12 @@ class _Setup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (present.length < 4) {
-      return Center(
+      return const Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: const [
+            children: [
               Icon(Icons.group_off, size: 64, color: NttColors.textFaint),
               SizedBox(height: 16),
               Text(
@@ -295,8 +302,7 @@ class _Setup extends StatelessWidget {
                         label: 'SQUADRA 1',
                         color: NttColors.team1,
                         names: team1
-                            .map((id) =>
-                                StatsService.playerName(players, id))
+                            .map((id) => StatsService.playerName(players, id))
                             .toList(),
                       ),
                     ),
@@ -306,8 +312,7 @@ class _Setup extends StatelessWidget {
                         label: 'SQUADRA 2',
                         color: NttColors.team2,
                         names: team2
-                            .map((id) =>
-                                StatsService.playerName(players, id))
+                            .map((id) => StatsService.playerName(players, id))
                             .toList(),
                       ),
                     ),
@@ -323,8 +328,8 @@ class _Setup extends StatelessWidget {
                 final t2Full = team2.length >= 2 && a != 2;
                 return Card(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     child: Row(
                       children: [
                         PlayerAvatar(name: p.name),
@@ -392,6 +397,7 @@ class _Scoreboard extends StatelessWidget {
     required this.team2Names,
     required this.score1,
     required this.score2,
+    required this.isSaving,
     required this.onAddGoal,
     required this.onRemoveGoal,
     required this.onEditScore,
@@ -402,6 +408,7 @@ class _Scoreboard extends StatelessWidget {
   final List<String> team2Names;
   final int score1;
   final int score2;
+  final bool isSaving;
   final void Function(int team) onAddGoal;
   final void Function(int team) onRemoveGoal;
   final Future<void> Function(int team) onEditScore;
@@ -409,7 +416,7 @@ class _Scoreboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canSave = score1 != score2 && (score1 > 0 || score2 > 0);
+    final canSave = !isSaving && score1 != score2 && (score1 > 0 || score2 > 0);
     return Column(
       children: [
         Expanded(
@@ -421,7 +428,8 @@ class _Scoreboard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: NttColors.surfaceMid,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: Colors.white.withOpacity(0.06)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.06)),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -432,6 +440,7 @@ class _Scoreboard extends StatelessWidget {
                         color: NttColors.team1,
                         playerNames: team1Names,
                         score: score1,
+                        enabled: !isSaving,
                         onAddGoal: () => onAddGoal(1),
                         onRemoveGoal: () => onRemoveGoal(1),
                         onLongPressScore: () => onEditScore(1),
@@ -439,7 +448,7 @@ class _Scoreboard extends StatelessWidget {
                     ),
                     Container(
                       width: 1.5,
-                      color: Colors.white.withOpacity(0.08),
+                      color: Colors.white.withValues(alpha: 0.08),
                     ),
                     Expanded(
                       child: _TeamPanel(
@@ -447,6 +456,7 @@ class _Scoreboard extends StatelessWidget {
                         color: NttColors.team2,
                         playerNames: team2Names,
                         score: score2,
+                        enabled: !isSaving,
                         onAddGoal: () => onAddGoal(2),
                         onRemoveGoal: () => onRemoveGoal(2),
                         onLongPressScore: () => onEditScore(2),
@@ -466,8 +476,15 @@ class _Scoreboard extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: canSave ? onSave : null,
-                icon: const Icon(Icons.flag),
-                label: const Text('REGISTRA RISULTATO'),
+                icon: isSaving
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.flag),
+                label: Text(
+                  isSaving ? 'SALVATAGGIO...' : 'REGISTRA RISULTATO',
+                ),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   textStyle: const TextStyle(
@@ -491,6 +508,7 @@ class _TeamPanel extends StatefulWidget {
     required this.color,
     required this.playerNames,
     required this.score,
+    required this.enabled,
     required this.onAddGoal,
     required this.onRemoveGoal,
     required this.onLongPressScore,
@@ -500,6 +518,7 @@ class _TeamPanel extends StatefulWidget {
   final Color color;
   final List<String> playerNames;
   final int score;
+  final bool enabled;
   final VoidCallback onAddGoal;
   final VoidCallback onRemoveGoal;
   final VoidCallback onLongPressScore;
@@ -546,8 +565,8 @@ class _TeamPanelState extends State<_TeamPanel>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                widget.color.withOpacity(0.20),
-                widget.color.withOpacity(0.02),
+                widget.color.withValues(alpha: 0.20),
+                widget.color.withValues(alpha: 0.02),
               ],
             ),
           ),
@@ -560,7 +579,7 @@ class _TeamPanelState extends State<_TeamPanel>
             return IgnorePointer(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: widget.color.withOpacity(opacity),
+                  color: widget.color.withValues(alpha: opacity),
                 ),
               ),
             );
@@ -600,7 +619,8 @@ class _TeamPanelState extends State<_TeamPanel>
               Expanded(
                 child: Center(
                   child: GestureDetector(
-                    onLongPress: widget.onLongPressScore,
+                    onLongPress:
+                        widget.enabled ? widget.onLongPressScore : null,
                     behavior: HitTestBehavior.opaque,
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 420),
@@ -634,7 +654,7 @@ class _TeamPanelState extends State<_TeamPanel>
                             letterSpacing: -3,
                             shadows: [
                               Shadow(
-                                color: widget.color.withOpacity(0.75),
+                                color: widget.color.withValues(alpha: 0.75),
                                 blurRadius: 24,
                               ),
                             ],
@@ -648,7 +668,7 @@ class _TeamPanelState extends State<_TeamPanel>
               SizedBox(
                 height: 58,
                 child: ElevatedButton(
-                  onPressed: widget.onAddGoal,
+                  onPressed: widget.enabled ? widget.onAddGoal : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: widget.color,
                     foregroundColor: NttColors.surfaceDark,
@@ -669,7 +689,9 @@ class _TeamPanelState extends State<_TeamPanel>
               SizedBox(
                 height: 32,
                 child: TextButton.icon(
-                  onPressed: widget.score > 0 ? widget.onRemoveGoal : null,
+                  onPressed: widget.enabled && widget.score > 0
+                      ? widget.onRemoveGoal
+                      : null,
                   icon: const Icon(Icons.remove, size: 16),
                   label: const Text('Annulla'),
                   style: TextButton.styleFrom(
@@ -711,7 +733,7 @@ class _SetupTeamCard extends StatelessWidget {
         color: NttColors.surfaceMid,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: filled == 2 ? color : Colors.white.withOpacity(0.08),
+          color: filled == 2 ? color : Colors.white.withValues(alpha: 0.08),
           width: filled == 2 ? 1.5 : 1,
         ),
       ),
@@ -728,7 +750,7 @@ class _SetupTeamCard extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.6),
+                      color: color.withValues(alpha: 0.6),
                       blurRadius: 8,
                     ),
                   ],
@@ -821,8 +843,8 @@ class _TeamChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: enabled
-                ? color.withOpacity(selected ? 1 : 0.55)
-                : NttColors.textFaint.withOpacity(0.3),
+                ? color.withValues(alpha: selected ? 1 : 0.55)
+                : NttColors.textFaint.withValues(alpha: 0.3),
             width: 1.5,
           ),
         ),

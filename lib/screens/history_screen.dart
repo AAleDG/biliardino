@@ -289,7 +289,8 @@ class _FilterSummaryBar extends StatelessWidget {
               Icon(
                 Icons.tune,
                 size: 20,
-                color: hasActiveFilters ? NttColors.accent : NttColors.textMuted,
+                color:
+                    hasActiveFilters ? NttColors.accent : NttColors.textMuted,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -525,7 +526,8 @@ class _SegmentedFilter<T> extends StatelessWidget {
                 ? NttColors.accent
                 : Colors.white.withValues(alpha: 0.06),
           ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         );
       }).toList(),
     );
@@ -562,8 +564,9 @@ class _PlayerSelector extends StatelessWidget {
                     ? NttColors.surfaceDark
                     : NttColors.textPrimary,
                 fontSize: 13,
-                fontWeight:
-                    selectedPlayerId == null ? FontWeight.w900 : FontWeight.w600,
+                fontWeight: selectedPlayerId == null
+                    ? FontWeight.w900
+                    : FontWeight.w600,
               ),
               selectedColor: NttColors.accent,
               backgroundColor: NttColors.surfaceHigh,
@@ -572,8 +575,8 @@ class _PlayerSelector extends StatelessWidget {
                     ? NttColors.accent
                     : Colors.white.withValues(alpha: 0.06),
               ),
-              shape:
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             ...players.map((player) {
               final selected = selectedPlayerId == player.id;
@@ -583,9 +586,8 @@ class _PlayerSelector extends StatelessWidget {
                 selected: selected,
                 onSelected: (_) => onSelected(player.id),
                 labelStyle: TextStyle(
-                  color: selected
-                      ? NttColors.surfaceDark
-                      : NttColors.textPrimary,
+                  color:
+                      selected ? NttColors.surfaceDark : NttColors.textPrimary,
                   fontSize: 13,
                   fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
                 ),

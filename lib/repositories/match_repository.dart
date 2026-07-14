@@ -14,7 +14,7 @@ class MatchRepository {
       StreamController<List<GameMatch>>.broadcast();
   List<GameMatch> _cache = const [];
 
-  List<GameMatch> get matches => List.unmodifiable(_cache);
+  List<GameMatch> get matches => _cache;
 
   Stream<List<GameMatch>> watchMatches() async* {
     yield _cache;
@@ -22,8 +22,7 @@ class MatchRepository {
   }
 
   Future<void> load() async {
-    _cache = await _db.getMatches();
-    _controller.add(_cache);
+    _publish(await _db.getMatches());
   }
 
   Future<void> addMatch({
@@ -32,6 +31,12 @@ class MatchRepository {
     required int score1,
     required int score2,
   }) async {
+    _validateMatch(
+      team1: team1,
+      team2: team2,
+      score1: score1,
+      score2: score2,
+    );
     final match = GameMatch(
       id: _uuid.v4(),
       playedAt: DateTime.now(),
@@ -44,11 +49,40 @@ class MatchRepository {
       winningTeam: score1 > score2 ? 1 : 2,
     );
     await _db.insertMatch(match);
-    _cache = await _db.getMatches();
-    _controller.add(_cache);
+    _publish(await _db.getMatches());
   }
 
   Future<void> dispose() async {
-    await _controller.close();
+    if (!_controller.isClosed) {
+      await _controller.close();
+    }
+  }
+
+  void _publish(List<GameMatch> matches) {
+    _cache = List.unmodifiable(matches);
+    if (!_controller.isClosed) {
+      _controller.add(_cache);
+    }
+  }
+
+  void _validateMatch({
+    required List<String> team1,
+    required List<String> team2,
+    required int score1,
+    required int score2,
+  }) {
+    if (team1.length != 2 || team2.length != 2) {
+      throw ArgumentError('Each team must contain exactly two players.');
+    }
+    final players = [...team1, ...team2];
+    if (players.any((id) => id.trim().isEmpty) || players.toSet().length != 4) {
+      throw ArgumentError('A match requires four distinct player IDs.');
+    }
+    if (score1 < 0 || score2 < 0) {
+      throw ArgumentError('Scores cannot be negative.');
+    }
+    if (score1 == score2) {
+      throw ArgumentError('A match must have one winning team.');
+    }
   }
 }

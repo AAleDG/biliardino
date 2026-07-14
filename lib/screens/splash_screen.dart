@@ -191,12 +191,12 @@ class _Ball extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: NttColors.accent.withOpacity(0.55),
+            color: NttColors.accent.withValues(alpha: 0.55),
             blurRadius: 18,
             spreadRadius: 1,
           ),
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
@@ -228,7 +228,7 @@ class _FieldPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final line = Paint()
-      ..color = Colors.white.withOpacity(0.12)
+      ..color = Colors.white.withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     final cx = size.width / 2;
@@ -276,7 +276,7 @@ class _FieldPainter extends CustomPainter {
     );
 
     final rod = Paint()
-      ..color = Colors.white.withOpacity(0.05)
+      ..color = Colors.white.withValues(alpha: 0.05)
       ..strokeWidth = 1;
     for (var i = 1; i <= 3; i++) {
       final dx = fieldHalfW * (i / 4);
@@ -317,7 +317,7 @@ class _Logo extends StatelessWidget {
             height: 1,
             shadows: [
               Shadow(
-                color: NttColors.accent.withOpacity(glow * 0.7),
+                color: NttColors.accent.withValues(alpha: glow * 0.7),
                 blurRadius: 24,
               ),
             ],
@@ -330,9 +330,9 @@ class _Logo extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                NttColors.accent.withOpacity(0),
+                NttColors.accent.withValues(alpha: 0),
                 NttColors.accent,
-                NttColors.accent.withOpacity(0),
+                NttColors.accent.withValues(alpha: 0),
               ],
             ),
           ),
