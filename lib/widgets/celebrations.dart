@@ -148,15 +148,15 @@ class _GoalOverlayState extends State<_GoalOverlay>
                     center: Alignment.center,
                     radius: 1.0,
                     colors: [
-                      widget.color.withOpacity(_tint.value),
-                      widget.color.withOpacity(_tint.value * 0.2),
+                      widget.color.withValues(alpha: _tint.value),
+                      widget.color.withValues(alpha: _tint.value * 0.2),
                     ],
                   ),
                 ),
               ),
               DecoratedBox(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(_flash.value),
+                  color: Colors.white.withValues(alpha: _flash.value),
                 ),
               ),
               LayoutBuilder(
@@ -185,7 +185,8 @@ class _GoalOverlayState extends State<_GoalOverlay>
                                       Shadow(
                                           color: widget.color, blurRadius: 28),
                                       Shadow(
-                                        color: widget.color.withOpacity(0.7),
+                                        color:
+                                            widget.color.withValues(alpha: 0.7),
                                         blurRadius: 60,
                                       ),
                                     ],
@@ -201,7 +202,8 @@ class _GoalOverlayState extends State<_GoalOverlay>
                                   borderRadius: BorderRadius.circular(8),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: widget.color.withOpacity(0.6),
+                                      color:
+                                          widget.color.withValues(alpha: 0.6),
                                       blurRadius: 20,
                                     ),
                                   ],
@@ -308,8 +310,8 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
                 center: Alignment.topCenter,
                 radius: 1.3,
                 colors: [
-                  widget.color.withOpacity(0.30),
-                  NttColors.surfaceDark.withOpacity(0.97),
+                  widget.color.withValues(alpha: 0.30),
+                  NttColors.surfaceDark.withValues(alpha: 0.97),
                 ],
               ),
             ),
@@ -378,7 +380,7 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: widget.color.withOpacity(0.55),
+                                  color: widget.color.withValues(alpha: 0.55),
                                   blurRadius: 26,
                                 ),
                               ],

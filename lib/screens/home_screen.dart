@@ -1,22 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../state/app_state.dart';
+import '../cubits/home/home_cubit.dart';
 import '../theme/app_theme.dart';
 import 'history_screen.dart';
 import 'leaderboard_screen.dart';
 import 'new_match_screen.dart';
 import 'players_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _index = 0;
 
   static const _pages = [
     PlayersScreen(),
@@ -27,18 +20,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<AppState>();
-    if (state.isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-    return Scaffold(
-      body: IndexedStack(index: _index, children: _pages),
-      bottomNavigationBar: _BottomNav(
-        index: _index,
-        onSelected: (i) => setState(() => _index = i),
-      ),
+    return BlocBuilder<HomeCubit, int>(
+      builder: (context, index) {
+        return Scaffold(
+          body: IndexedStack(index: index, children: _pages),
+          bottomNavigationBar: _BottomNav(
+            index: index,
+            onSelected: context.read<HomeCubit>().selectTab,
+          ),
+        );
+      },
     );
   }
 }
@@ -73,7 +64,7 @@ class _BottomNav extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: NttColors.accent,
                             borderRadius: BorderRadius.circular(2),
-                            boxShadow: [
+                            boxShadow: const [
                               BoxShadow(
                                 color: NttColors.accent,
                                 blurRadius: 10,
