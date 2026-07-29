@@ -1,8 +1,7 @@
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:biliardino/models/game_match.dart';
 import 'package:biliardino/models/player.dart';
 import 'package:biliardino/services/stats_service.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('StatsService rivalryOverview', () {

@@ -1,8 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/cubits/leaderboard/leaderboard_cubit.dart';
 import 'package:biliardino/cubits/players/players_cubit.dart';
@@ -15,6 +10,10 @@ import 'package:biliardino/screens/history_screen.dart';
 import 'package:biliardino/screens/home_screen.dart';
 import 'package:biliardino/screens/new_match_screen.dart';
 import 'package:biliardino/theme/app_theme.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 class _MockPlayerRepository extends Mock implements PlayerRepository {}
 

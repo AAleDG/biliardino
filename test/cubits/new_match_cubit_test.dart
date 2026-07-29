@@ -1,13 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_state.dart';
 import 'package:biliardino/models/game_match.dart';
 import 'package:biliardino/models/player.dart';
 import 'package:biliardino/repositories/match_repository.dart';
 import 'package:biliardino/repositories/player_repository.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

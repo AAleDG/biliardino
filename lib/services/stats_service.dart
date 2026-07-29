@@ -1,6 +1,6 @@
 import '../models/game_match.dart';
-import '../models/player_badge.dart';
 import '../models/player.dart';
+import '../models/player_badge.dart';
 import '../models/player_stats.dart';
 import '../models/rivalry_overview.dart';
 

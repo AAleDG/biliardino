@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-import 'player_badge.dart';
 import 'player.dart';
+import 'player_badge.dart';
 
 class PlayerStats extends Equatable {
   final Player player;

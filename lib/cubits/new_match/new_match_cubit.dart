@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../models/player.dart';
 import '../../models/game_match.dart';
+import '../../models/player.dart';
 import '../../repositories/match_repository.dart';
 import '../../repositories/player_repository.dart';
 import '../../services/stats_service.dart';
