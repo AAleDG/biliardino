@@ -62,7 +62,9 @@ class FeedbackEvent extends Equatable {
 class NewMatchState extends Equatable {
   const NewMatchState({
     this.players = const [],
+    this.matches = const [],
     this.mode = MatchMode.twoVsTwo,
+    this.isRivalry = false,
     this.assignment = const {},
     this.scorerIds = const [],
     this.score1 = 0,
@@ -75,7 +77,9 @@ class NewMatchState extends Equatable {
   });
 
   final List<Player> players;
+  final List<GameMatch> matches;
   final MatchMode mode;
+  final bool isRivalry;
   final Map<String, int> assignment;
   final List<String> scorerIds;
   final int score1;
@@ -111,7 +115,9 @@ class NewMatchState extends Equatable {
 
   NewMatchState copyWith({
     List<Player>? players,
+    List<GameMatch>? matches,
     MatchMode? mode,
+    bool? isRivalry,
     Map<String, int>? assignment,
     List<String>? scorerIds,
     int? score1,
@@ -127,7 +133,9 @@ class NewMatchState extends Equatable {
   }) {
     return NewMatchState(
       players: players ?? this.players,
+      matches: matches ?? this.matches,
       mode: mode ?? this.mode,
+      isRivalry: isRivalry ?? this.isRivalry,
       assignment: assignment ?? this.assignment,
       scorerIds: scorerIds ?? this.scorerIds,
       score1: score1 ?? this.score1,
@@ -144,7 +152,9 @@ class NewMatchState extends Equatable {
   @override
   List<Object?> get props => [
         players,
+        matches,
         mode,
+        isRivalry,
         assignment,
         scorerIds,
         score1,

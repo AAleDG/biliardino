@@ -13,6 +13,7 @@ import 'package:biliardino/repositories/match_repository.dart';
 import 'package:biliardino/repositories/player_repository.dart';
 import 'package:biliardino/screens/history_screen.dart';
 import 'package:biliardino/screens/home_screen.dart';
+import 'package:biliardino/screens/new_match_screen.dart';
 import 'package:biliardino/theme/app_theme.dart';
 
 class _MockPlayerRepository extends Mock implements PlayerRepository {}
@@ -69,6 +70,46 @@ void main() {
     expect(find.text('2 partite'), findsOneWidget);
     expect(find.text('2v2'), findsNWidgets(2));
     expect(find.text('Vittoria'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('La Rivalita compare solo a squadre complete e apre il popup',
+      (WidgetTester tester) async {
+    final sample = _sampleData();
+    await _pumpHome(
+      tester,
+      home: const NewMatchScreen(),
+      repos: sample,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Attiva Rivalita'), findsNothing);
+
+    Future<void> assignTeam(String playerName, String chipLabel) async {
+      await tester.ensureVisible(find.text(playerName));
+      await tester.pumpAndSettle();
+      final row = find.ancestor(
+        of: find.text(playerName),
+        matching: find.byType(Card),
+      );
+      await tester.tap(
+        find.descendant(of: row, matching: find.text(chipLabel)),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await assignTeam('Alessandro Antonio Delgaudio', 'S1');
+    await assignTeam('Beatrice Lunghissimo Cognome', 'S1');
+    await assignTeam('Cristiano Nome Molto Esteso', 'S2');
+    await assignTeam('Daniela Super Competitiva', 'S2');
+
+    expect(find.text('Attiva Rivalita'), findsOneWidget);
+
+    await tester.tap(find.text('Attiva Rivalita'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Attivare Rivalita?'), findsOneWidget);
+    expect(find.textContaining('Lo storico terra separati precedenti'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

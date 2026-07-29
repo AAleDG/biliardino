@@ -4,7 +4,7 @@ import '../../models/game_match.dart';
 
 enum HistoryPeriod { all, today, last7Days, last30Days }
 
-enum HistoryMatchModeFilter { all, oneVsOne, twoVsTwo }
+enum HistoryMatchModeFilter { all, oneVsOne, rivalry, twoVsTwo }
 
 enum HistoryResult { all, wins, losses }
 
@@ -56,13 +56,18 @@ String matchModeLabel(HistoryMatchModeFilter matchMode) {
       return 'Tutti i formati';
     case HistoryMatchModeFilter.oneVsOne:
       return '1v1';
+    case HistoryMatchModeFilter.rivalry:
+      return 'Rivalita';
     case HistoryMatchModeFilter.twoVsTwo:
       return '2v2';
   }
 }
 
-HistoryMatchModeFilter historyMatchModeFilterFor(MatchMode mode) {
-  switch (mode) {
+HistoryMatchModeFilter historyMatchModeFilterFor(GameMatch match) {
+  if (match.isRivalry) {
+    return HistoryMatchModeFilter.rivalry;
+  }
+  switch (match.mode) {
     case MatchMode.oneVsOne:
       return HistoryMatchModeFilter.oneVsOne;
     case MatchMode.twoVsTwo:

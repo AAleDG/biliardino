@@ -22,7 +22,7 @@ List<GameMatch> filterMatches(
   final periodStart = periodStartDate(filters.period, now);
   return StatsService.sortedByMostRecent(matches).where((match) {
     if (filters.matchMode != HistoryMatchModeFilter.all &&
-        historyMatchModeFilterFor(match.mode) != filters.matchMode) {
+        historyMatchModeFilterFor(match) != filters.matchMode) {
       return false;
     }
     if (periodStart != null && match.playedAt.isBefore(periodStart)) {

@@ -699,12 +699,18 @@ class _MatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final timeLabel = DateFormat('HH:mm').format(match.playedAt);
-    final modeLabel = match.mode == MatchMode.oneVsOne ? '1v1' : '2v2';
+    final baseModeLabel = match.mode == MatchMode.oneVsOne ? '1v1' : '2v2';
+    final modeLabel = match.isRivalry ? 'Rivalita · $baseModeLabel' : baseModeLabel;
     final t1Names =
         match.team1.map((id) => StatsService.playerName(players, id)).toList();
     final t2Names =
         match.team2.map((id) => StatsService.playerName(players, id)).toList();
     final winColor = match.winningTeam == 1 ? NttColors.team1 : NttColors.team2;
+    final modeColor = match.isRivalry
+        ? NttColors.team2
+        : (match.mode == MatchMode.oneVsOne
+            ? NttColors.warning
+            : NttColors.accentSoft);
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -754,9 +760,7 @@ class _MatchCard extends StatelessWidget {
                       child: Text(
                         modeLabel,
                         style: TextStyle(
-                          color: match.mode == MatchMode.oneVsOne
-                              ? NttColors.warning
-                              : NttColors.accentSoft,
+                          color: modeColor,
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.6,

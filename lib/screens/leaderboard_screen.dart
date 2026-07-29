@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubits/leaderboard/leaderboard_cubit.dart';
 import '../cubits/leaderboard/leaderboard_state.dart';
+import '../models/player_badge.dart';
 import '../models/player_stats.dart';
 import '../theme/app_theme.dart';
 import '../widgets/avatar.dart';
@@ -229,7 +230,7 @@ class _PodiumFrame extends StatelessWidget {
     final third = top.length > 2 ? top[2] : null;
 
     return SizedBox(
-      height: 290,
+      height: 380,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -367,6 +368,15 @@ class _PodiumColumn extends StatelessWidget {
                         letterSpacing: 0.5,
                       ),
                     ),
+                    if (s.badges.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: s.badges.take(2).map(_PodiumBadgeChip.new).toList(),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -613,6 +623,14 @@ class _LeaderRow extends StatelessWidget {
                       fontSize: 12,
                     ),
                   ),
+                  if (stats.badges.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: stats.badges.take(3).map(_RowBadgeChip.new).toList(),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -653,6 +671,82 @@ class _SectionLabel extends StatelessWidget {
         letterSpacing: 2,
       ),
     );
+  }
+}
+
+class _PodiumBadgeChip extends StatelessWidget {
+  const _PodiumBadgeChip(this.badge);
+
+  final PlayerBadge badge;
+
+  @override
+  Widget build(BuildContext context) {
+    final tone = _badgeTone(badge.code);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: tone.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: tone.withValues(alpha: 0.35)),
+      ),
+      child: Text(
+        badge.label,
+        style: TextStyle(
+          color: tone,
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _RowBadgeChip extends StatelessWidget {
+  const _RowBadgeChip(this.badge);
+
+  final PlayerBadge badge;
+
+  @override
+  Widget build(BuildContext context) {
+    final tone = _badgeTone(badge.code);
+    return Tooltip(
+      message: badge.description,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: tone.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: tone.withValues(alpha: 0.32)),
+        ),
+        child: Text(
+          badge.label,
+          style: TextStyle(
+            color: tone,
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Color _badgeTone(String code) {
+  switch (code) {
+    case 'leader':
+      return _Hud.warm;
+    case 'bomber':
+      return const Color(0xFFFF8A4C);
+    case 'grinder':
+      return const Color(0xFF9AD1FF);
+    case 'dominant':
+      return const Color(0xFF7CFFB2);
+    case 'streak':
+      return const Color(0xFFFF6B6B);
+    case 'rivalry':
+      return const Color(0xFFFF9F1C);
+    default:
+      return _Hud.cyan;
   }
 }
 

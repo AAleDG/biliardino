@@ -91,6 +91,7 @@ class _MatchRepositoryFake implements MatchRepository {
   @override
   Future<void> addMatch({
     required MatchMode mode,
+    required bool isRivalry,
     required List<String> team1,
     required List<String> team2,
     required int score1,

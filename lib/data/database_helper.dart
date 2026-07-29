@@ -13,7 +13,7 @@ class DatabaseHelper {
 
   Future<Database> _open() async =>
       openDatabase(join(await getDatabasesPath(), 'biliardino.db'),
-        version: 2, onCreate: _onCreate, onUpgrade: _onUpgrade);
+        version: 3, onCreate: _onCreate, onUpgrade: _onUpgrade);
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
@@ -36,7 +36,8 @@ class DatabaseHelper {
         t1_score INTEGER NOT NULL,
         t2_score INTEGER NOT NULL,
         winning_team INTEGER NOT NULL,
-        scorer_ids_json TEXT NOT NULL
+        scorer_ids_json TEXT NOT NULL,
+        is_rivalry INTEGER NOT NULL DEFAULT 0
       )
     ''');
   }
@@ -48,6 +49,17 @@ class DatabaseHelper {
       );
       await db.execute(
         "ALTER TABLE matches ADD COLUMN scorer_ids_json TEXT NOT NULL DEFAULT '[]'",
+      );
+    }
+    if (oldVersion < 3) {
+      await db.execute(
+        'ALTER TABLE matches ADD COLUMN is_rivalry INTEGER NOT NULL DEFAULT 0',
+      );
+      await db.execute(
+        "UPDATE matches SET is_rivalry = 1 WHERE match_mode = 'rivalry'",
+      );
+      await db.execute(
+        "UPDATE matches SET match_mode = '1v1' WHERE match_mode = 'rivalry'",
       );
     }
   }

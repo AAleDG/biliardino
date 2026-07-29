@@ -5,6 +5,7 @@ import '../cubits/new_match/new_match_cubit.dart';
 import '../cubits/new_match/new_match_state.dart';
 import '../models/game_match.dart';
 import '../models/player.dart';
+import '../models/rivalry_overview.dart';
 import '../repositories/match_repository.dart';
 import '../repositories/player_repository.dart';
 import '../services/stats_service.dart';
@@ -41,7 +42,9 @@ class _NewMatchView extends StatelessWidget {
             Celebrations.showGoal(
               ctx,
               color: goal.team == 1 ? NttColors.team1 : NttColors.team2,
-              teamLabel: '${goal.scorerName.toUpperCase()} · SQUADRA ${goal.team}',
+              teamLabel: state.isRivalry
+                  ? 'RIVALITA · ${goal.scorerName.toUpperCase()}'
+                  : '${goal.scorerName.toUpperCase()} · SQUADRA ${goal.team}',
             );
           },
         ),
@@ -55,11 +58,14 @@ class _NewMatchView extends StatelessWidget {
             Celebrations.showVictory(
               ctx,
               color: color,
-              teamLabel: 'SQUADRA ${victory.winningTeam}',
+              teamLabel: state.isRivalry
+                ? 'RIVALITA · ${victory.winnerNames.join(' / ').toUpperCase()}'
+                  : 'SQUADRA ${victory.winningTeam}',
               playerNames: victory.winnerNames,
               winnerScore: victory.winnerScore,
               loserScore: victory.loserScore,
-              onContinue: ctx.read<NewMatchCubit>().acknowledgeVictory,
+              onChangeTeams: ctx.read<NewMatchCubit>().changeTeamsAfterVictory,
+              onRematch: ctx.read<NewMatchCubit>().rematchAfterVictory,
             );
           },
         ),
@@ -107,24 +113,36 @@ class _NewMatchView extends StatelessWidget {
             ),
             body: showScoreboard
                 ? _Scoreboard(
-                team1Players: _matchPlayers(state.players, state.team1),
-                team2Players: _matchPlayers(state.players, state.team2),
+                    mode: state.mode,
+                    isRivalry: state.isRivalry,
+                    rivalry: state.isRivalry
+                        ? StatsService.rivalryOverview(
+                            state.matches,
+                            team1Ids: state.team1,
+                            team2Ids: state.team2,
+                          )
+                        : null,
+                    team1Players: _matchPlayers(state.players, state.team1),
+                    team2Players: _matchPlayers(state.players, state.team2),
                     score1: state.score1,
                     score2: state.score2,
                     isSaving: state.isSaving,
-                onAddGoal: (team, players) =>
-                  _handleAddGoal(context, team, players),
+                    onAddGoal: (team, players) =>
+                        _handleAddGoal(context, team, players),
                     onRemoveGoal: cubit.removeGoal,
                     onSave: cubit.save,
                   )
                 : _Setup(
                     players: state.players,
-                mode: state.mode,
+                    matches: state.matches,
+                    mode: state.mode,
+                    isRivalry: state.isRivalry,
                     present: state.present,
                     team1: state.team1,
                     team2: state.team2,
                     assignment: state.assignment,
-                onModeChanged: cubit.setMatchMode,
+                    onModeChanged: cubit.setMatchMode,
+                    onRivalryChanged: cubit.setRivalry,
                     onToggle: cubit.setTeam,
                     onKickoff: state.teamsValid ? cubit.kickoff : null,
                   ),
@@ -153,7 +171,7 @@ String _feedbackText(NewMatchFeedback kind, MatchMode mode) {
     case NewMatchFeedback.noGoals:
       return 'Inserisci almeno un gol prima di registrare.';
     case NewMatchFeedback.invalidTeams:
-      return mode == MatchMode.oneVsOne
+      return mode.teamSize == 1
           ? 'Servono due squadre valide con un giocatore per lato.'
           : 'Servono due squadre valide con due giocatori per lato.';
     case NewMatchFeedback.saveFailed:
@@ -334,28 +352,42 @@ Future<bool> _confirmDialog(
 class _Setup extends StatelessWidget {
   const _Setup({
     required this.players,
+    required this.matches,
     required this.mode,
+    required this.isRivalry,
     required this.present,
     required this.team1,
     required this.team2,
     required this.assignment,
     required this.onModeChanged,
+    required this.onRivalryChanged,
     required this.onToggle,
     required this.onKickoff,
   });
 
   final List<Player> players;
+  final List<GameMatch> matches;
   final MatchMode mode;
+  final bool isRivalry;
   final List<Player> present;
   final List<String> team1;
   final List<String> team2;
   final Map<String, int> assignment;
   final ValueChanged<MatchMode> onModeChanged;
+  final ValueChanged<bool> onRivalryChanged;
   final void Function(String id, int team) onToggle;
   final VoidCallback? onKickoff;
 
   @override
   Widget build(BuildContext context) {
+    final rivalry = isRivalry && team1.isNotEmpty && team2.isNotEmpty
+        ? StatsService.rivalryOverview(
+            matches,
+            team1Ids: team1,
+            team2Ids: team2,
+          )
+        : null;
+
     if (present.length < mode.teamSize * 2) {
       return Center(
         child: Padding(
@@ -434,6 +466,31 @@ class _Setup extends StatelessWidget {
                   ],
                 ),
               ),
+              if (team1.length == mode.teamSize && team2.length == mode.teamSize) ...[
+                const SizedBox(height: 16),
+                _RivalryToggleCard(
+                  mode: mode,
+                  isRivalry: isRivalry,
+                  onActivate: () async {
+                    final enabled = await _confirmRivalryActivation(
+                      context,
+                      mode: mode,
+                    );
+                    if (enabled) {
+                      onRivalryChanged(true);
+                    }
+                  },
+                  onDeactivate: () => onRivalryChanged(false),
+                ),
+              ],
+              if (isRivalry) ...[
+                const SizedBox(height: 12),
+                _RivalryOverviewCard(
+                  overview: rivalry,
+                  team1Label: _teamLabel(players, team1, 'Squadra 1'),
+                  team2Label: _teamLabel(players, team2, 'Squadra 2'),
+                ),
+              ],
               const SizedBox(height: 24),
               const _SectionLabel('GIOCATORI PRESENTI'),
               const SizedBox(height: 4),
@@ -508,6 +565,9 @@ class _Setup extends StatelessWidget {
 
 class _Scoreboard extends StatelessWidget {
   const _Scoreboard({
+    required this.mode,
+    required this.isRivalry,
+    required this.rivalry,
     required this.team1Players,
     required this.team2Players,
     required this.score1,
@@ -518,6 +578,9 @@ class _Scoreboard extends StatelessWidget {
     required this.onSave,
   });
 
+  final MatchMode mode;
+  final bool isRivalry;
+  final RivalryOverview? rivalry;
   final List<_MatchPlayer> team1Players;
   final List<_MatchPlayer> team2Players;
   final int score1;
@@ -532,6 +595,18 @@ class _Scoreboard extends StatelessWidget {
     final canSave = !isSaving && score1 != score2 && (score1 > 0 || score2 > 0);
     return Column(
       children: [
+        if (isRivalry &&
+            rivalry != null &&
+            team1Players.isNotEmpty &&
+            team2Players.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+            child: _RivalryScoreboardBanner(
+              overview: rivalry!,
+              team1Name: team1Players.map((player) => player.name).join(' / '),
+              team2Name: team2Players.map((player) => player.name).join(' / '),
+            ),
+          ),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
@@ -934,65 +1009,411 @@ class _MatchModeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: _modeOptions.map((option) {
-        final selected = option.mode == selectedMode;
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(
-              right: option.mode == MatchMode.oneVsOne ? 6 : 0,
-              left: option.mode == MatchMode.twoVsTwo ? 6 : 0,
-            ),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(14),
-              onTap: () => onChanged(option.mode),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 360;
+        final children = _modeOptions.asMap().entries.map((entry) {
+          final index = entry.key;
+          final option = entry.value;
+          final selected = option.mode == selectedMode;
+          final card = InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () => onChanged(option.mode),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: selected
+                    ? NttColors.accent.withValues(alpha: 0.12)
+                    : NttColors.surfaceMid,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
                   color: selected
-                      ? NttColors.accent.withValues(alpha: 0.12)
-                      : NttColors.surfaceMid,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: selected
-                        ? NttColors.accent
-                        : Colors.white.withValues(alpha: 0.08),
-                    width: selected ? 1.5 : 1,
-                  ),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      option.title,
-                      style: TextStyle(
-                        color: selected
-                            ? NttColors.accent
-                            : NttColors.textPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      option.description,
-                      style: const TextStyle(
-                        color: NttColors.textMuted,
-                        fontSize: 12,
-                        height: 1.35,
-                      ),
-                    ),
-                  ],
+                      ? NttColors.accent
+                      : Colors.white.withValues(alpha: 0.08),
+                  width: selected ? 1.5 : 1,
                 ),
               ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    option.title,
+                    style: TextStyle(
+                      color: selected
+                          ? NttColors.accent
+                          : NttColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    option.description,
+                    style: const TextStyle(
+                      color: NttColors.textMuted,
+                      fontSize: 12,
+                      height: 1.35,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      }).toList(growable: false),
+          );
+
+          if (compact) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: index == 0 ? 0 : 8,
+                right: index == _modeOptions.length - 1 ? 0 : 0,
+              ),
+              child: SizedBox(width: 172, child: card),
+            );
+          }
+
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: index == 0 ? 0 : 6,
+                right: index == _modeOptions.length - 1 ? 0 : 6,
+              ),
+              child: card,
+            ),
+          );
+        }).toList(growable: false);
+
+        if (compact) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            child: Row(children: children),
+          );
+        }
+
+        return Row(children: children);
+      },
     );
   }
+}
+
+class _RivalryOverviewCard extends StatelessWidget {
+  const _RivalryOverviewCard({
+    required this.overview,
+    required this.team1Label,
+    required this.team2Label,
+  });
+
+  final RivalryOverview? overview;
+  final String team1Label;
+  final String team2Label;
+
+  @override
+  Widget build(BuildContext context) {
+    final title = overview != null && overview!.hasMatches
+            ? 'Testa a testa attivo'
+            : 'Primo duello in arrivo';
+    final description = overview != null && overview!.hasMatches
+        ? _rivalryHeadline(overview!, team1Label, team2Label)
+        : '$team1Label e $team2Label non si sono ancora affrontati in modalita Rivalita.';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: NttColors.surfaceMid,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: NttColors.warning.withValues(alpha: 0.25)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            NttColors.warning.withValues(alpha: 0.12),
+            Colors.transparent,
+          ],
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.local_fire_department_outlined,
+                color: NttColors.warning,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: NttColors.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: const TextStyle(
+              color: NttColors.textMuted,
+              fontSize: 13,
+              height: 1.35,
+            ),
+          ),
+          if (overview != null && overview!.hasMatches) ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: _RivalryStatTile(
+                    label: 'Duelli',
+                    value: '${overview!.totalMatches}',
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _RivalryStatTile(
+                    label: 'Score',
+                    value: '${overview!.team1Wins}-${overview!.team2Wins}',
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _RivalryStatTile(
+                    label: 'Gol',
+                    value: '${overview!.team1Goals}-${overview!.team2Goals}',
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _RivalryToggleCard extends StatelessWidget {
+  const _RivalryToggleCard({
+    required this.mode,
+    required this.isRivalry,
+    required this.onActivate,
+    required this.onDeactivate,
+  });
+
+  final MatchMode mode;
+  final bool isRivalry;
+  final Future<void> Function() onActivate;
+  final VoidCallback onDeactivate;
+
+  @override
+  Widget build(BuildContext context) {
+    final description = mode == MatchMode.oneVsOne
+        ? 'Puoi trasformare questa sfida in una Rivalita dedicata tra i due giocatori.'
+        : 'Puoi trasformare questa partita in una Rivalita dedicata tra queste due coppie.';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: NttColors.surfaceMid,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: NttColors.warning.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.local_fire_department_outlined,
+              color: NttColors.warning,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isRivalry ? 'Rivalita attiva' : 'Modalita Rivalita disponibile',
+                  style: const TextStyle(
+                    color: NttColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    color: NttColors.textMuted,
+                    fontSize: 13,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: isRivalry ? null : () => onActivate(),
+                      icon: const Icon(Icons.flash_on_outlined),
+                      label: const Text('Attiva Rivalita'),
+                    ),
+                    if (isRivalry)
+                      TextButton(
+                        onPressed: onDeactivate,
+                        child: const Text('Disattiva'),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RivalryScoreboardBanner extends StatelessWidget {
+  const _RivalryScoreboardBanner({
+    required this.overview,
+    required this.team1Name,
+    required this.team2Name,
+  });
+
+  final RivalryOverview overview;
+  final String team1Name;
+  final String team2Name;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: NttColors.surfaceMid,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: NttColors.warning.withValues(alpha: 0.22)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'RIVALITA ATTIVA',
+            style: TextStyle(
+              color: NttColors.warning,
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.8,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _rivalryHeadline(overview, team1Name, team2Name),
+            style: const TextStyle(
+              color: NttColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RivalryStatTile extends StatelessWidget {
+  const _RivalryStatTile({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: NttColors.surfaceHigh,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: NttColors.textFaint,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              color: NttColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _rivalryHeadline(
+  RivalryOverview overview,
+  String team1Name,
+  String team2Name,
+) {
+  if (!overview.hasMatches) {
+    return 'Nessun precedente tra $team1Name e $team2Name.';
+  }
+  if (overview.isTied) {
+    return '$team1Name e $team2Name sono in parita: ${overview.team1Wins}-${overview.team2Wins} nei duelli diretti.';
+  }
+  final leaderName = overview.team1Wins > overview.team2Wins
+      ? team1Name
+      : team2Name;
+  return '$leaderName conduce ${overview.team1Wins}-${overview.team2Wins}, con ${overview.team1Goals}-${overview.team2Goals} nei gol assegnati.';
+}
+
+String _teamLabel(List<Player> players, List<String> ids, String fallback) {
+  if (ids.isEmpty) {
+    return fallback;
+  }
+  return ids.map((id) => StatsService.playerName(players, id)).join(' / ');
+}
+
+Future<bool> _confirmRivalryActivation(
+  BuildContext context, {
+  required MatchMode mode,
+}) {
+  final subject = mode == MatchMode.oneVsOne
+      ? 'tra questi due giocatori'
+      : 'tra queste due coppie';
+  return _confirmDialog(
+    context,
+    title: 'Attivare Rivalita?',
+    message:
+        'Puoi marcare questa partita come Rivalita $subject. Lo storico terra separati precedenti, score e gol dedicati a questa sfida.',
+    confirmLabel: 'Attiva',
+  );
 }
 
 class _TeamChip extends StatelessWidget {

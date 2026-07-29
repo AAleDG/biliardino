@@ -21,6 +21,7 @@ void main() {
       await expectLater(
         repository.addMatch(
           mode: MatchMode.twoVsTwo,
+          isRivalry: false,
           team1: const ['p1'],
           team2: const ['p2', 'p3'],
           score1: 1,
@@ -32,6 +33,7 @@ void main() {
       await expectLater(
         repository.addMatch(
           mode: MatchMode.twoVsTwo,
+          isRivalry: false,
           team1: const ['p1', 'p2'],
           team2: const ['p2', 'p3'],
           score1: 1,
@@ -49,6 +51,7 @@ void main() {
       await expectLater(
         repository.addMatch(
           mode: MatchMode.twoVsTwo,
+          isRivalry: false,
           team1: const ['p1', 'p2'],
           team2: const ['p3', 'p4'],
           score1: -1,
@@ -60,6 +63,7 @@ void main() {
       await expectLater(
         repository.addMatch(
           mode: MatchMode.twoVsTwo,
+          isRivalry: false,
           team1: const ['p1', 'p2'],
           team2: const ['p3', 'p4'],
           score1: 3,
@@ -70,6 +74,20 @@ void main() {
       );
 
       expect(database.insertMatchCalls, 0);
+    });
+
+    test('accepts rivalry matches with one player per side', () async {
+      await repository.addMatch(
+        mode: MatchMode.oneVsOne,
+        isRivalry: true,
+        team1: const ['p1'],
+        team2: const ['p2'],
+        score1: 5,
+        score2: 3,
+        scorerIds: const ['p1', 'p1', 'p2', 'p1', 'p2', 'p1', 'p1', 'p2'],
+      );
+
+      expect(database.insertMatchCalls, 1);
     });
   });
 
@@ -120,6 +138,7 @@ GameMatch _match(String id) {
     id: id,
     playedAt: DateTime(2026),
     mode: MatchMode.twoVsTwo,
+    isRivalry: false,
     t1p1: 'p1',
     t1p2: 'p2',
     t2p1: 'p3',

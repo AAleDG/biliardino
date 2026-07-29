@@ -16,13 +16,18 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     required MatchRepository matchRepository,
   })  : _playerRepo = playerRepository,
         _matchRepo = matchRepository,
-        super(NewMatchState(players: playerRepository.players)) {
+        super(NewMatchState(
+          players: playerRepository.players,
+          matches: matchRepository.matches,
+        )) {
     _playersSub = _playerRepo.watchPlayers().listen(_onPlayersChanged);
+    _matchesSub = _matchRepo.watchMatches().listen(_onMatchesChanged);
   }
 
   final PlayerRepository _playerRepo;
   final MatchRepository _matchRepo;
   late final StreamSubscription<List<Player>> _playersSub;
+  late final StreamSubscription<List<GameMatch>> _matchesSub;
   List<Player>? _deferredPlayers;
   int _signal = 0;
 
@@ -35,6 +40,11 @@ class NewMatchCubit extends Cubit<NewMatchState> {
       return;
     }
     _reconcilePlayers(players);
+  }
+
+  void _onMatchesChanged(List<GameMatch> matches) {
+    if (isClosed) return;
+    emit(state.copyWith(matches: List.unmodifiable(matches)));
   }
 
   void _reconcilePlayers(
@@ -64,6 +74,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     emit(state.copyWith(
       players: players,
       assignment: assignment,
+      isRivalry: invalidated ? false : state.isRivalry,
       kickedOff: interruptedMatch ? false : null,
       scorerIds: interruptedMatch ? const [] : null,
       score1: interruptedMatch ? 0 : null,
@@ -97,13 +108,17 @@ class NewMatchCubit extends Cubit<NewMatchState> {
       if (targetTeam.length >= state.mode.teamSize) return;
       current[playerId] = team;
     }
-    emit(state.copyWith(assignment: Map.unmodifiable(current)));
+    emit(state.copyWith(
+      assignment: Map.unmodifiable(current),
+      isRivalry: false,
+    ));
   }
 
   void setMatchMode(MatchMode mode) {
     if (state.kickedOff || state.isSaving || state.mode == mode) return;
     emit(state.copyWith(
       mode: mode,
+      isRivalry: false,
       assignment: const {},
       scorerIds: const [],
       score1: 0,
@@ -111,6 +126,11 @@ class NewMatchCubit extends Cubit<NewMatchState> {
       clearLastGoal: true,
       clearLastFeedback: true,
     ));
+  }
+
+  void setRivalry(bool enabled) {
+    if (state.kickedOff || state.isSaving || !state.teamsValid) return;
+    emit(state.copyWith(isRivalry: enabled));
   }
 
   void kickoff() {
@@ -220,6 +240,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     try {
       await _matchRepo.addMatch(
         mode: snapshot.mode,
+        isRivalry: snapshot.isRivalry,
         team1: snapshot.team1,
         team2: snapshot.team2,
         score1: snapshot.score1,
@@ -277,9 +298,44 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     ));
   }
 
+  void changeTeamsAfterVictory() {
+    if (state.isSaving) return;
+    final players = _deferredPlayers ?? state.players;
+    _deferredPlayers = null;
+    emit(state.copyWith(
+      players: players,
+      assignment: const {},
+      scorerIds: const [],
+      score1: 0,
+      score2: 0,
+      kickedOff: false,
+      isRivalry: false,
+      clearLastGoal: true,
+      clearLastVictory: true,
+      clearLastFeedback: true,
+    ));
+  }
+
+  void rematchAfterVictory() {
+    if (state.isSaving) return;
+    final players = _deferredPlayers ?? state.players;
+    _deferredPlayers = null;
+    emit(state.copyWith(
+      players: players,
+      scorerIds: const [],
+      score1: 0,
+      score2: 0,
+      kickedOff: true,
+      clearLastGoal: true,
+      clearLastVictory: true,
+      clearLastFeedback: true,
+    ));
+  }
+
   @override
   Future<void> close() async {
     await _playersSub.cancel();
+    await _matchesSub.cancel();
     return super.close();
   }
 }
@@ -287,6 +343,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
 class _MatchSnapshot {
   const _MatchSnapshot({
     required this.mode,
+    required this.isRivalry,
     required this.team1,
     required this.team2,
     required this.score1,
@@ -298,6 +355,7 @@ class _MatchSnapshot {
   factory _MatchSnapshot.fromState(NewMatchState state) {
     return _MatchSnapshot(
       mode: state.mode,
+      isRivalry: state.isRivalry,
       team1: List.unmodifiable(state.team1),
       team2: List.unmodifiable(state.team2),
       score1: state.score1,
@@ -308,6 +366,7 @@ class _MatchSnapshot {
   }
 
   final MatchMode mode;
+  final bool isRivalry;
   final List<String> team1;
   final List<String> team2;
   final int score1;

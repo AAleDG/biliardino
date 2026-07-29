@@ -27,6 +27,7 @@ class MatchRepository {
 
   Future<void> addMatch({
     required MatchMode mode,
+    required bool isRivalry,
     required List<String> team1,
     required List<String> team2,
     required int score1,
@@ -45,6 +46,7 @@ class MatchRepository {
       id: _uuid.v4(),
       playedAt: DateTime.now(),
       mode: mode,
+      isRivalry: isRivalry,
       t1p1: team1[0],
       t1p2: team1.length > 1 ? team1[1] : '',
       t2p1: team2[0],

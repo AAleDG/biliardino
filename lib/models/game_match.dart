@@ -10,6 +10,9 @@ enum MatchMode {
   final int teamSize;
 
   static MatchMode fromDbValue(String? value) {
+    if (value == 'rivalry') {
+      return MatchMode.oneVsOne;
+    }
     return MatchMode.values.firstWhere(
       (mode) => mode.dbValue == value,
       orElse: () => MatchMode.twoVsTwo,
@@ -25,6 +28,7 @@ class GameMatch {
   final int t1Score, t2Score;
   final int winningTeam;
   final List<String> scorerIds;
+  final bool isRivalry;
 
   GameMatch({
     required this.id,
@@ -38,6 +42,7 @@ class GameMatch {
     required this.t2Score,
     required this.winningTeam,
     required this.scorerIds,
+    this.isRivalry = false,
   });
 
   List<String> get team1 => [t1p1, t1p2].where(_isPlayerId).toList();
@@ -61,6 +66,7 @@ class GameMatch {
         't2_score': t2Score,
         'winning_team': winningTeam,
         'scorer_ids_json': jsonEncode(scorerIds),
+        'is_rivalry': isRivalry ? 1 : 0,
       };
 
   factory GameMatch.fromMap(Map<String, dynamic> m) => GameMatch(
@@ -77,6 +83,8 @@ class GameMatch {
         scorerIds: List<String>.from(
           jsonDecode((m['scorer_ids_json'] as String?) ?? '[]') as List,
         ),
+        isRivalry: (m['is_rivalry'] as int?) == 1 ||
+            (m['match_mode'] as String?) == 'rivalry',
       );
 
   static bool _isPlayerId(String value) => value.trim().isNotEmpty;
