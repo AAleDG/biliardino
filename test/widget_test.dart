@@ -65,9 +65,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('17 giugno 2026'), findsOneWidget);
-    expect(find.text('Partite'), findsOneWidget);
-    expect(find.text('Filtro'), findsOneWidget);
-    expect(find.text('Vittoria'), findsNWidgets(2));
+    expect(find.text('Tutti i risultati'), findsOneWidget);
+    expect(find.text('2 partite'), findsOneWidget);
+    expect(find.text('2v2'), findsNWidgets(2));
+    expect(find.text('Vittoria'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
@@ -84,6 +85,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('history-open-filters')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-player-p5')));
+    await tester.ensureVisible(find.byKey(const ValueKey('history-apply-filters')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-apply-filters')));
     await tester.pumpAndSettle();
 
@@ -110,6 +113,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('history-player-p1')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-filter-wins')));
+    await tester.ensureVisible(find.byKey(const ValueKey('history-apply-filters')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-apply-filters')));
     await tester.pumpAndSettle();
 
@@ -119,6 +124,32 @@ void main() {
         findsWidgets);
     expect(find.text('10'), findsOneWidget);
     expect(find.text('6'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Lo storico filtra le partite 1v1',
+      (WidgetTester tester) async {
+    final sample = _sampleDataMixedFormats();
+    await _pumpHome(
+      tester,
+      home: const HistoryScreen(),
+      repos: sample,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('history-open-filters')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('history-filter-oneVsOne')));
+    await tester.ensureVisible(find.byKey(const ValueKey('history-apply-filters')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('history-apply-filters')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1v1 · Tutti i risultati'), findsWidgets);
+    expect(find.text('1v1'), findsWidgets);
+    expect(find.text('2v2'), findsNothing);
+    expect(find.text('Ale'), findsOneWidget);
+    expect(find.text('Mario / Max'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }
@@ -212,6 +243,7 @@ _Repos _sampleData() {
     GameMatch(
       id: 'm1',
       playedAt: now,
+      mode: MatchMode.twoVsTwo,
       t1p1: 'p1',
       t1p2: 'p2',
       t2p1: 'p3',
@@ -219,10 +251,12 @@ _Repos _sampleData() {
       t1Score: 10,
       t2Score: 8,
       winningTeam: 1,
+      scorerIds: const ['p1', 'p2', 'p1', 'p2', 'p1', 'p2', 'p1', 'p2', 'p1', 'p1', 'p3', 'p4', 'p3', 'p4', 'p3', 'p4', 'p3', 'p4'],
     ),
     GameMatch(
       id: 'm2',
       playedAt: now.subtract(const Duration(hours: 2)),
+      mode: MatchMode.twoVsTwo,
       t1p1: 'p3',
       t1p2: 'p1',
       t2p1: 'p2',
@@ -230,6 +264,7 @@ _Repos _sampleData() {
       t1Score: 6,
       t2Score: 10,
       winningTeam: 2,
+      scorerIds: const ['p3', 'p1', 'p3', 'p1', 'p3', 'p1', 'p2', 'p4', 'p2', 'p4', 'p2', 'p4', 'p2', 'p4', 'p2', 'p4'],
     ),
   ];
   return _Repos.build(players: players, matches: matches);
@@ -246,4 +281,43 @@ _Repos _sampleDataNoMatchPlayerFirst() {
     players[3],
   ];
   return _Repos.build(players: reordered, matches: base.matchRepo.matches);
+}
+
+_Repos _sampleDataMixedFormats() {
+  final now = DateTime(2026, 6, 17, 12);
+  final players = [
+    Player(id: 'p1', name: 'Ale', createdAt: now),
+    Player(id: 'p2', name: 'Luigi', createdAt: now),
+    Player(id: 'p3', name: 'Mario', createdAt: now),
+    Player(id: 'p4', name: 'Max', createdAt: now),
+  ];
+  final matches = [
+    GameMatch(
+      id: 'm1',
+      playedAt: now,
+      mode: MatchMode.twoVsTwo,
+      t1p1: 'p1',
+      t1p2: 'p2',
+      t2p1: 'p3',
+      t2p2: 'p4',
+      t1Score: 5,
+      t2Score: 2,
+      winningTeam: 1,
+      scorerIds: const ['p1', 'p2', 'p1', 'p2', 'p1', 'p3', 'p4'],
+    ),
+    GameMatch(
+      id: 'm2',
+      playedAt: now.subtract(const Duration(minutes: 8)),
+      mode: MatchMode.oneVsOne,
+      t1p1: 'p1',
+      t1p2: '',
+      t2p1: 'p4',
+      t2p2: '',
+      t1Score: 2,
+      t2Score: 1,
+      winningTeam: 1,
+      scorerIds: const ['p1', 'p4', 'p1'],
+    ),
+  ];
+  return _Repos.build(players: players, matches: matches);
 }

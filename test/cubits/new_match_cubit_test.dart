@@ -23,8 +23,8 @@ void main() {
       final firstSave = cubit.save();
       expect(cubit.state.isSaving, isTrue);
 
-      cubit.addGoal(2);
-      cubit.setScore(1, 9);
+      cubit.addGoal(2, 'p3');
+      cubit.removeGoal(1);
       final secondSave = cubit.save();
 
       expect(matches.saved, hasLength(1));
@@ -182,7 +182,7 @@ NewMatchCubit _readyCubit({
     ..setTeam('p3', 2)
     ..setTeam('p4', 2)
     ..kickoff()
-    ..addGoal(1);
+    ..addGoal(1, 'p1');
   return cubit;
 }
 
@@ -199,16 +199,20 @@ List<Player> _players() {
 
 class _SavedMatch {
   const _SavedMatch({
+    required this.mode,
     required this.team1,
     required this.team2,
     required this.score1,
     required this.score2,
+    required this.scorerIds,
   });
 
+  final MatchMode mode;
   final List<String> team1;
   final List<String> team2;
   final int score1;
   final int score2;
+  final List<String> scorerIds;
 }
 
 class _MatchRepositoryFake implements MatchRepository {
@@ -220,16 +224,20 @@ class _MatchRepositoryFake implements MatchRepository {
 
   @override
   Future<void> addMatch({
+    required MatchMode mode,
     required List<String> team1,
     required List<String> team2,
     required int score1,
     required int score2,
+    required List<String> scorerIds,
   }) {
     final match = _SavedMatch(
+      mode: mode,
       team1: List.unmodifiable(team1),
       team2: List.unmodifiable(team2),
       score1: score1,
       score2: score2,
+      scorerIds: List.unmodifiable(scorerIds),
     );
     saved.add(match);
     return onSave?.call(match) ?? Future.value();

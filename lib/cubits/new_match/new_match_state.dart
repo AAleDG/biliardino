@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../models/game_match.dart';
 import '../../models/player.dart';
 
 enum NewMatchFeedback {
@@ -11,12 +12,20 @@ enum NewMatchFeedback {
 }
 
 class GoalEvent extends Equatable {
-  const GoalEvent({required this.team, required this.signalId});
+  const GoalEvent({
+    required this.team,
+    required this.scorerId,
+    required this.scorerName,
+    required this.signalId,
+  });
+
   final int team;
+  final String scorerId;
+  final String scorerName;
   final int signalId;
 
   @override
-  List<Object?> get props => [team, signalId];
+  List<Object?> get props => [team, scorerId, scorerName, signalId];
 }
 
 class VictoryEvent extends Equatable {
@@ -53,7 +62,9 @@ class FeedbackEvent extends Equatable {
 class NewMatchState extends Equatable {
   const NewMatchState({
     this.players = const [],
+    this.mode = MatchMode.twoVsTwo,
     this.assignment = const {},
+    this.scorerIds = const [],
     this.score1 = 0,
     this.score2 = 0,
     this.kickedOff = false,
@@ -64,7 +75,9 @@ class NewMatchState extends Equatable {
   });
 
   final List<Player> players;
+  final MatchMode mode;
   final Map<String, int> assignment;
+  final List<String> scorerIds;
   final int score1;
   final int score2;
   final bool kickedOff;
@@ -81,15 +94,16 @@ class NewMatchState extends Equatable {
 
   List<String> get team1 => team(1);
   List<String> get team2 => team(2);
+  int get requiredPlayers => mode.teamSize * 2;
 
   bool get teamsValid {
     final firstTeam = team1;
     final secondTeam = team2;
     final selected = {...firstTeam, ...secondTeam};
     final presentIds = present.map((player) => player.id).toSet();
-    return firstTeam.length == 2 &&
-        secondTeam.length == 2 &&
-        selected.length == 4 &&
+    return firstTeam.length == mode.teamSize &&
+        secondTeam.length == mode.teamSize &&
+        selected.length == requiredPlayers &&
         selected.every(presentIds.contains);
   }
 
@@ -97,7 +111,9 @@ class NewMatchState extends Equatable {
 
   NewMatchState copyWith({
     List<Player>? players,
+    MatchMode? mode,
     Map<String, int>? assignment,
+    List<String>? scorerIds,
     int? score1,
     int? score2,
     bool? kickedOff,
@@ -111,7 +127,9 @@ class NewMatchState extends Equatable {
   }) {
     return NewMatchState(
       players: players ?? this.players,
+      mode: mode ?? this.mode,
       assignment: assignment ?? this.assignment,
+      scorerIds: scorerIds ?? this.scorerIds,
       score1: score1 ?? this.score1,
       score2: score2 ?? this.score2,
       kickedOff: kickedOff ?? this.kickedOff,
@@ -126,7 +144,9 @@ class NewMatchState extends Equatable {
   @override
   List<Object?> get props => [
         players,
+        mode,
         assignment,
+        scorerIds,
         score1,
         score2,
         kickedOff,

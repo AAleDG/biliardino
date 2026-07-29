@@ -20,19 +20,23 @@ void main() {
     test('rejects malformed teams before touching the database', () async {
       await expectLater(
         repository.addMatch(
+          mode: MatchMode.twoVsTwo,
           team1: const ['p1'],
           team2: const ['p2', 'p3'],
           score1: 1,
           score2: 0,
+          scorerIds: const ['p1'],
         ),
         throwsArgumentError,
       );
       await expectLater(
         repository.addMatch(
+          mode: MatchMode.twoVsTwo,
           team1: const ['p1', 'p2'],
           team2: const ['p2', 'p3'],
           score1: 1,
           score2: 0,
+          scorerIds: const ['p1'],
         ),
         throwsArgumentError,
       );
@@ -44,19 +48,23 @@ void main() {
         () async {
       await expectLater(
         repository.addMatch(
+          mode: MatchMode.twoVsTwo,
           team1: const ['p1', 'p2'],
           team2: const ['p3', 'p4'],
           score1: -1,
           score2: 0,
+          scorerIds: const [],
         ),
         throwsArgumentError,
       );
       await expectLater(
         repository.addMatch(
+          mode: MatchMode.twoVsTwo,
           team1: const ['p1', 'p2'],
           team2: const ['p3', 'p4'],
           score1: 3,
           score2: 3,
+          scorerIds: const [],
         ),
         throwsArgumentError,
       );
@@ -111,6 +119,7 @@ GameMatch _match(String id) {
   return GameMatch(
     id: id,
     playedAt: DateTime(2026),
+    mode: MatchMode.twoVsTwo,
     t1p1: 'p1',
     t1p2: 'p2',
     t2p1: 'p3',
@@ -118,5 +127,6 @@ GameMatch _match(String id) {
     t1Score: 1,
     t2Score: 0,
     winningTeam: 1,
+    scorerIds: const ['p1'],
   );
 }

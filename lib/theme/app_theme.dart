@@ -19,8 +19,8 @@ class NttColors {
   static const Color surfaceHigh = Color(0xFF1B2D52);
 
   static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textMuted = Color(0xFFB0BCC9);
-  static const Color textFaint = Color(0xFF7A8699);
+  static const Color textMuted = Color(0xFFD0D9E6);
+  static const Color textFaint = Color(0xFFAAB8CB);
 }
 
 class AppTheme {

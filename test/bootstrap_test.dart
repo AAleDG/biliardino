@@ -90,10 +90,12 @@ class _MatchRepositoryFake implements MatchRepository {
 
   @override
   Future<void> addMatch({
+    required MatchMode mode,
     required List<String> team1,
     required List<String> team2,
     required int score1,
     required int score2,
+    required List<String> scorerIds,
   }) async {}
 
   @override

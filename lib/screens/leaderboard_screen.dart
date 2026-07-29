@@ -12,7 +12,7 @@ import '../widgets/avatar.dart';
 class _Hud {
   _Hud._();
   static const cyan = Color(0xFF28E0FF);
-  static const magenta = Color(0xFFFF3D9A);
+  static const warm = Color(0xFFFFB703);
   static const text = Color(0xFFCDEEFF);
 }
 
@@ -46,53 +46,100 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   Widget build(BuildContext context) {
     return BlocBuilder<LeaderboardCubit, LeaderboardState>(
       builder: (context, state) {
-        final ranked = state.stats.where((s) => s.games > 0).toList();
+        final rankedByPoints = state.stats.where((s) => s.games > 0).toList();
+        final rankedByGoals = state.stats.where((s) => s.goalsScored > 0).toList()
+          ..sort((a, b) {
+            final byGoals = b.goalsScored.compareTo(a.goalsScored);
+            if (byGoals != 0) return byGoals;
+            final byGames = b.games.compareTo(a.games);
+            if (byGames != 0) return byGames;
+            return a.player.name.toLowerCase().compareTo(
+                  b.player.name.toLowerCase(),
+                );
+          });
 
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text(
-              'CLASSIFICA',
-              style: TextStyle(
-                color: _Hud.cyan,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 5,
-                shadows: [Shadow(color: _Hud.cyan, blurRadius: 14)],
+        return DefaultTabController(
+          length: 2,
+          child: Scaffold(
+            appBar: AppBar(
+              title: const Text(
+                'CLASSIFICA',
+                style: TextStyle(
+                  color: _Hud.cyan,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 5,
+                  shadows: [Shadow(color: _Hud.cyan, blurRadius: 14)],
+                ),
               ),
             ),
-          ),
-          body: Stack(
-            children: [
-              Positioned.fill(
-                child: CustomPaint(painter: _ScanlinePainter()),
-              ),
-              ranked.isEmpty
-                  ? const _Empty()
-                  : ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                      children: [
-                        _PodiumFrame(
-                          top: ranked.take(3).toList(),
-                          anim: _ctrl,
+            body: Stack(
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(painter: _ScanlinePainter()),
+                ),
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: _Hud.cyan.withValues(alpha: 0.18),
+                          ),
+                          color: Colors.black.withValues(alpha: 0.08),
                         ),
-                        if (ranked.length > 3) ...[
-                          const SizedBox(height: 24),
-                          const _SectionLabel('CLASSIFICA COMPLETA'),
-                          const SizedBox(height: 10),
-                          ...ranked.sublist(3).asMap().entries.map(
-                                (e) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 10),
-                                  child: _LeaderRow(
-                                    rank: e.key + 4,
-                                    stats: e.value,
-                                    anim: _ctrl,
-                                    delay: 0.5 + math.min(e.key, 8) * 0.05,
-                                  ),
-                                ),
-                              ),
-                        ],
-                      ],
+                        child: const TabBar(
+                          dividerColor: Colors.transparent,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          labelColor: _Hud.cyan,
+                          unselectedLabelColor: _Hud.text,
+                          indicator: BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(13)),
+                            color: Color(0x1828E0FF),
+                          ),
+                          tabs: [
+                            Tab(text: 'Generale'),
+                            Tab(text: 'Marcatori'),
+                          ],
+                        ),
+                      ),
                     ),
-            ],
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          _LeaderboardPane(
+                            ranked: rankedByPoints,
+                            anim: _ctrl,
+                            sectionLabel: 'CLASSIFICA COMPLETA',
+                            podiumMetric: (stats) => '${stats.points} pt',
+                            rowMetric: (stats) => '${stats.points}',
+                            rowDetail: (stats) =>
+                                '${stats.wins}V · ${stats.losses}P · ${stats.games} partite',
+                            emptyTitle: 'Nessuna partita giocata',
+                            emptyDescription:
+                                'Registra una partita per vedere la classifica.',
+                          ),
+                          _LeaderboardPane(
+                            ranked: rankedByGoals,
+                            anim: _ctrl,
+                            sectionLabel: 'CLASSIFICA MARCATORI',
+                            podiumMetric: (stats) => '${stats.goalsScored} gol',
+                            rowMetric: (stats) => '${stats.goalsScored}',
+                            rowDetail: (stats) =>
+                                '${stats.games} partite · ${stats.wins} vittorie',
+                            emptyTitle: 'Nessun marcatore disponibile',
+                            emptyDescription:
+                                'I gol compariranno qui dalle partite salvate con assegnazione marcatore.',
+                            emptyIcon: Icons.sports_soccer,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -100,11 +147,80 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }
 }
 
+class _LeaderboardPane extends StatelessWidget {
+  const _LeaderboardPane({
+    required this.ranked,
+    required this.anim,
+    required this.sectionLabel,
+    required this.podiumMetric,
+    required this.rowMetric,
+    required this.rowDetail,
+    required this.emptyTitle,
+    required this.emptyDescription,
+    this.emptyIcon = Icons.leaderboard,
+  });
+
+  final List<PlayerStats> ranked;
+  final Animation<double> anim;
+  final String sectionLabel;
+  final String Function(PlayerStats stats) podiumMetric;
+  final String Function(PlayerStats stats) rowMetric;
+  final String Function(PlayerStats stats) rowDetail;
+  final String emptyTitle;
+  final String emptyDescription;
+  final IconData emptyIcon;
+
+  @override
+  Widget build(BuildContext context) {
+    if (ranked.isEmpty) {
+      return _Empty(
+        title: emptyTitle,
+        description: emptyDescription,
+        icon: emptyIcon,
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      children: [
+        _PodiumFrame(
+          top: ranked.take(3).toList(),
+          anim: anim,
+          metricLabel: podiumMetric,
+        ),
+        if (ranked.length > 3) ...[
+          const SizedBox(height: 24),
+          _SectionLabel(sectionLabel),
+          const SizedBox(height: 10),
+          ...ranked.sublist(3).asMap().entries.map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _LeaderRow(
+                    rank: entry.key + 4,
+                    stats: entry.value,
+                    anim: anim,
+                    delay: 0.5 + math.min(entry.key, 8) * 0.05,
+                    metricLabel: rowMetric,
+                    detailLabel: rowDetail,
+                  ),
+                ),
+              ),
+        ],
+      ],
+    );
+  }
+}
+
 class _PodiumFrame extends StatelessWidget {
-  const _PodiumFrame({required this.top, required this.anim});
+  const _PodiumFrame({
+    required this.top,
+    required this.anim,
+    required this.metricLabel,
+  });
 
   final List<PlayerStats> top;
   final Animation<double> anim;
+  final String Function(PlayerStats stats) metricLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +240,7 @@ class _PodiumFrame extends StatelessWidget {
               stats: second,
               anim: anim,
               entryDelay: 0.18,
+              metricLabel: metricLabel,
             ),
           ),
           Expanded(
@@ -133,6 +250,7 @@ class _PodiumFrame extends StatelessWidget {
               stats: first,
               anim: anim,
               entryDelay: 0.0,
+              metricLabel: metricLabel,
               isWinner: true,
             ),
           ),
@@ -143,6 +261,7 @@ class _PodiumFrame extends StatelessWidget {
               stats: third,
               anim: anim,
               entryDelay: 0.32,
+              metricLabel: metricLabel,
             ),
           ),
         ],
@@ -158,6 +277,7 @@ class _PodiumColumn extends StatelessWidget {
     required this.stats,
     required this.anim,
     required this.entryDelay,
+    required this.metricLabel,
     this.isWinner = false,
   });
 
@@ -166,6 +286,7 @@ class _PodiumColumn extends StatelessWidget {
   final PlayerStats? stats;
   final Animation<double> anim;
   final double entryDelay;
+  final String Function(PlayerStats stats) metricLabel;
   final bool isWinner;
 
   @override
@@ -209,10 +330,10 @@ class _PodiumColumn extends StatelessWidget {
                         padding: EdgeInsets.only(bottom: 4),
                         child: Icon(
                           Icons.emoji_events_outlined,
-                          color: _Hud.magenta,
+                          color: _Hud.warm,
                           size: 22,
                           shadows: [
-                            Shadow(color: _Hud.magenta, blurRadius: 14),
+                            Shadow(color: _Hud.warm, blurRadius: 14),
                           ],
                         ),
                       ),
@@ -238,7 +359,7 @@ class _PodiumColumn extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${s.points} pt',
+                      metricLabel(s),
                       style: TextStyle(
                         color: accent,
                         fontSize: 12,
@@ -408,12 +529,16 @@ class _LeaderRow extends StatelessWidget {
     required this.stats,
     required this.anim,
     required this.delay,
+    required this.metricLabel,
+    required this.detailLabel,
   });
 
   final int rank;
   final PlayerStats stats;
   final Animation<double> anim;
   final double delay;
+  final String Function(PlayerStats stats) metricLabel;
+  final String Function(PlayerStats stats) detailLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -459,7 +584,7 @@ class _LeaderRow extends StatelessWidget {
                 '$rank',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: _Hud.text.withValues(alpha: 0.6),
+                  color: _Hud.text.withValues(alpha: 0.82),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -482,9 +607,9 @@ class _LeaderRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    '${stats.wins}V · ${stats.losses}P · ${stats.games} partite',
+                    detailLabel(stats),
                     style: TextStyle(
-                      color: _Hud.text.withValues(alpha: 0.55),
+                      color: _Hud.text.withValues(alpha: 0.78),
                       fontSize: 12,
                     ),
                   ),
@@ -495,7 +620,7 @@ class _LeaderRow extends StatelessWidget {
               builder: (_) {
                 final accent = hudColorForName(stats.player.name);
                 return Text(
-                  '${stats.points}',
+                  metricLabel(stats),
                   style: TextStyle(
                     color: accent,
                     fontSize: 19,
@@ -532,37 +657,45 @@ class _SectionLabel extends StatelessWidget {
 }
 
 class _Empty extends StatelessWidget {
-  const _Empty();
+  const _Empty({
+    required this.title,
+    required this.description,
+    this.icon = Icons.leaderboard,
+  });
+
+  final String title;
+  final String description;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.leaderboard,
+              icon,
               size: 64,
               color: _Hud.cyan,
-              shadows: [Shadow(color: _Hud.cyan, blurRadius: 18)],
+              shadows: const [Shadow(color: _Hud.cyan, blurRadius: 18)],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
-              'Nessuna partita giocata',
-              style: TextStyle(
+              title,
+              style: const TextStyle(
                 color: _Hud.text,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.5,
               ),
             ),
-            SizedBox(height: 6),
+            const SizedBox(height: 6),
             Text(
-              'Registra una partita per vedere la classifica.',
+              description,
               textAlign: TextAlign.center,
-              style: TextStyle(color: _Hud.text, fontSize: 13),
+              style: const TextStyle(color: _Hud.text, fontSize: 13),
             ),
           ],
         ),

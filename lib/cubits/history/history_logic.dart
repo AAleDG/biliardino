@@ -21,6 +21,10 @@ List<GameMatch> filterMatches(
 ) {
   final periodStart = periodStartDate(filters.period, now);
   return StatsService.sortedByMostRecent(matches).where((match) {
+    if (filters.matchMode != HistoryMatchModeFilter.all &&
+        historyMatchModeFilterFor(match.mode) != filters.matchMode) {
+      return false;
+    }
     if (periodStart != null && match.playedAt.isBefore(periodStart)) {
       return false;
     }
@@ -59,6 +63,8 @@ String filterSummaryLabel(
   HistoryFilters filters,
 ) {
   final parts = <String>[
+    if (filters.matchMode != HistoryMatchModeFilter.all)
+      matchModeLabel(filters.matchMode),
     periodLabel(filters.period),
     if (filters.playerId != null)
       StatsService.playerName(players, filters.playerId!),

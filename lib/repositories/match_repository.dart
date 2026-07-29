@@ -26,27 +26,33 @@ class MatchRepository {
   }
 
   Future<void> addMatch({
+    required MatchMode mode,
     required List<String> team1,
     required List<String> team2,
     required int score1,
     required int score2,
+    required List<String> scorerIds,
   }) async {
     _validateMatch(
+      mode: mode,
       team1: team1,
       team2: team2,
       score1: score1,
       score2: score2,
+      scorerIds: scorerIds,
     );
     final match = GameMatch(
       id: _uuid.v4(),
       playedAt: DateTime.now(),
+      mode: mode,
       t1p1: team1[0],
-      t1p2: team1[1],
+      t1p2: team1.length > 1 ? team1[1] : '',
       t2p1: team2[0],
-      t2p2: team2[1],
+      t2p2: team2.length > 1 ? team2[1] : '',
       t1Score: score1,
       t2Score: score2,
       winningTeam: score1 > score2 ? 1 : 2,
+      scorerIds: List.unmodifiable(scorerIds),
     );
     await _db.insertMatch(match);
     _publish(await _db.getMatches());
@@ -66,23 +72,46 @@ class MatchRepository {
   }
 
   void _validateMatch({
+    required MatchMode mode,
     required List<String> team1,
     required List<String> team2,
     required int score1,
     required int score2,
+    required List<String> scorerIds,
   }) {
-    if (team1.length != 2 || team2.length != 2) {
-      throw ArgumentError('Each team must contain exactly two players.');
+    if (team1.length != mode.teamSize || team2.length != mode.teamSize) {
+      throw ArgumentError('Each team must contain exactly ${mode.teamSize} players.');
     }
     final players = [...team1, ...team2];
-    if (players.any((id) => id.trim().isEmpty) || players.toSet().length != 4) {
-      throw ArgumentError('A match requires four distinct player IDs.');
+    final expectedPlayers = mode.teamSize * 2;
+    if (players.any((id) => id.trim().isEmpty) ||
+        players.toSet().length != expectedPlayers) {
+      throw ArgumentError('A match requires $expectedPlayers distinct player IDs.');
     }
     if (score1 < 0 || score2 < 0) {
       throw ArgumentError('Scores cannot be negative.');
     }
     if (score1 == score2) {
       throw ArgumentError('A match must have one winning team.');
+    }
+
+    final team1Set = team1.toSet();
+    final team2Set = team2.toSet();
+    var team1Goals = 0;
+    var team2Goals = 0;
+    for (final scorerId in scorerIds) {
+      if (team1Set.contains(scorerId)) {
+        team1Goals += 1;
+        continue;
+      }
+      if (team2Set.contains(scorerId)) {
+        team2Goals += 1;
+        continue;
+      }
+      throw ArgumentError('Every scorer must belong to one of the two teams.');
+    }
+    if (team1Goals != score1 || team2Goals != score2) {
+      throw ArgumentError('Scorer history must match the final score.');
     }
   }
 }

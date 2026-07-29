@@ -31,9 +31,11 @@ class StatsService {
   ) {
     final wins = <String, int>{};
     final games = <String, int>{};
+    final goals = <String, int>{};
     for (final p in players) {
       wins[p.id] = 0;
       games[p.id] = 0;
+      goals[p.id] = 0;
     }
     for (final m in matches) {
       for (final id in m.allPlayers) {
@@ -42,11 +44,20 @@ class StatsService {
       for (final id in m.winners) {
         wins[id] = (wins[id] ?? 0) + 1;
       }
+      for (final scorerId in m.scorerIds) {
+        goals[scorerId] = (goals[scorerId] ?? 0) + 1;
+      }
     }
     final list = players.map((p) {
       final g = games[p.id] ?? 0;
       final w = wins[p.id] ?? 0;
-      return PlayerStats(player: p, games: g, wins: w, losses: g - w);
+      return PlayerStats(
+        player: p,
+        games: g,
+        wins: w,
+        losses: g - w,
+        goalsScored: goals[p.id] ?? 0,
+      );
     }).toList();
 
     list.sort((a, b) {

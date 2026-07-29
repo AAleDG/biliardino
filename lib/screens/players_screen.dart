@@ -129,13 +129,13 @@ class _Summary extends StatelessWidget {
         children: [
           _Pill(
             text: '$presentCount/$total presenti',
-            color: NttColors.accent,
+            color: NttColors.accentSoft,
           ),
           _Pill(
             text: ready
                 ? 'Pronti a giocare'
                 : 'Servono ${4 - presentCount} per giocare',
-            color: ready ? NttColors.success : NttColors.textFaint,
+            color: ready ? NttColors.success : NttColors.warning,
           ),
         ],
       ),

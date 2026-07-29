@@ -69,24 +69,16 @@ class _HistoryViewState extends State<_HistoryView>
           body: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: _HistorySummary(
-                  matchesCount: state.matchesCount,
-                  lastMatch: state.lastMatchAt,
-                  filterLabel: state.filterLabel,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                 child: _FilterSummaryBar(
+                  matchesCount: state.matchesCount,
                   label: state.filterLabel,
                   hasActiveFilters: hasActiveFilters,
                   onOpenFilters: () => _openFilters(context, state),
                   onReset: context.read<HistoryCubit>().resetFilters,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Expanded(
                 child: matches.isEmpty
                     ? _Empty(
@@ -134,132 +126,16 @@ Future<void> _openFilters(BuildContext rootContext, HistoryState state) async {
   cubit.applyFilters(selectedFilters);
 }
 
-class _HistorySummary extends StatelessWidget {
-  const _HistorySummary({
-    required this.matchesCount,
-    required this.lastMatch,
-    required this.filterLabel,
-  });
-
-  final int matchesCount;
-  final DateTime? lastMatch;
-  final String filterLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final lastLabel = lastMatch == null
-        ? '-'
-        : DateFormat('dd/MM · HH:mm').format(lastMatch!);
-
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Expanded(
-              child: _SummaryItem(
-                label: 'Partite',
-                value: '$matchesCount',
-                icon: Icons.sports_score_outlined,
-              ),
-            ),
-            const _SummaryDivider(),
-            Expanded(
-              child: _SummaryItem(
-                label: 'Ultima',
-                value: lastLabel,
-                icon: Icons.schedule,
-              ),
-            ),
-            const _SummaryDivider(),
-            Expanded(
-              child: _SummaryItem(
-                label: 'Filtro',
-                value: filterLabel,
-                icon: Icons.filter_alt_outlined,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SummaryItem extends StatelessWidget {
-  const _SummaryItem({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 14, color: NttColors.textFaint),
-            const SizedBox(width: 5),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: NttColors.textFaint,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 7),
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: NttColors.textPrimary,
-            fontSize: 15,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SummaryDivider extends StatelessWidget {
-  const _SummaryDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 1,
-      height: 42,
-      margin: const EdgeInsets.symmetric(horizontal: 10),
-      color: Colors.white.withValues(alpha: 0.08),
-    );
-  }
-}
-
 class _FilterSummaryBar extends StatelessWidget {
   const _FilterSummaryBar({
+    required this.matchesCount,
     required this.label,
     required this.hasActiveFilters,
     required this.onOpenFilters,
     required this.onReset,
   });
 
+  final int matchesCount;
   final String label;
   final bool hasActiveFilters;
   final VoidCallback onOpenFilters;
@@ -267,63 +143,142 @@ class _FilterSummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final summaryLabel = hasActiveFilters ? label : 'Tutti i risultati';
     return Material(
-      color: NttColors.surfaceHigh,
-      borderRadius: BorderRadius.circular(12),
+      color: NttColors.surfaceMid,
+      borderRadius: BorderRadius.circular(18),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(18),
         onTap: onOpenFilters,
-        child: Container(
-          height: 46,
-          padding: const EdgeInsets.only(left: 12, right: 6),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: hasActiveFilters
-                  ? NttColors.accent.withValues(alpha: 0.55)
-                  : Colors.white.withValues(alpha: 0.06),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.tune,
-                size: 20,
-                color:
-                    hasActiveFilters ? NttColors.accent : NttColors.textMuted,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 360;
+            return Container(
+              padding: EdgeInsets.fromLTRB(16, 14, compact ? 6 : 10, 14),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: hasActiveFilters
+                      ? NttColors.accent.withValues(alpha: 0.55)
+                      : Colors.white.withValues(alpha: 0.06),
+                ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: NttColors.textPrimary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Icon(
+                      Icons.filter_alt_outlined,
+                      size: 22,
+                      color: hasActiveFilters
+                          ? NttColors.accent
+                          : NttColors.textMuted,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              hasActiveFilters ? 'Filtri attivi' : 'Filtri',
+                              style: const TextStyle(
+                                color: NttColors.textFaint,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.1,
+                              ),
+                            ),
+                            if (!compact) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: hasActiveFilters
+                                      ? NttColors.accent.withValues(alpha: 0.14)
+                                      : NttColors.surfaceHigh,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  '$matchesCount partite',
+                                  style: TextStyle(
+                                    color: hasActiveFilters
+                                        ? NttColors.accentSoft
+                                        : NttColors.textMuted,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          summaryLabel,
+                          maxLines: compact ? 1 : 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: NttColors.textPrimary,
+                            fontSize: compact ? 16 : 18,
+                            fontWeight: FontWeight.w800,
+                            height: 1.15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      if (hasActiveFilters)
+                        compact
+                            ? IconButton(
+                                key: const ValueKey('history-reset-filters'),
+                                visualDensity: VisualDensity.compact,
+                                tooltip: 'Reset filtri',
+                                icon: const Icon(Icons.refresh, size: 18),
+                                color: NttColors.accent,
+                                onPressed: onReset,
+                              )
+                            : TextButton(
+                                key: const ValueKey('history-reset-filters'),
+                                onPressed: onReset,
+                                style: TextButton.styleFrom(
+                                  minimumSize: Size.zero,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: const Text('Reset'),
+                              )
+                      else
+                        SizedBox(height: compact ? 28 : 32),
+                      IconButton(
+                        key: const ValueKey('history-open-filters'),
+                        visualDensity: VisualDensity.compact,
+                        tooltip: 'Apri filtri',
+                        icon: const Icon(Icons.chevron_right, size: 22),
+                        color: NttColors.accent,
+                        onPressed: onOpenFilters,
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              if (hasActiveFilters)
-                IconButton(
-                  key: const ValueKey('history-reset-filters'),
-                  visualDensity: VisualDensity.compact,
-                  tooltip: 'Reset filtri',
-                  icon: const Icon(Icons.close, size: 18),
-                  color: NttColors.textMuted,
-                  onPressed: onReset,
-                ),
-              IconButton(
-                key: const ValueKey('history-open-filters'),
-                visualDensity: VisualDensity.compact,
-                tooltip: 'Apri filtri',
-                icon: const Icon(Icons.filter_alt_outlined, size: 20),
-                color: NttColors.accent,
-                onPressed: onOpenFilters,
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -394,6 +349,22 @@ class _HistoryFilterSheetState extends State<_HistoryFilterSheet> {
               ],
             ),
             const SizedBox(height: 16),
+            const _FilterSectionLabel('FORMATO'),
+            const SizedBox(height: 8),
+            _SegmentedFilter<HistoryMatchModeFilter>(
+              values: HistoryMatchModeFilter.values,
+              selectedValue: _draftFilters.matchMode,
+              labelForValue: matchModeLabel,
+              onSelected: (matchMode) => setState(
+                () => _draftFilters = _draftFilters.copyWith(
+                  matchMode: matchMode,
+                  period: _draftFilters.period,
+                  playerId: _draftFilters.playerId,
+                  result: _draftFilters.result,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
             const _FilterSectionLabel('PERIODO'),
             const SizedBox(height: 8),
             _SegmentedFilter<HistoryPeriod>(
@@ -402,6 +373,7 @@ class _HistoryFilterSheetState extends State<_HistoryFilterSheet> {
               labelForValue: periodLabel,
               onSelected: (period) => setState(
                 () => _draftFilters = _draftFilters.copyWith(
+                  matchMode: _draftFilters.matchMode,
                   period: period,
                   playerId: _draftFilters.playerId,
                   result: _draftFilters.result,
@@ -416,6 +388,7 @@ class _HistoryFilterSheetState extends State<_HistoryFilterSheet> {
               selectedPlayerId: _draftFilters.playerId,
               onSelected: (playerId) => setState(
                 () => _draftFilters = _draftFilters.copyWith(
+                  matchMode: _draftFilters.matchMode,
                   period: _draftFilters.period,
                   playerId: playerId,
                   result: _draftFilters.result,
@@ -432,6 +405,7 @@ class _HistoryFilterSheetState extends State<_HistoryFilterSheet> {
               labelForValue: resultLabel,
               onSelected: (result) => setState(
                 () => _draftFilters = _draftFilters.copyWith(
+                  matchMode: _draftFilters.matchMode,
                   period: _draftFilters.period,
                   playerId: _draftFilters.playerId,
                   result: result,
@@ -442,17 +416,48 @@ class _HistoryFilterSheetState extends State<_HistoryFilterSheet> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Annulla'),
+                  child: SizedBox(
+                    height: 56,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: NttColors.accent,
+                        side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.45),
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      child: const Text('Annulla'),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
-                    key: const ValueKey('history-apply-filters'),
-                    onPressed: () => Navigator.of(context).pop(_draftFilters),
-                    child: const Text('Applica'),
+                  child: SizedBox(
+                    height: 56,
+                    child: ElevatedButton(
+                      key: const ValueKey('history-apply-filters'),
+                      onPressed: () => Navigator.of(context).pop(_draftFilters),
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(22),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      child: const Text('Applica'),
+                    ),
                   ),
                 ),
               ],
@@ -694,6 +699,7 @@ class _MatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final timeLabel = DateFormat('HH:mm').format(match.playedAt);
+    final modeLabel = match.mode == MatchMode.oneVsOne ? '1v1' : '2v2';
     final t1Names =
         match.team1.map((id) => StatsService.playerName(players, id)).toList();
     final t2Names =
@@ -711,7 +717,7 @@ class _MatchCard extends StatelessWidget {
             child: Container(width: 3, color: winColor),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 10, 12, 12),
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -727,14 +733,39 @@ class _MatchCard extends StatelessWidget {
                       timeLabel,
                       style: const TextStyle(
                         color: NttColors.textFaint,
-                        fontSize: 11,
+                        fontSize: 12,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.8,
                       ),
                     ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: NttColors.surfaceHigh,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                      child: Text(
+                        modeLabel,
+                        style: TextStyle(
+                          color: match.mode == MatchMode.oneVsOne
+                              ? NttColors.warning
+                              : NttColors.accentSoft,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 _TeamResultLine(
                   color: NttColors.team1,
                   names: t1Names,
@@ -772,6 +803,7 @@ class _TeamResultLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final namesLabel = names.join(' / ');
     return Row(
       children: [
         Container(
@@ -785,39 +817,25 @@ class _TeamResultLine extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: Text(
-            names.join(' / '),
+            namesLabel,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: isWinner ? NttColors.textPrimary : NttColors.textMuted,
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: isWinner ? FontWeight.w800 : FontWeight.w500,
             ),
           ),
         ),
         const SizedBox(width: 8),
-        if (isWinner) ...[
-          Text(
-            'Vittoria',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: color,
-              fontSize: 10,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1,
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
         SizedBox(
-          width: 28,
+          width: 32,
           child: Text(
             '$score',
             textAlign: TextAlign.right,
             style: TextStyle(
               color: isWinner ? color : NttColors.textFaint,
-              fontSize: 21,
+              fontSize: 28,
               fontWeight: FontWeight.w900,
             ),
           ),
