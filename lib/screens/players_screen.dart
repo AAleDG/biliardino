@@ -120,7 +120,8 @@ class _Summary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ready = presentCount >= 4;
+    const minimumPlayers = 2;
+    final ready = presentCount >= minimumPlayers;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
       child: Wrap(
@@ -134,7 +135,7 @@ class _Summary extends StatelessWidget {
           _Pill(
             text: ready
                 ? 'Pronti a giocare'
-                : 'Servono ${4 - presentCount} per giocare',
+                : 'Servono ${minimumPlayers - presentCount} per giocare',
             color: ready ? NttColors.success : NttColors.warning,
           ),
         ],

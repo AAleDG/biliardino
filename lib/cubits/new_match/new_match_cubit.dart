@@ -320,15 +320,40 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     if (state.isSaving) return;
     final players = _deferredPlayers ?? state.players;
     _deferredPlayers = null;
+    final presentIds = players
+        .where((player) => player.isPresent)
+        .map((player) => player.id)
+        .toSet();
+    final assignment = Map<String, int>.unmodifiable(
+      Map.fromEntries(
+        state.assignment.entries.where(
+          (entry) =>
+              presentIds.contains(entry.key) &&
+              (entry.value == 1 || entry.value == 2),
+        ),
+      ),
+    );
+    final teamsValid = assignment.values.where((team) => team == 1).length ==
+            state.mode.teamSize &&
+        assignment.values.where((team) => team == 2).length ==
+            state.mode.teamSize;
     emit(state.copyWith(
       players: players,
+      assignment: assignment,
       scorerIds: const [],
       score1: 0,
       score2: 0,
-      kickedOff: true,
+      kickedOff: teamsValid,
+      isRivalry: teamsValid ? null : false,
       clearLastGoal: true,
       clearLastVictory: true,
-      clearLastFeedback: true,
+      lastFeedback: teamsValid
+          ? null
+          : FeedbackEvent(
+              kind: NewMatchFeedback.playersUnavailable,
+              signalId: _nextSignal(),
+            ),
+      clearLastFeedback: teamsValid,
     ));
   }
 

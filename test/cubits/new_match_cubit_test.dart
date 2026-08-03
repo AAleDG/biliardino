@@ -110,7 +110,8 @@ void main() {
       await players.dispose();
     });
 
-    test('clears teams after choosing change teams from victory overlay', () async {
+    test('clears teams after choosing change teams from victory overlay',
+        () async {
       final players = _PlayerRepositoryFake(_players());
       final matches = _MatchRepositoryFake();
       final cubit = _readyCubit(players: players, matches: matches);
@@ -127,7 +128,8 @@ void main() {
       await players.dispose();
     });
 
-    test('starts a rematch with same teams after victory overlay action', () async {
+    test('starts a rematch with same teams after victory overlay action',
+        () async {
       final players = _PlayerRepositoryFake(_players());
       final matches = _MatchRepositoryFake();
       final cubit = _readyCubit(players: players, matches: matches);
@@ -142,6 +144,37 @@ void main() {
       expect(cubit.state.score1, 0);
       expect(cubit.state.score2, 0);
       expect(cubit.state.scorerIds, isEmpty);
+
+      await cubit.close();
+      await players.dispose();
+    });
+
+    test('returns to setup when a deferred player invalidates a rematch',
+        () async {
+      final initialPlayers = _players();
+      final players = _PlayerRepositoryFake(initialPlayers);
+      final matches = _MatchRepositoryFake();
+      final pendingSave = Completer<void>();
+      matches.onSave = (_) => pendingSave.future;
+      final cubit = _readyCubit(players: players, matches: matches);
+
+      final save = cubit.save();
+      players.emit([
+        initialPlayers.first.copyWith(isPresent: false),
+        ...initialPlayers.skip(1),
+      ]);
+      await Future<void>.delayed(Duration.zero);
+      pendingSave.complete();
+      await save;
+
+      cubit.rematchAfterVictory();
+
+      expect(cubit.state.lastVictory, isNull);
+      expect(cubit.state.assignment, isNot(contains('p1')));
+      expect(cubit.state.kickedOff, isFalse);
+      expect(cubit.state.teamsValid, isFalse);
+      expect(
+          cubit.state.lastFeedback?.kind, NewMatchFeedback.playersUnavailable);
 
       await cubit.close();
       await players.dispose();

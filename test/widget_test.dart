@@ -9,6 +9,7 @@ import 'package:biliardino/repositories/player_repository.dart';
 import 'package:biliardino/screens/history_screen.dart';
 import 'package:biliardino/screens/home_screen.dart';
 import 'package:biliardino/screens/new_match_screen.dart';
+import 'package:biliardino/screens/players_screen.dart';
 import 'package:biliardino/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -108,7 +109,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Attivare Rivalita?'), findsOneWidget);
-    expect(find.textContaining('Lo storico terra separati precedenti'), findsOneWidget);
+    expect(find.textContaining('Lo storico terra separati precedenti'),
+        findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -125,7 +127,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('history-open-filters')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-player-p5')));
-    await tester.ensureVisible(find.byKey(const ValueKey('history-apply-filters')));
+    await tester
+        .ensureVisible(find.byKey(const ValueKey('history-apply-filters')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-apply-filters')));
     await tester.pumpAndSettle();
@@ -153,7 +156,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('history-player-p1')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-filter-wins')));
-    await tester.ensureVisible(find.byKey(const ValueKey('history-apply-filters')));
+    await tester
+        .ensureVisible(find.byKey(const ValueKey('history-apply-filters')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-apply-filters')));
     await tester.pumpAndSettle();
@@ -167,8 +171,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Lo storico filtra le partite 1v1',
-      (WidgetTester tester) async {
+  testWidgets('Lo storico filtra le partite 1v1', (WidgetTester tester) async {
     final sample = _sampleDataMixedFormats();
     await _pumpHome(
       tester,
@@ -180,7 +183,8 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('history-open-filters')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-filter-oneVsOne')));
-    await tester.ensureVisible(find.byKey(const ValueKey('history-apply-filters')));
+    await tester
+        .ensureVisible(find.byKey(const ValueKey('history-apply-filters')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-apply-filters')));
     await tester.pumpAndSettle();
@@ -191,6 +195,28 @@ void main() {
     expect(find.text('Ale'), findsOneWidget);
     expect(find.text('Mario / Max'), findsNothing);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Due giocatori presenti sono pronti per una partita 1v1',
+      (WidgetTester tester) async {
+    final now = DateTime(2026, 6, 17, 12);
+    final repos = _Repos.build(
+      players: [
+        Player(id: 'p1', name: 'Ale', createdAt: now),
+        Player(id: 'p2', name: 'Luigi', createdAt: now),
+      ],
+      matches: const [],
+    );
+    await _pumpHome(
+      tester,
+      home: const PlayersScreen(),
+      repos: repos,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('2/2 presenti'), findsOneWidget);
+    expect(find.text('Pronti a giocare'), findsOneWidget);
+    expect(find.textContaining('Servono'), findsNothing);
   });
 }
 
@@ -291,7 +317,26 @@ _Repos _sampleData() {
       t1Score: 10,
       t2Score: 8,
       winningTeam: 1,
-      scorerIds: const ['p1', 'p2', 'p1', 'p2', 'p1', 'p2', 'p1', 'p2', 'p1', 'p1', 'p3', 'p4', 'p3', 'p4', 'p3', 'p4', 'p3', 'p4'],
+      scorerIds: const [
+        'p1',
+        'p2',
+        'p1',
+        'p2',
+        'p1',
+        'p2',
+        'p1',
+        'p2',
+        'p1',
+        'p1',
+        'p3',
+        'p4',
+        'p3',
+        'p4',
+        'p3',
+        'p4',
+        'p3',
+        'p4'
+      ],
     ),
     GameMatch(
       id: 'm2',
@@ -304,7 +349,24 @@ _Repos _sampleData() {
       t1Score: 6,
       t2Score: 10,
       winningTeam: 2,
-      scorerIds: const ['p3', 'p1', 'p3', 'p1', 'p3', 'p1', 'p2', 'p4', 'p2', 'p4', 'p2', 'p4', 'p2', 'p4', 'p2', 'p4'],
+      scorerIds: const [
+        'p3',
+        'p1',
+        'p3',
+        'p1',
+        'p3',
+        'p1',
+        'p2',
+        'p4',
+        'p2',
+        'p4',
+        'p2',
+        'p4',
+        'p2',
+        'p4',
+        'p2',
+        'p4'
+      ],
     ),
   ];
   return _Repos.build(players: players, matches: matches);
