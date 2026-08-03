@@ -1,7 +1,6 @@
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:biliardino/models/game_match.dart';
 import 'package:biliardino/repositories/match_repository.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import '../support/fake_database.dart';
 
@@ -20,19 +19,25 @@ void main() {
     test('rejects malformed teams before touching the database', () async {
       await expectLater(
         repository.addMatch(
+          mode: MatchMode.twoVsTwo,
+          isRivalry: false,
           team1: const ['p1'],
           team2: const ['p2', 'p3'],
           score1: 1,
           score2: 0,
+          scorerIds: const ['p1'],
         ),
         throwsArgumentError,
       );
       await expectLater(
         repository.addMatch(
+          mode: MatchMode.twoVsTwo,
+          isRivalry: false,
           team1: const ['p1', 'p2'],
           team2: const ['p2', 'p3'],
           score1: 1,
           score2: 0,
+          scorerIds: const ['p1'],
         ),
         throwsArgumentError,
       );
@@ -44,24 +49,44 @@ void main() {
         () async {
       await expectLater(
         repository.addMatch(
+          mode: MatchMode.twoVsTwo,
+          isRivalry: false,
           team1: const ['p1', 'p2'],
           team2: const ['p3', 'p4'],
           score1: -1,
           score2: 0,
+          scorerIds: const [],
         ),
         throwsArgumentError,
       );
       await expectLater(
         repository.addMatch(
+          mode: MatchMode.twoVsTwo,
+          isRivalry: false,
           team1: const ['p1', 'p2'],
           team2: const ['p3', 'p4'],
           score1: 3,
           score2: 3,
+          scorerIds: const [],
         ),
         throwsArgumentError,
       );
 
       expect(database.insertMatchCalls, 0);
+    });
+
+    test('accepts rivalry matches with one player per side', () async {
+      await repository.addMatch(
+        mode: MatchMode.oneVsOne,
+        isRivalry: true,
+        team1: const ['p1'],
+        team2: const ['p2'],
+        score1: 5,
+        score2: 3,
+        scorerIds: const ['p1', 'p1', 'p2', 'p1', 'p2', 'p1', 'p1', 'p2'],
+      );
+
+      expect(database.insertMatchCalls, 1);
     });
   });
 
@@ -111,6 +136,8 @@ GameMatch _match(String id) {
   return GameMatch(
     id: id,
     playedAt: DateTime(2026),
+    mode: MatchMode.twoVsTwo,
+    isRivalry: false,
     t1p1: 'p1',
     t1p2: 'p2',
     t2p1: 'p3',
@@ -118,5 +145,6 @@ GameMatch _match(String id) {
     t1Score: 1,
     t2Score: 0,
     winningTeam: 1,
+    scorerIds: const ['p1'],
   );
 }

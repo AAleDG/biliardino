@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 
-const List<Color> _hudPalette = [
-  Color(0xFF28E0FF), // cyan
-  Color(0xFFFF3D9A), // magenta
-  Color(0xFF7CFC9F), // mint
-  Color(0xFFFFD23F), // amber
-  Color(0xFFB283FF), // violet
-  Color(0xFFFF8C42), // orange
-  Color(0xFF4DA8FF), // sky blue
-  Color(0xFFFF5C73), // coral
-  Color(0xFF5EEAD4), // teal
-  Color(0xFFE879F9), // pink
-];
-
 Color hudColorForName(String name) {
-  if (name.isEmpty) return _hudPalette.first;
-  final sum = name.codeUnits.fold<int>(0, (a, b) => a + b);
-  return _hudPalette[sum % _hudPalette.length];
+  if (name.isEmpty) return const Color(0xFF28E0FF);
+
+  final hash = name.toLowerCase().codeUnits.fold<int>(0, (value, codeUnit) {
+    return ((value * 31) + codeUnit) & 0x7fffffff;
+  });
+
+  final hue = (hash % 360).toDouble();
+  final saturation = 0.58 + ((hash >> 4) % 18) / 100;
+  final lightness = 0.58 + ((hash >> 9) % 12) / 100;
+
+  return HSLColor.fromAHSL(
+    1,
+    hue,
+    saturation.clamp(0.55, 0.76),
+    lightness.clamp(0.52, 0.68),
+  ).toColor();
 }
 
 class PlayerAvatar extends StatelessWidget {

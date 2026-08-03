@@ -35,7 +35,8 @@ class Celebrations {
     required List<String> playerNames,
     required int winnerScore,
     required int loserScore,
-    required VoidCallback onContinue,
+    required VoidCallback onChangeTeams,
+    required VoidCallback onRematch,
   }) {
     final overlay = Overlay.of(context, rootOverlay: true);
     late OverlayEntry entry;
@@ -46,9 +47,13 @@ class Celebrations {
         playerNames: playerNames,
         winnerScore: winnerScore,
         loserScore: loserScore,
-        onContinue: () {
+        onChangeTeams: () {
           if (entry.mounted) entry.remove();
-          onContinue();
+          onChangeTeams();
+        },
+        onRematch: () {
+          if (entry.mounted) entry.remove();
+          onRematch();
         },
       ),
     );
@@ -241,7 +246,8 @@ class _VictoryOverlay extends StatefulWidget {
     required this.playerNames,
     required this.winnerScore,
     required this.loserScore,
-    required this.onContinue,
+    required this.onChangeTeams,
+    required this.onRematch,
   });
 
   final Color color;
@@ -249,7 +255,8 @@ class _VictoryOverlay extends StatefulWidget {
   final List<String> playerNames;
   final int winnerScore;
   final int loserScore;
-  final VoidCallback onContinue;
+  final VoidCallback onChangeTeams;
+  final VoidCallback onRematch;
 
   @override
   State<_VictoryOverlay> createState() => _VictoryOverlayState();
@@ -432,20 +439,62 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
                         _staggered(
                           buttonAnim,
                           slideUp: true,
-                          child: SizedBox(
-                            width: 220,
-                            child: ElevatedButton(
-                              onPressed: widget.onContinue,
-                              style: ElevatedButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                textStyle: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 2.5,
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 360),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: widget.onChangeTeams,
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      backgroundColor:
+                                          NttColors.surfaceDark.withValues(
+                                        alpha: 0.78,
+                                      ),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                        side: BorderSide(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.28,
+                                          ),
+                                        ),
+                                      ),
+                                      textStyle: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 1.8,
+                                      ),
+                                    ),
+                                    child: const Text('CAMBIA SQUADRE'),
+                                  ),
                                 ),
-                              ),
-                              child: const Text('CONTINUA'),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: widget.onRematch,
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(18),
+                                      ),
+                                      textStyle: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 1.8,
+                                      ),
+                                    ),
+                                    child: const Text('RIVINCITA'),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
