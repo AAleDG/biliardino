@@ -33,7 +33,17 @@ void main() {
           t1Score: 5,
           t2Score: 4,
           winningTeam: 1,
-          scorerIds: const ['p2', 'p1', 'p2', 'p1', 'p2', 'p1', 'p2', 'p1', 'p2'],
+          scorerIds: const [
+            'p2',
+            'p1',
+            'p2',
+            'p1',
+            'p2',
+            'p1',
+            'p2',
+            'p1',
+            'p2'
+          ],
         ),
         GameMatch(
           id: 'r3',
@@ -67,9 +77,24 @@ void main() {
   group('StatsService computeLeaderboard', () {
     test('assigns badges from ranking, goals, streaks and rivalry wins', () {
       final players = [
-        Player(id: 'p1', name: 'Ale', createdAt: DateTime(2026)),
-        Player(id: 'p2', name: 'Luca', createdAt: DateTime(2026)),
-        Player(id: 'p3', name: 'Marta', createdAt: DateTime(2026)),
+        Player(
+          id: 'p1',
+          name: 'Ale',
+          createdAt: DateTime(2026),
+          isPresent: true,
+        ),
+        Player(
+          id: 'p2',
+          name: 'Luca',
+          createdAt: DateTime(2026),
+          isPresent: true,
+        ),
+        Player(
+          id: 'p3',
+          name: 'Marta',
+          createdAt: DateTime(2026),
+          isPresent: true,
+        ),
       ];
       final matches = [
         GameMatch(

@@ -68,6 +68,9 @@ class _PlayerRepositoryFake implements PlayerRepository {
   }
 
   @override
+  Future<void> renamePlayer(Player player, String name) async {}
+
+  @override
   Future<void> dispose() => _controller.close();
 
   @override

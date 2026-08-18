@@ -7,6 +7,7 @@ import '../cubits/leaderboard/leaderboard_cubit.dart';
 import '../cubits/leaderboard/leaderboard_state.dart';
 import '../models/player_badge.dart';
 import '../models/player_stats.dart';
+import '../services/leaderboard_export_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/avatar.dart';
 
@@ -48,16 +49,17 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
     return BlocBuilder<LeaderboardCubit, LeaderboardState>(
       builder: (context, state) {
         final rankedByPoints = state.stats.where((s) => s.games > 0).toList();
-        final rankedByGoals = state.stats.where((s) => s.goalsScored > 0).toList()
-          ..sort((a, b) {
-            final byGoals = b.goalsScored.compareTo(a.goalsScored);
-            if (byGoals != 0) return byGoals;
-            final byGames = b.games.compareTo(a.games);
-            if (byGames != 0) return byGames;
-            return a.player.name.toLowerCase().compareTo(
-                  b.player.name.toLowerCase(),
-                );
-          });
+        final rankedByGoals =
+            state.stats.where((s) => s.goalsScored > 0).toList()
+              ..sort((a, b) {
+                final byGoals = b.goalsScored.compareTo(a.goalsScored);
+                if (byGoals != 0) return byGoals;
+                final byGames = b.games.compareTo(a.games);
+                if (byGames != 0) return byGames;
+                return a.player.name.toLowerCase().compareTo(
+                      b.player.name.toLowerCase(),
+                    );
+              });
 
         return DefaultTabController(
           length: 2,
@@ -72,6 +74,18 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                   shadows: [Shadow(color: _Hud.cyan, blurRadius: 14)],
                 ),
               ),
+              actions: [
+                IconButton(
+                  tooltip: 'Esporta CSV',
+                  onPressed: state.stats.isEmpty
+                      ? null
+                      : () => _exportLeaderboardCsv(
+                            context,
+                            state.stats,
+                          ),
+                  icon: const Icon(Icons.ios_share),
+                ),
+              ],
             ),
             body: Stack(
               children: [
@@ -146,6 +160,50 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       },
     );
   }
+}
+
+Future<void> _exportLeaderboardCsv(
+  BuildContext context,
+  List<PlayerStats> stats,
+) async {
+  try {
+    final result = await LeaderboardExportService.exportCsv(
+      stats,
+      DateTime.now(),
+    );
+    if (!context.mounted) {
+      return;
+    }
+    await _showExportDialog(context, result: result);
+  } on Object catch (error) {
+    if (!context.mounted) {
+      return;
+    }
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text('Impossibile esportare il CSV: $error')),
+      );
+  }
+}
+
+Future<void> _showExportDialog(
+  BuildContext context, {
+  required LeaderboardExportResult result,
+}) async {
+  await showDialog<void>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Scaricato CSV!'),
+      content: Text(result.fileName),
+      actions: [
+        ElevatedButton(
+          onPressed: () => Navigator.of(dialogContext).pop(),
+          child: const Text('Chiudi'),
+        ),
+      ],
+    ),
+  );
 }
 
 class _LeaderboardPane extends StatelessWidget {
@@ -374,7 +432,8 @@ class _PodiumColumn extends StatelessWidget {
                         alignment: WrapAlignment.center,
                         spacing: 6,
                         runSpacing: 6,
-                        children: s.badges.take(2).map(_PodiumBadgeChip.new).toList(),
+                        children:
+                            s.badges.take(2).map(_PodiumBadgeChip.new).toList(),
                       ),
                     ],
                   ],
@@ -628,7 +687,8 @@ class _LeaderRow extends StatelessWidget {
                     Wrap(
                       spacing: 6,
                       runSpacing: 6,
-                      children: stats.badges.take(3).map(_RowBadgeChip.new).toList(),
+                      children:
+                          stats.badges.take(3).map(_RowBadgeChip.new).toList(),
                     ),
                   ],
                 ],

@@ -44,13 +44,11 @@ class StatsService {
       if (!match.isRivalry) {
         continue;
       }
-      final aligned =
-          match.team1.toSet().containsAll(team1Set) &&
+      final aligned = match.team1.toSet().containsAll(team1Set) &&
           match.team2.toSet().containsAll(team2Set) &&
           match.team1.length == team1Ids.length &&
           match.team2.length == team2Ids.length;
-      final swapped =
-          match.team1.toSet().containsAll(team2Set) &&
+      final swapped = match.team1.toSet().containsAll(team2Set) &&
           match.team2.toSet().containsAll(team1Set) &&
           match.team1.length == team2Ids.length &&
           match.team2.length == team1Ids.length;
@@ -146,10 +144,14 @@ class StatsService {
       );
     }).toList();
 
-    final topPoints = list.fold<int>(0, (max, stats) => stats.points > max ? stats.points : max);
-    final topGoals = list.fold<int>(0, (max, stats) => stats.goalsScored > max ? stats.goalsScored : max);
-    final topGames = list.fold<int>(0, (max, stats) => stats.games > max ? stats.games : max);
-    final topRivalryWins = rivalryWins.values.fold<int>(0, (max, value) => value > max ? value : max);
+    final topPoints = list.fold<int>(
+        0, (max, stats) => stats.points > max ? stats.points : max);
+    final topGoals = list.fold<int>(
+        0, (max, stats) => stats.goalsScored > max ? stats.goalsScored : max);
+    final topGames = list.fold<int>(
+        0, (max, stats) => stats.games > max ? stats.games : max);
+    final topRivalryWins = rivalryWins.values
+        .fold<int>(0, (max, value) => value > max ? value : max);
 
     list = list.map((stats) {
       final badges = <PlayerBadge>[];
@@ -185,10 +187,12 @@ class StatsService {
         badges.add(PlayerBadge(
           code: 'streak',
           label: 'Hot Streak',
-          description: 'Ha una striscia aperta di ${stats.currentWinStreak} vittorie.',
+          description:
+              'Ha una striscia aperta di ${stats.currentWinStreak} vittorie.',
         ));
       }
-      if ((rivalryWins[stats.player.id] ?? 0) == topRivalryWins && topRivalryWins >= 2) {
+      if ((rivalryWins[stats.player.id] ?? 0) == topRivalryWins &&
+          topRivalryWins >= 2) {
         badges.add(const PlayerBadge(
           code: 'rivalry',
           label: 'Re delle Rivalita',

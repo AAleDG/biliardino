@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'cubits/home/home_cubit.dart';
 import 'cubits/leaderboard/leaderboard_cubit.dart';
+import 'cubits/new_match/new_match_cubit.dart';
 import 'cubits/players/players_cubit.dart';
 import 'data/database_helper.dart';
 import 'repositories/match_repository.dart';
@@ -128,6 +129,12 @@ class BiliardinoApp extends StatelessWidget {
           ),
           BlocProvider<LeaderboardCubit>(
             create: (ctx) => LeaderboardCubit(
+              playerRepository: ctx.read<PlayerRepository>(),
+              matchRepository: ctx.read<MatchRepository>(),
+            ),
+          ),
+          BlocProvider<NewMatchCubit>(
+            create: (ctx) => NewMatchCubit(
               playerRepository: ctx.read<PlayerRepository>(),
               matchRepository: ctx.read<MatchRepository>(),
             ),

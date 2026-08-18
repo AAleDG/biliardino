@@ -33,6 +33,13 @@ class PlayersCubit extends Cubit<PlayersState> {
     );
   }
 
+  Future<bool> renamePlayer(Player player, String name) {
+    return _mutate(
+      () => _repo.renamePlayer(player, name),
+      failureFeedback: PlayersFeedback.renameFailed,
+    );
+  }
+
   Future<bool> _mutate(
     Future<void> Function() operation, {
     required PlayersFeedback failureFeedback,
@@ -41,7 +48,7 @@ class PlayersCubit extends Cubit<PlayersState> {
     emit(state.copyWith(isMutating: true, clearFeedback: true));
     try {
       await operation();
-    } catch (_) {
+    } on Object {
       if (!isClosed) {
         emit(state.copyWith(
           isMutating: false,

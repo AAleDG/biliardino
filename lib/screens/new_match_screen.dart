@@ -6,8 +6,6 @@ import '../cubits/new_match/new_match_state.dart';
 import '../models/game_match.dart';
 import '../models/player.dart';
 import '../models/rivalry_overview.dart';
-import '../repositories/match_repository.dart';
-import '../repositories/player_repository.dart';
 import '../services/stats_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/avatar.dart';
@@ -17,15 +15,7 @@ class NewMatchScreen extends StatelessWidget {
   const NewMatchScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider<NewMatchCubit>(
-      create: (ctx) => NewMatchCubit(
-        playerRepository: ctx.read<PlayerRepository>(),
-        matchRepository: ctx.read<MatchRepository>(),
-      ),
-      child: const _NewMatchView(),
-    );
-  }
+  Widget build(BuildContext context) => const _NewMatchView();
 }
 
 class _NewMatchView extends StatelessWidget {
@@ -59,7 +49,7 @@ class _NewMatchView extends StatelessWidget {
               ctx,
               color: color,
               teamLabel: state.isRivalry
-                ? 'RIVALITA · ${victory.winnerNames.join(' / ').toUpperCase()}'
+                  ? 'RIVALITA · ${victory.winnerNames.join(' / ').toUpperCase()}'
                   : 'SQUADRA ${victory.winningTeam}',
               playerNames: victory.winnerNames,
               winnerScore: victory.winnerScore,
@@ -466,7 +456,8 @@ class _Setup extends StatelessWidget {
                   ],
                 ),
               ),
-              if (team1.length == mode.teamSize && team2.length == mode.teamSize) ...[
+              if (team1.length == mode.teamSize &&
+                  team2.length == mode.teamSize) ...[
                 const SizedBox(height: 16),
                 _RivalryToggleCard(
                   mode: mode,
@@ -1040,9 +1031,8 @@ class _MatchModeSelector extends StatelessWidget {
                   Text(
                     option.title,
                     style: TextStyle(
-                      color: selected
-                          ? NttColors.accent
-                          : NttColors.textPrimary,
+                      color:
+                          selected ? NttColors.accent : NttColors.textPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 1.2,
@@ -1111,8 +1101,8 @@ class _RivalryOverviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final title = overview != null && overview!.hasMatches
-            ? 'Testa a testa attivo'
-            : 'Primo duello in arrivo';
+        ? 'Testa a testa attivo'
+        : 'Primo duello in arrivo';
     final description = overview != null && overview!.hasMatches
         ? _rivalryHeadline(overview!, team1Label, team2Label)
         : '$team1Label e $team2Label non si sono ancora affrontati in modalita Rivalita.';
@@ -1246,7 +1236,9 @@ class _RivalryToggleCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isRivalry ? 'Rivalita attiva' : 'Modalita Rivalita disponibile',
+                  isRivalry
+                      ? 'Rivalita attiva'
+                      : 'Modalita Rivalita disponibile',
                   style: const TextStyle(
                     color: NttColors.textPrimary,
                     fontSize: 15,
@@ -1387,9 +1379,8 @@ String _rivalryHeadline(
   if (overview.isTied) {
     return '$team1Name e $team2Name sono in parita: ${overview.team1Wins}-${overview.team2Wins} nei duelli diretti.';
   }
-  final leaderName = overview.team1Wins > overview.team2Wins
-      ? team1Name
-      : team2Name;
+  final leaderName =
+      overview.team1Wins > overview.team2Wins ? team1Name : team2Name;
   return '$leaderName conduce ${overview.team1Wins}-${overview.team2Wins}, con ${overview.team1Goals}-${overview.team2Goals} nei gol assegnati.';
 }
 

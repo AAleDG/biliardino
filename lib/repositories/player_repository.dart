@@ -27,7 +27,10 @@ class PlayerRepository {
 
   Future<void> addPlayer(String name) async {
     final trimmed = name.trim();
-    if (trimmed.isEmpty) return;
+    if (trimmed.isEmpty) {
+      throw ArgumentError.value(name, 'name', 'Player name cannot be empty.');
+    }
+    _validateUniqueName(trimmed, ignoredPlayerId: null);
     final player = Player(
       id: _uuid.v4(),
       name: trimmed,
@@ -35,6 +38,16 @@ class PlayerRepository {
       isPresent: true,
     );
     await _db.insertPlayer(player);
+    await _reload();
+  }
+
+  Future<void> renamePlayer(Player player, String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) {
+      throw ArgumentError.value(name, 'name', 'Player name cannot be empty.');
+    }
+    _validateUniqueName(trimmed, ignoredPlayerId: player.id);
+    await _db.updatePlayer(player.copyWith(name: trimmed));
     await _reload();
   }
 
@@ -51,6 +64,18 @@ class PlayerRepository {
     _cache = List.unmodifiable(players);
     if (!_controller.isClosed) {
       _controller.add(_cache);
+    }
+  }
+
+  void _validateUniqueName(String name, {required String? ignoredPlayerId}) {
+    final normalized = name.toLowerCase();
+    final exists = _cache.any(
+      (player) =>
+          player.id != ignoredPlayerId &&
+          player.name.trim().toLowerCase() == normalized,
+    );
+    if (exists) {
+      throw ArgumentError.value(name, 'name', 'Player name already exists.');
     }
   }
 

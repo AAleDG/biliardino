@@ -88,6 +88,15 @@ void main() {
 
       expect(database.insertMatchCalls, 1);
     });
+
+    test('validates updates and deletes through the database', () async {
+      await repository.updateMatch(_match('m1'));
+      await repository.deleteMatch('m1');
+
+      expect(database.updateMatchCalls, 1);
+      expect(database.deleteMatchCalls, 1);
+      await expectLater(repository.deleteMatch(' '), throwsArgumentError);
+    });
   });
 
   group('MatchRepository snapshots', () {

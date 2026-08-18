@@ -46,9 +46,27 @@ void main() {
       expect(isDone, isTrue);
       await subscription.cancel();
     });
+
+    test('rejects empty and duplicate names before touching the database',
+        () async {
+      final database = FakeDatabaseHelper(players: [_player('p1')]);
+      final repository = PlayerRepository(database);
+      await repository.load();
+
+      await expectLater(repository.addPlayer(' '), throwsArgumentError);
+      await expectLater(repository.addPlayer('P1'), throwsArgumentError);
+      await expectLater(
+        repository.renamePlayer(_player('p2'), 'p1'),
+        throwsArgumentError,
+      );
+
+      expect(database.insertPlayerCalls, 0);
+      expect(database.updatePlayerCalls, 0);
+      await repository.dispose();
+    });
   });
 }
 
 Player _player(String id) {
-  return Player(id: id, name: id, createdAt: DateTime(2026));
+  return Player(id: id, name: id, createdAt: DateTime(2026), isPresent: true);
 }

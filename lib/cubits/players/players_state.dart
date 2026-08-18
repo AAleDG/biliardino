@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../models/player.dart';
 
-enum PlayersFeedback { addFailed, presenceUpdateFailed }
+enum PlayersFeedback { addFailed, renameFailed, presenceUpdateFailed }
 
 class PlayersState extends Equatable {
   final List<Player> players;

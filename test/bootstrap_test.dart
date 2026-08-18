@@ -61,6 +61,9 @@ class _PlayerRepositoryFake implements PlayerRepository {
   Future<void> addPlayer(String name) async {}
 
   @override
+  Future<void> renamePlayer(Player player, String name) async {}
+
+  @override
   Future<void> togglePresent(Player p) async {}
 
   @override
@@ -97,6 +100,12 @@ class _MatchRepositoryFake implements MatchRepository {
     required int score2,
     required List<String> scorerIds,
   }) async {}
+
+  @override
+  Future<void> updateMatch(GameMatch match) async {}
+
+  @override
+  Future<void> deleteMatch(String id) async {}
 
   @override
   Stream<List<GameMatch>> watchMatches() => Stream.value(const []);

@@ -93,6 +93,14 @@ class _HistoryViewState extends State<_HistoryView>
                           players: state.players,
                           anim: _ctrl,
                           delay: math.min(i, 8) * 0.08,
+                          onEdit: (match) => _openEditMatchDialog(
+                            context,
+                            match,
+                          ),
+                          onDelete: (match) => _confirmDeleteMatch(
+                            context,
+                            match,
+                          ),
                         ),
                       ),
               ),
@@ -101,6 +109,503 @@ class _HistoryViewState extends State<_HistoryView>
         );
       },
     );
+  }
+}
+
+Future<void> _openEditMatchDialog(
+  BuildContext rootContext,
+  GameMatch match,
+) async {
+  final cubit = rootContext.read<HistoryCubit>();
+  final state = cubit.state;
+  final updatedMatch = await showDialog<GameMatch>(
+    context: rootContext,
+    builder: (dialogContext) => _EditMatchDialog(
+      match: match,
+      players: state.players,
+    ),
+  );
+  if (updatedMatch == null || !rootContext.mounted) {
+    return;
+  }
+  try {
+    await cubit.updateMatch(updatedMatch);
+  } on Object {
+    if (rootContext.mounted) {
+      _showHistoryMessage(rootContext, 'Impossibile modificare la partita.');
+    }
+  }
+}
+
+Future<void> _confirmDeleteMatch(
+  BuildContext rootContext,
+  GameMatch match,
+) async {
+  final confirmed = await showDialog<bool>(
+    context: rootContext,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Eliminare partita?'),
+      content: const Text('La partita verra rimossa dallo storico.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Annulla'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Elimina'),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true || !rootContext.mounted) {
+    return;
+  }
+  try {
+    await rootContext.read<HistoryCubit>().deleteMatch(match);
+  } on Object {
+    if (rootContext.mounted) {
+      _showHistoryMessage(rootContext, 'Impossibile eliminare la partita.');
+    }
+  }
+}
+
+void _showHistoryMessage(BuildContext context, String message) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(SnackBar(content: Text(message)));
+}
+
+class _EditMatchDialog extends StatefulWidget {
+  const _EditMatchDialog({required this.match, required this.players});
+
+  final GameMatch match;
+  final List<Player> players;
+
+  @override
+  State<_EditMatchDialog> createState() => _EditMatchDialogState();
+}
+
+class _EditMatchDialogState extends State<_EditMatchDialog> {
+  late MatchMode _mode;
+  late DateTime _playedAt;
+  late bool _isRivalry;
+  late List<String> _team1;
+  late List<String> _team2;
+  late List<String> _team1Scorers;
+  late List<String> _team2Scorers;
+  late final TextEditingController _dateController;
+  late final TextEditingController _timeController;
+  late final TextEditingController _score1Controller;
+  late final TextEditingController _score2Controller;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _mode = widget.match.mode;
+    _playedAt = widget.match.playedAt;
+    _isRivalry = widget.match.isRivalry;
+    _team1 = List<String>.from(widget.match.team1);
+    _team2 = List<String>.from(widget.match.team2);
+    _team1Scorers = _scorersForTeam(widget.match, widget.match.team1);
+    _team2Scorers = _scorersForTeam(widget.match, widget.match.team2);
+    _dateController = TextEditingController(
+      text: DateFormat('dd/MM/yyyy').format(_playedAt),
+    );
+    _timeController = TextEditingController(
+      text: DateFormat('HH:mm').format(_playedAt),
+    );
+    _score1Controller = TextEditingController(text: '${widget.match.t1Score}');
+    _score2Controller = TextEditingController(text: '${widget.match.t2Score}');
+    _resizeScorers();
+  }
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    _timeController.dispose();
+    _score1Controller.dispose();
+    _score2Controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Correggi partita'),
+      content: SizedBox(
+        width: 420,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SegmentedButton<MatchMode>(
+                segments: const [
+                  ButtonSegment<MatchMode>(
+                    value: MatchMode.oneVsOne,
+                    label: Text('1v1'),
+                  ),
+                  ButtonSegment<MatchMode>(
+                    value: MatchMode.twoVsTwo,
+                    label: Text('2v2'),
+                  ),
+                ],
+                selected: {_mode},
+                onSelectionChanged: (selected) => setState(() {
+                  _mode = selected.first;
+                  _fitTeamsToMode();
+                  _resizeScorers();
+                }),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _dateController,
+                      decoration:
+                          const InputDecoration(labelText: 'Data gg/mm/aaaa'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    width: 112,
+                    child: TextField(
+                      controller: _timeController,
+                      decoration: const InputDecoration(labelText: 'Ora'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _TeamEditor(
+                title: 'Squadra 1',
+                players: widget.players,
+                selectedIds: _team1,
+                blockedIds: _team2.toSet(),
+                teamSize: _mode.teamSize,
+                onChanged: (ids) => setState(() {
+                  _team1 = ids;
+                  _sanitizeScorers();
+                }),
+              ),
+              const SizedBox(height: 12),
+              _TeamEditor(
+                title: 'Squadra 2',
+                players: widget.players,
+                selectedIds: _team2,
+                blockedIds: _team1.toSet(),
+                teamSize: _mode.teamSize,
+                onChanged: (ids) => setState(() {
+                  _team2 = ids;
+                  _sanitizeScorers();
+                }),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _score1Controller,
+                      keyboardType: TextInputType.number,
+                      decoration:
+                          const InputDecoration(labelText: 'Score squadra 1'),
+                      onChanged: (_) => setState(_resizeScorers),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextField(
+                      controller: _score2Controller,
+                      keyboardType: TextInputType.number,
+                      decoration:
+                          const InputDecoration(labelText: 'Score squadra 2'),
+                      onChanged: (_) => setState(_resizeScorers),
+                    ),
+                  ),
+                ],
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Rivalita'),
+                value: _isRivalry,
+                onChanged: (value) => setState(() => _isRivalry = value),
+              ),
+              _ScorersEditor(
+                title: 'Marcatori squadra 1',
+                teamIds: _team1,
+                players: widget.players,
+                scorerIds: _team1Scorers,
+                onChanged: (index, playerId) => setState(() {
+                  _team1Scorers[index] = playerId;
+                }),
+              ),
+              _ScorersEditor(
+                title: 'Marcatori squadra 2',
+                teamIds: _team2,
+                players: widget.players,
+                scorerIds: _team2Scorers,
+                onChanged: (index, playerId) => setState(() {
+                  _team2Scorers[index] = playerId;
+                }),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  _error!,
+                  style: const TextStyle(color: NttColors.warning),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Annulla'),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          child: const Text('Salva'),
+        ),
+      ],
+    );
+  }
+
+  void _submit() {
+    final score1 = int.tryParse(_score1Controller.text.trim());
+    final score2 = int.tryParse(_score2Controller.text.trim());
+    final playedAt = _parsePlayedAt();
+    final validationError = _validationError(score1, score2, playedAt);
+    if (validationError != null) {
+      setState(() => _error = validationError);
+      return;
+    }
+    final normalizedTeam1 = _normalizedTeam(_team1);
+    final normalizedTeam2 = _normalizedTeam(_team2);
+    final match = widget.match.copyWith(
+      playedAt: playedAt,
+      mode: _mode,
+      t1p1: normalizedTeam1[0],
+      t1p2: _mode == MatchMode.twoVsTwo ? normalizedTeam1[1] : '',
+      t2p1: normalizedTeam2[0],
+      t2p2: _mode == MatchMode.twoVsTwo ? normalizedTeam2[1] : '',
+      t1Score: score1,
+      t2Score: score2,
+      winningTeam: score1! > score2! ? 1 : 2,
+      isRivalry: _isRivalry,
+      scorerIds: List.unmodifiable([..._team1Scorers, ..._team2Scorers]),
+    );
+    Navigator.of(context).pop(match);
+  }
+
+  String? _validationError(int? score1, int? score2, DateTime? playedAt) {
+    if (playedAt == null) {
+      return 'Inserisci data e ora valide.';
+    }
+    if (score1 == null || score2 == null || score1 < 0 || score2 < 0) {
+      return 'Inserisci punteggi validi.';
+    }
+    if (score1 == score2) {
+      return 'La partita deve avere un vincitore.';
+    }
+    if (_normalizedTeam(_team1).length != _mode.teamSize ||
+        _normalizedTeam(_team2).length != _mode.teamSize) {
+      return 'Completa entrambe le squadre.';
+    }
+    final playerIds = [..._normalizedTeam(_team1), ..._normalizedTeam(_team2)];
+    if (playerIds.toSet().length != _mode.teamSize * 2) {
+      return 'Ogni giocatore puo stare in una sola squadra.';
+    }
+    if (_team1Scorers.length != score1 || _team2Scorers.length != score2) {
+      return 'Il numero di marcatori deve corrispondere allo score.';
+    }
+    if (!_team1Scorers.every(_team1.contains) ||
+        !_team2Scorers.every(_team2.contains)) {
+      return 'Ogni marcatore deve appartenere alla propria squadra.';
+    }
+    return null;
+  }
+
+  DateTime? _parsePlayedAt() {
+    try {
+      final date = DateFormat('dd/MM/yyyy').parseStrict(
+        _dateController.text.trim(),
+      );
+      final time = DateFormat('HH:mm').parseStrict(_timeController.text.trim());
+      return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    } on FormatException {
+      return null;
+    }
+  }
+
+  void _fitTeamsToMode() {
+    _team1 = _normalizedTeam(_team1).take(_mode.teamSize).toList();
+    _team2 = _normalizedTeam(_team2).take(_mode.teamSize).toList();
+  }
+
+  void _resizeScorers() {
+    _fitTeamScorers(_team1Scorers, _team1, _currentScore(_score1Controller));
+    _fitTeamScorers(_team2Scorers, _team2, _currentScore(_score2Controller));
+  }
+
+  void _sanitizeScorers() {
+    _team1Scorers = _team1Scorers.where(_team1.contains).toList();
+    _team2Scorers = _team2Scorers.where(_team2.contains).toList();
+    _resizeScorers();
+  }
+}
+
+class _TeamEditor extends StatelessWidget {
+  const _TeamEditor({
+    required this.title,
+    required this.players,
+    required this.selectedIds,
+    required this.blockedIds,
+    required this.teamSize,
+    required this.onChanged,
+  });
+
+  final String title;
+  final List<Player> players;
+  final List<String> selectedIds;
+  final Set<String> blockedIds;
+  final int teamSize;
+  final ValueChanged<List<String>> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _FilterSectionLabel(title),
+        const SizedBox(height: 6),
+        ...List.generate(teamSize, (index) {
+          final selectedId =
+              index < selectedIds.length ? selectedIds[index] : null;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: DropdownButtonFormField<String>(
+              key: ValueKey<String>(
+                '$title-$index-${selectedId ?? 'none'}-${blockedIds.join('|')}',
+              ),
+              initialValue: selectedId,
+              decoration: InputDecoration(labelText: 'Giocatore ${index + 1}'),
+              items: players
+                  .where(
+                    (player) =>
+                        !blockedIds.contains(player.id) ||
+                        player.id == selectedId,
+                  )
+                  .map(
+                    (player) => DropdownMenuItem<String>(
+                      value: player.id,
+                      child: Text(player.name),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (playerId) {
+                final updated = List<String>.from(selectedIds);
+                while (updated.length <= index) {
+                  updated.add('');
+                }
+                updated[index] = playerId ?? '';
+                onChanged(_normalizedTeam(updated));
+              },
+            ),
+          );
+        }),
+      ],
+    );
+  }
+}
+
+class _ScorersEditor extends StatelessWidget {
+  const _ScorersEditor({
+    required this.title,
+    required this.teamIds,
+    required this.players,
+    required this.scorerIds,
+    required this.onChanged,
+  });
+
+  final String title;
+  final List<String> teamIds;
+  final List<Player> players;
+  final List<String> scorerIds;
+  final void Function(int index, String playerId) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    if (scorerIds.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _FilterSectionLabel(title),
+        const SizedBox(height: 6),
+        ...scorerIds.asMap().entries.map((entry) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: DropdownButtonFormField<String>(
+              key: ValueKey<String>(
+                '$title-${entry.key}-${entry.value}-${teamIds.join('|')}',
+              ),
+              initialValue: teamIds.contains(entry.value) ? entry.value : null,
+              decoration: InputDecoration(labelText: 'Gol ${entry.key + 1}'),
+              items: teamIds
+                  .map(
+                    (playerId) => DropdownMenuItem<String>(
+                      value: playerId,
+                      child: Text(StatsService.playerName(players, playerId)),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (playerId) {
+                if (playerId != null) {
+                  onChanged(entry.key, playerId);
+                }
+              },
+            ),
+          );
+        }),
+      ],
+    );
+  }
+}
+
+List<String> _scorersForTeam(GameMatch match, List<String> teamIds) {
+  final teamSet = teamIds.toSet();
+  return match.scorerIds.where(teamSet.contains).toList();
+}
+
+List<String> _normalizedTeam(List<String> ids) {
+  return ids.where((id) => id.trim().isNotEmpty).toList();
+}
+
+int _currentScore(TextEditingController controller) {
+  final score = int.tryParse(controller.text.trim());
+  if (score == null || score < 0) {
+    return 0;
+  }
+  return score;
+}
+
+void _fitTeamScorers(
+  List<String> scorerIds,
+  List<String> teamIds,
+  int targetGoals,
+) {
+  if (targetGoals < scorerIds.length) {
+    scorerIds.removeRange(targetGoals, scorerIds.length);
+  }
+  final fallbackScorerId = teamIds.isEmpty ? '' : teamIds.first;
+  while (scorerIds.length < targetGoals) {
+    scorerIds.add(fallbackScorerId);
   }
 }
 
@@ -621,12 +1126,16 @@ class _MatchDaySection extends StatelessWidget {
     required this.players,
     required this.anim,
     required this.delay,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   final MatchDayGroup group;
   final List<Player> players;
   final Animation<double> anim;
   final double delay;
+  final ValueChanged<GameMatch> onEdit;
+  final ValueChanged<GameMatch> onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -659,7 +1168,12 @@ class _MatchDaySection extends StatelessWidget {
             _SectionLabel(dayLabel(group.day, DateTime.now())),
             const SizedBox(height: 6),
             ...group.matches.map(
-              (match) => _MatchCard(match: match, players: players),
+              (match) => _MatchCard(
+                match: match,
+                players: players,
+                onEdit: () => onEdit(match),
+                onDelete: () => onDelete(match),
+              ),
             ),
           ],
         ),
@@ -691,16 +1205,21 @@ class _MatchCard extends StatelessWidget {
   const _MatchCard({
     required this.match,
     required this.players,
+    required this.onEdit,
+    required this.onDelete,
   });
 
   final GameMatch match;
   final List<Player> players;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
     final timeLabel = DateFormat('HH:mm').format(match.playedAt);
     final baseModeLabel = match.mode == MatchMode.oneVsOne ? '1v1' : '2v2';
-    final modeLabel = match.isRivalry ? 'Rivalita · $baseModeLabel' : baseModeLabel;
+    final modeLabel =
+        match.isRivalry ? 'Rivalita · $baseModeLabel' : baseModeLabel;
     final t1Names =
         match.team1.map((id) => StatsService.playerName(players, id)).toList();
     final t2Names =
@@ -745,6 +1264,33 @@ class _MatchCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
+                    PopupMenuButton<_MatchAction>(
+                      tooltip: 'Azioni partita',
+                      onSelected: (action) {
+                        switch (action) {
+                          case _MatchAction.edit:
+                            onEdit();
+                          case _MatchAction.delete:
+                            onDelete();
+                        }
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem<_MatchAction>(
+                          value: _MatchAction.edit,
+                          child: ListTile(
+                            leading: Icon(Icons.edit),
+                            title: Text('Correggi'),
+                          ),
+                        ),
+                        PopupMenuItem<_MatchAction>(
+                          value: _MatchAction.delete,
+                          child: ListTile(
+                            leading: Icon(Icons.delete_outline),
+                            title: Text('Elimina'),
+                          ),
+                        ),
+                      ],
+                    ),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -791,6 +1337,8 @@ class _MatchCard extends StatelessWidget {
     );
   }
 }
+
+enum _MatchAction { edit, delete }
 
 class _TeamResultLine extends StatelessWidget {
   const _TeamResultLine({

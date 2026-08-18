@@ -13,7 +13,7 @@ class DatabaseHelper {
 
   Future<Database> _open() async =>
       openDatabase(join(await getDatabasesPath(), 'biliardino.db'),
-        version: 3, onCreate: _onCreate, onUpgrade: _onUpgrade);
+          version: 4, onCreate: _onCreate, onUpgrade: _onUpgrade);
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
@@ -40,6 +40,7 @@ class DatabaseHelper {
         is_rivalry INTEGER NOT NULL DEFAULT 0
       )
     ''');
+    await _createIndexes(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -62,6 +63,22 @@ class DatabaseHelper {
         "UPDATE matches SET match_mode = '1v1' WHERE match_mode = 'rivalry'",
       );
     }
+    if (oldVersion < 4) {
+      await _createIndexes(db);
+    }
+  }
+
+  Future<void> _createIndexes(Database db) async {
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_matches_played_at ON matches(played_at)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_matches_mode ON matches(match_mode)',
+    );
+    await db.execute(
+      'CREATE UNIQUE INDEX IF NOT EXISTS idx_players_name_nocase '
+      'ON players(name COLLATE NOCASE)',
+    );
   }
 
   Future<List<Player>> getPlayers() async {
@@ -76,8 +93,14 @@ class DatabaseHelper {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
 
-  Future<void> updatePlayer(Player p) async => (await _database)
-      .update('players', p.toMap(), where: 'id = ?', whereArgs: [p.id]);
+  Future<void> updatePlayer(Player p) async {
+    final updatedRows = await (await _database)
+        .update('players', p.toMap(), where: 'id = ?', whereArgs: [p.id]);
+    if (updatedRows != 1) {
+      throw StateError(
+          'Player update failed for id=${p.id}. Rows: $updatedRows');
+    }
+  }
 
   Future<List<GameMatch>> getMatches() async {
     final db = await _database;
@@ -88,6 +111,23 @@ class DatabaseHelper {
   Future<void> insertMatch(GameMatch m) async => (await _database).insert(
         'matches',
         m.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
+        conflictAlgorithm: ConflictAlgorithm.abort,
       );
+
+  Future<void> updateMatch(GameMatch m) async {
+    final updatedRows = await (await _database)
+        .update('matches', m.toMap(), where: 'id = ?', whereArgs: [m.id]);
+    if (updatedRows != 1) {
+      throw StateError(
+          'Match update failed for id=${m.id}. Rows: $updatedRows');
+    }
+  }
+
+  Future<void> deleteMatch(String id) async {
+    final deletedRows = await (await _database)
+        .delete('matches', where: 'id = ?', whereArgs: [id]);
+    if (deletedRows != 1) {
+      throw StateError('Match delete failed for id=$id. Rows: $deletedRows');
+    }
+  }
 }

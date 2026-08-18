@@ -8,7 +8,7 @@ class Player {
     required this.id,
     required this.name,
     required this.createdAt,
-    this.isPresent = true,
+    required this.isPresent,
   });
 
   Map<String, dynamic> toMap() => {

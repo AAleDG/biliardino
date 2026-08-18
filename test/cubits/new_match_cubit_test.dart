@@ -262,6 +262,7 @@ List<Player> _players() {
       id: 'p${index + 1}',
       name: 'Player ${index + 1}',
       createdAt: DateTime(2026),
+      isPresent: true,
     ),
   );
 }
@@ -323,6 +324,12 @@ class _MatchRepositoryFake implements MatchRepository {
   Future<void> load() async {}
 
   @override
+  Future<void> updateMatch(GameMatch match) async {}
+
+  @override
+  Future<void> deleteMatch(String id) async {}
+
+  @override
   Stream<List<GameMatch>> watchMatches() => const Stream.empty();
 }
 
@@ -350,6 +357,9 @@ class _PlayerRepositoryFake implements PlayerRepository {
 
   @override
   Future<void> addPlayer(String name) async {}
+
+  @override
+  Future<void> renamePlayer(Player player, String name) async {}
 
   @override
   Future<void> dispose() => _controller.close();

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubits/home/home_cubit.dart';
+import '../cubits/new_match/new_match_cubit.dart';
+import '../cubits/new_match/new_match_state.dart';
 import '../theme/app_theme.dart';
 import 'history_screen.dart';
 import 'leaderboard_screen.dart';
@@ -22,16 +24,87 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, int>(
       builder: (context, index) {
-        return Scaffold(
-          body: IndexedStack(index: index, children: _pages),
-          bottomNavigationBar: _BottomNav(
-            index: index,
-            onSelected: context.read<HomeCubit>().selectTab,
-          ),
+        return BlocBuilder<NewMatchCubit, NewMatchState>(
+          builder: (context, matchState) {
+            return PopScope(
+              canPop: !_isStartedMatch(matchState),
+              onPopInvokedWithResult: (didPop, result) async {
+                if (didPop) {
+                  return;
+                }
+                final canLeave = await _confirmLeaveStartedMatch(context);
+                if (!context.mounted || !canLeave) {
+                  return;
+                }
+                context.read<NewMatchCubit>().abortMatch();
+                Navigator.of(context).pop(result);
+              },
+              child: Scaffold(
+                body: IndexedStack(index: index, children: _pages),
+                bottomNavigationBar: _BottomNav(
+                  index: index,
+                  onSelected: (selectedIndex) => _selectTab(
+                    context,
+                    currentIndex: index,
+                    selectedIndex: selectedIndex,
+                  ),
+                ),
+              ),
+            );
+          },
         );
       },
     );
   }
+}
+
+bool _hasStartedMatch(BuildContext context) {
+  return _isStartedMatch(context.read<NewMatchCubit>().state);
+}
+
+bool _isStartedMatch(NewMatchState state) =>
+    state.kickedOff && state.lastVictory == null;
+
+Future<void> _selectTab(
+  BuildContext context, {
+  required int currentIndex,
+  required int selectedIndex,
+}) async {
+  if (currentIndex == selectedIndex) {
+    return;
+  }
+  final leavingMatchTab = currentIndex == 1 && selectedIndex != 1;
+  if (leavingMatchTab && _hasStartedMatch(context)) {
+    final canLeave = await _confirmLeaveStartedMatch(context);
+    if (!context.mounted || !canLeave) {
+      return;
+    }
+    context.read<NewMatchCubit>().abortMatch();
+  }
+  if (context.mounted) {
+    context.read<HomeCubit>().selectTab(selectedIndex);
+  }
+}
+
+Future<bool> _confirmLeaveStartedMatch(BuildContext context) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Uscire dalla partita?'),
+      content: const Text('La partita in corso verra annullata.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Resta'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Esci'),
+        ),
+      ],
+    ),
+  );
+  return confirmed == true;
 }
 
 class _BottomNav extends StatelessWidget {

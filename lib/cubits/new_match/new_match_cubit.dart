@@ -247,7 +247,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         score2: snapshot.score2,
         scorerIds: snapshot.scorerIds,
       );
-    } catch (_) {
+    } on Object {
       if (isClosed) return;
       final deferredPlayers = _deferredPlayers;
       _deferredPlayers = null;

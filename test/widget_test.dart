@@ -1,5 +1,6 @@
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/cubits/leaderboard/leaderboard_cubit.dart';
+import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/cubits/players/players_cubit.dart';
 import 'package:biliardino/main.dart';
 import 'package:biliardino/models/game_match.dart';
@@ -202,8 +203,8 @@ void main() {
     final now = DateTime(2026, 6, 17, 12);
     final repos = _Repos.build(
       players: [
-        Player(id: 'p1', name: 'Ale', createdAt: now),
-        Player(id: 'p2', name: 'Luigi', createdAt: now),
+        Player(id: 'p1', name: 'Ale', createdAt: now, isPresent: true),
+        Player(id: 'p2', name: 'Luigi', createdAt: now, isPresent: true),
       ],
       matches: const [],
     );
@@ -265,6 +266,12 @@ Future<void> _pumpHome(
               matchRepository: repos.matchRepo,
             ),
           ),
+          BlocProvider<NewMatchCubit>(
+            create: (_) => NewMatchCubit(
+              playerRepository: repos.playerRepo,
+              matchRepository: repos.matchRepo,
+            ),
+          ),
         ],
         child: MaterialApp(
           theme: AppTheme.dark(),
@@ -282,21 +289,25 @@ _Repos _sampleData() {
       id: 'p1',
       name: 'Alessandro Antonio Delgaudio',
       createdAt: now,
+      isPresent: true,
     ),
     Player(
       id: 'p2',
       name: 'Beatrice Lunghissimo Cognome',
       createdAt: now,
+      isPresent: true,
     ),
     Player(
       id: 'p3',
       name: 'Cristiano Nome Molto Esteso',
       createdAt: now,
+      isPresent: true,
     ),
     Player(
       id: 'p4',
       name: 'Daniela Super Competitiva',
       createdAt: now,
+      isPresent: true,
     ),
     Player(
       id: 'p5',
@@ -388,10 +399,10 @@ _Repos _sampleDataNoMatchPlayerFirst() {
 _Repos _sampleDataMixedFormats() {
   final now = DateTime(2026, 6, 17, 12);
   final players = [
-    Player(id: 'p1', name: 'Ale', createdAt: now),
-    Player(id: 'p2', name: 'Luigi', createdAt: now),
-    Player(id: 'p3', name: 'Mario', createdAt: now),
-    Player(id: 'p4', name: 'Max', createdAt: now),
+    Player(id: 'p1', name: 'Ale', createdAt: now, isPresent: true),
+    Player(id: 'p2', name: 'Luigi', createdAt: now, isPresent: true),
+    Player(id: 'p3', name: 'Mario', createdAt: now, isPresent: true),
+    Player(id: 'p4', name: 'Max', createdAt: now, isPresent: true),
   ];
   final matches = [
     GameMatch(
