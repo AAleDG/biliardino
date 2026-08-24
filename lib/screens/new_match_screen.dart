@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../cubits/home/home_cubit.dart';
 import '../cubits/new_match/new_match_cubit.dart';
 import '../cubits/new_match/new_match_state.dart';
 import '../models/game_match.dart';
@@ -18,13 +19,38 @@ class NewMatchScreen extends StatelessWidget {
   Widget build(BuildContext context) => const _NewMatchView();
 }
 
-class _NewMatchView extends StatelessWidget {
+class _NewMatchView extends StatefulWidget {
   const _NewMatchView();
+
+  @override
+  State<_NewMatchView> createState() => _NewMatchViewState();
+}
+
+class _NewMatchViewState extends State<_NewMatchView> {
+  CelebrationOverlayHandle? _victoryOverlay;
+
+  @override
+  void dispose() {
+    _dismissVictoryOverlay();
+    super.dispose();
+  }
+
+  void _dismissVictoryOverlay() {
+    _victoryOverlay?.dismiss();
+    _victoryOverlay = null;
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
+        BlocListener<HomeCubit, int>(
+          listenWhen: (previous, current) => previous != current && current != 1,
+          listener: (ctx, state) {
+            _dismissVictoryOverlay();
+            ctx.read<NewMatchCubit>().acknowledgeVictory();
+          },
+        ),
         BlocListener<NewMatchCubit, NewMatchState>(
           listenWhen: (p, n) => n.lastGoal != null && n.lastGoal != p.lastGoal,
           listener: (ctx, state) {
@@ -45,7 +71,8 @@ class _NewMatchView extends StatelessWidget {
             final victory = state.lastVictory!;
             final color =
                 victory.winningTeam == 1 ? NttColors.team1 : NttColors.team2;
-            Celebrations.showVictory(
+            _dismissVictoryOverlay();
+            _victoryOverlay = Celebrations.showVictory(
               ctx,
               color: color,
               teamLabel: state.isRivalry
@@ -54,8 +81,14 @@ class _NewMatchView extends StatelessWidget {
               playerNames: victory.winnerNames,
               winnerScore: victory.winnerScore,
               loserScore: victory.loserScore,
-              onChangeTeams: ctx.read<NewMatchCubit>().changeTeamsAfterVictory,
-              onRematch: ctx.read<NewMatchCubit>().rematchAfterVictory,
+              onChangeTeams: () {
+                _victoryOverlay = null;
+                ctx.read<NewMatchCubit>().changeTeamsAfterVictory();
+              },
+              onRematch: () {
+                _victoryOverlay = null;
+                ctx.read<NewMatchCubit>().rematchAfterVictory();
+              },
             );
           },
         ),

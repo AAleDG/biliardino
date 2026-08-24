@@ -28,7 +28,7 @@ class Celebrations {
     HapticFeedback.mediumImpact();
   }
 
-  static void showVictory(
+  static CelebrationOverlayHandle showVictory(
     BuildContext context, {
     required Color color,
     required String teamLabel,
@@ -59,6 +59,19 @@ class Celebrations {
     );
     overlay.insert(entry);
     HapticFeedback.heavyImpact();
+    return CelebrationOverlayHandle._(entry);
+  }
+}
+
+class CelebrationOverlayHandle {
+  CelebrationOverlayHandle._(this._entry);
+
+  final OverlayEntry _entry;
+
+  void dismiss() {
+    if (_entry.mounted) {
+      _entry.remove();
+    }
   }
 }
 

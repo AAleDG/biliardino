@@ -3,11 +3,9 @@ import 'package:biliardino/models/game_match.dart';
 import 'package:biliardino/models/player.dart';
 
 class FakeDatabaseHelper implements DatabaseHelper {
-  FakeDatabaseHelper({
-    List<Player>? players,
-    List<GameMatch>? matches,
-  })  : players = players ?? const [],
-        matches = matches ?? const [];
+  FakeDatabaseHelper({List<Player>? players, List<GameMatch>? matches})
+    : players = players ?? const [],
+      matches = matches ?? const [];
 
   final List<Player> players;
   final List<GameMatch> matches;
@@ -16,6 +14,7 @@ class FakeDatabaseHelper implements DatabaseHelper {
   int deleteMatchCalls = 0;
   int insertPlayerCalls = 0;
   int updatePlayerCalls = 0;
+  bool hasDuplicatePlayerName = false;
 
   @override
   Future<List<Player>> getPlayers() async => players;
@@ -32,6 +31,9 @@ class FakeDatabaseHelper implements DatabaseHelper {
   Future<void> insertPlayer(Player player) async {
     insertPlayerCalls++;
   }
+
+  @override
+  Future<bool> playerNameExists(String name) async => hasDuplicatePlayerName;
 
   @override
   Future<void> updatePlayer(Player player) async {

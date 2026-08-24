@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -11,9 +13,12 @@ class DatabaseHelper {
 
   Future<Database> get _database async => _db ??= await _open();
 
-  Future<Database> _open() async =>
-      openDatabase(join(await getDatabasesPath(), 'biliardino.db'),
-          version: 4, onCreate: _onCreate, onUpgrade: _onUpgrade);
+  Future<Database> _open() async => openDatabase(
+    join(await getDatabasesPath(), 'biliardino.db'),
+    version: 4,
+    onCreate: _onCreate,
+    onUpgrade: _onUpgrade,
+  );
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
@@ -64,6 +69,7 @@ class DatabaseHelper {
       );
     }
     if (oldVersion < 4) {
+      await migratePlayersToUniqueNames(db);
       await _createIndexes(db);
     }
   }
@@ -75,10 +81,31 @@ class DatabaseHelper {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_matches_mode ON matches(match_mode)',
     );
-    await db.execute(
-      'CREATE UNIQUE INDEX IF NOT EXISTS idx_players_name_nocase '
-      'ON players(name COLLATE NOCASE)',
+    await _createPlayersNameIndex(db);
+  }
+
+  static Future<void> migratePlayersToUniqueNames(Database db) async {
+    final players = await db.query('players');
+    final matches = await db.query('matches');
+    final duplicateIdsByCanonicalId = _duplicatePlayerIdsByCanonicalId(
+      players: players,
+      matches: matches,
     );
+    if (duplicateIdsByCanonicalId.isNotEmpty) {
+      final replacementById = <String, String>{};
+      for (final entry in duplicateIdsByCanonicalId.entries) {
+        for (final duplicateId in entry.value) {
+          replacementById[duplicateId] = entry.key;
+        }
+      }
+      await _rewriteMatchPlayerReferences(db, matches, replacementById);
+      for (final duplicateIds in duplicateIdsByCanonicalId.values) {
+        for (final duplicateId in duplicateIds) {
+          await db.delete('players', where: 'id = ?', whereArgs: [duplicateId]);
+        }
+      }
+    }
+    await _createPlayersNameIndex(db);
   }
 
   Future<List<Player>> getPlayers() async {
@@ -87,18 +114,31 @@ class DatabaseHelper {
     return rows.map(Player.fromMap).toList();
   }
 
-  Future<void> insertPlayer(Player p) async => (await _database).insert(
-        'players',
-        p.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
+  Future<bool> playerNameExists(String name) async {
+    final rows = await (await _database).query(
+      'players',
+      columns: const ['id'],
+      where: 'TRIM(name) = ? COLLATE NOCASE',
+      whereArgs: [name.trim()],
+      limit: 1,
+    );
+    return rows.isNotEmpty;
+  }
+
+  Future<void> insertPlayer(Player p) async =>
+      (await _database).insert('players', p.toMap());
 
   Future<void> updatePlayer(Player p) async {
-    final updatedRows = await (await _database)
-        .update('players', p.toMap(), where: 'id = ?', whereArgs: [p.id]);
+    final updatedRows = await (await _database).update(
+      'players',
+      p.toMap(),
+      where: 'id = ?',
+      whereArgs: [p.id],
+    );
     if (updatedRows != 1) {
       throw StateError(
-          'Player update failed for id=${p.id}. Rows: $updatedRows');
+        'Player update failed for id=${p.id}. Rows: $updatedRows',
+      );
     }
   }
 
@@ -109,25 +149,181 @@ class DatabaseHelper {
   }
 
   Future<void> insertMatch(GameMatch m) async => (await _database).insert(
-        'matches',
-        m.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.abort,
-      );
+    'matches',
+    m.toMap(),
+    conflictAlgorithm: ConflictAlgorithm.abort,
+  );
 
   Future<void> updateMatch(GameMatch m) async {
-    final updatedRows = await (await _database)
-        .update('matches', m.toMap(), where: 'id = ?', whereArgs: [m.id]);
+    final updatedRows = await (await _database).update(
+      'matches',
+      m.toMap(),
+      where: 'id = ?',
+      whereArgs: [m.id],
+    );
     if (updatedRows != 1) {
       throw StateError(
-          'Match update failed for id=${m.id}. Rows: $updatedRows');
+        'Match update failed for id=${m.id}. Rows: $updatedRows',
+      );
     }
   }
 
   Future<void> deleteMatch(String id) async {
-    final deletedRows = await (await _database)
-        .delete('matches', where: 'id = ?', whereArgs: [id]);
+    final deletedRows = await (await _database).delete(
+      'matches',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
     if (deletedRows != 1) {
       throw StateError('Match delete failed for id=$id. Rows: $deletedRows');
     }
+  }
+}
+
+Future<void> _createPlayersNameIndex(DatabaseExecutor db) {
+  return db.execute(
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_players_name_nocase '
+    'ON players(TRIM(name) COLLATE NOCASE)',
+  );
+}
+
+Map<String, List<String>> _duplicatePlayerIdsByCanonicalId({
+  required List<Map<String, Object?>> players,
+  required List<Map<String, Object?>> matches,
+}) {
+  final groups = <String, List<_PlayerRow>>{};
+  final referenceCounts = _playerReferenceCounts(matches);
+  for (final row in players) {
+    final player = _PlayerRow.fromMap(row);
+    final normalizedName = player.name.trim().toLowerCase();
+    groups.putIfAbsent(normalizedName, () => []).add(player);
+  }
+
+  final duplicateIdsByCanonicalId = <String, List<String>>{};
+  for (final group in groups.values) {
+    if (group.length < 2) {
+      continue;
+    }
+    final sorted = [...group]
+      ..sort((a, b) {
+        final byReferences = (referenceCounts[b.id] ?? 0).compareTo(
+          referenceCounts[a.id] ?? 0,
+        );
+        if (byReferences != 0) {
+          return byReferences;
+        }
+        final byCreatedAt = a.createdAt.compareTo(b.createdAt);
+        if (byCreatedAt != 0) {
+          return byCreatedAt;
+        }
+        return a.id.compareTo(b.id);
+      });
+    duplicateIdsByCanonicalId[sorted.first.id] = sorted
+        .skip(1)
+        .map((player) => player.id)
+        .toList(growable: false);
+  }
+  return duplicateIdsByCanonicalId;
+}
+
+Map<String, int> _playerReferenceCounts(List<Map<String, Object?>> matches) {
+  final counts = <String, int>{};
+  for (final match in matches) {
+    for (final column in const ['t1p1', 't1p2', 't2p1', 't2p2']) {
+      final id = match[column] as String;
+      if (id.trim().isNotEmpty) {
+        counts[id] = (counts[id] ?? 0) + 1;
+      }
+    }
+    for (final id in _scorerIdsFromMatch(match)) {
+      counts[id] = (counts[id] ?? 0) + 1;
+    }
+  }
+  return counts;
+}
+
+Future<void> _rewriteMatchPlayerReferences(
+  Database db,
+  List<Map<String, Object?>> matches,
+  Map<String, String> replacementById,
+) async {
+  for (final match in matches) {
+    final updates = <String, Object?>{};
+    for (final column in const ['t1p1', 't1p2', 't2p1', 't2p2']) {
+      final id = match[column] as String;
+      final replacement = replacementById[id];
+      if (replacement != null) {
+        updates[column] = replacement;
+      }
+    }
+
+    final scorerIds = _scorerIdsFromMatch(match);
+    final rewrittenScorerIds = scorerIds
+        .map((id) => replacementById[id] ?? id)
+        .toList(growable: false);
+    if (!_sameStrings(scorerIds, rewrittenScorerIds)) {
+      updates['scorer_ids_json'] = jsonEncode(rewrittenScorerIds);
+    }
+
+    if (updates.isNotEmpty) {
+      await db.update(
+        'matches',
+        updates,
+        where: 'id = ?',
+        whereArgs: [match['id'] as String],
+      );
+    }
+  }
+}
+
+List<String> _scorerIdsFromMatch(Map<String, Object?> match) {
+  final rawValue = match['scorer_ids_json'];
+  final rawJson = rawValue is String ? rawValue : '[]';
+  final decoded = jsonDecode(rawJson);
+  if (decoded is! List) {
+    throw FormatException('Invalid scorer_ids_json list', rawJson);
+  }
+  return decoded
+      .map((value) {
+        if (value is! String) {
+          throw FormatException(
+            'Invalid scorer ID in scorer_ids_json',
+            rawJson,
+          );
+        }
+        return value;
+      })
+      .toList(growable: false);
+}
+
+bool _sameStrings(List<String> first, List<String> second) {
+  if (first.length != second.length) {
+    return false;
+  }
+  for (var index = 0; index < first.length; index += 1) {
+    if (first[index] != second[index]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+class _PlayerRow {
+  const _PlayerRow({
+    required this.id,
+    required this.name,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final int createdAt;
+
+  factory _PlayerRow.fromMap(Map<String, Object?> map) {
+    return _PlayerRow(
+      id: map['id'] as String,
+      name: map['name'] as String,
+      createdAt: map['created_at'] as int,
+    );
   }
 }

@@ -7,7 +7,8 @@ import '../cubits/leaderboard/leaderboard_cubit.dart';
 import '../cubits/leaderboard/leaderboard_state.dart';
 import '../models/player_badge.dart';
 import '../models/player_stats.dart';
-import '../services/leaderboard_export_service.dart';
+import '../services/csv_share_service.dart';
+import '../services/leaderboard_csv_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/avatar.dart';
 
@@ -50,16 +51,15 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
       builder: (context, state) {
         final rankedByPoints = state.stats.where((s) => s.games > 0).toList();
         final rankedByGoals =
-            state.stats.where((s) => s.goalsScored > 0).toList()
-              ..sort((a, b) {
-                final byGoals = b.goalsScored.compareTo(a.goalsScored);
-                if (byGoals != 0) return byGoals;
-                final byGames = b.games.compareTo(a.games);
-                if (byGames != 0) return byGames;
-                return a.player.name.toLowerCase().compareTo(
-                      b.player.name.toLowerCase(),
-                    );
-              });
+            state.stats.where((s) => s.goalsScored > 0).toList()..sort((a, b) {
+              final byGoals = b.goalsScored.compareTo(a.goalsScored);
+              if (byGoals != 0) return byGoals;
+              final byGames = b.games.compareTo(a.games);
+              if (byGames != 0) return byGames;
+              return a.player.name.toLowerCase().compareTo(
+                b.player.name.toLowerCase(),
+              );
+            });
 
         return DefaultTabController(
           length: 2,
@@ -75,15 +75,20 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
                 ),
               ),
               actions: [
-                IconButton(
-                  tooltip: 'Esporta CSV',
-                  onPressed: state.stats.isEmpty
-                      ? null
-                      : () => _exportLeaderboardCsv(
-                            context,
-                            state.stats,
-                          ),
-                  icon: const Icon(Icons.ios_share),
+                Builder(
+                  builder: (buttonContext) {
+                    return IconButton(
+                      key: const ValueKey('leaderboard-export-csv'),
+                      icon: const Icon(Icons.ios_share),
+                      tooltip: 'Esporta CSV',
+                      onPressed: rankedByPoints.isEmpty
+                          ? null
+                          : () => _shareLeaderboardCsv(
+                              context: buttonContext,
+                              ranked: rankedByPoints,
+                            ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -162,20 +167,28 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
   }
 }
 
-Future<void> _exportLeaderboardCsv(
-  BuildContext context,
-  List<PlayerStats> stats,
-) async {
+Future<void> _shareLeaderboardCsv({
+  required BuildContext context,
+  required List<PlayerStats> ranked,
+}) async {
   try {
-    final result = await LeaderboardExportService.exportCsv(
-      stats,
-      DateTime.now(),
+    final csv = LeaderboardCsvService.build(ranked);
+    await CsvShareService.platform().shareCsv(
+      csv: csv,
+      fileName: 'classifica-biliardino.csv',
+      subject: 'Classifica Biliardino',
+      text: 'Classifica Biliardino in CSV',
+      sharePositionOrigin: _sharePositionOrigin(context),
     );
     if (!context.mounted) {
       return;
     }
-    await _showExportDialog(context, result: result);
-  } on Object catch (error) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(content: Text('CSV pronto per la condivisione.')),
+      );
+  } catch (error) {
     if (!context.mounted) {
       return;
     }
@@ -187,23 +200,13 @@ Future<void> _exportLeaderboardCsv(
   }
 }
 
-Future<void> _showExportDialog(
-  BuildContext context, {
-  required LeaderboardExportResult result,
-}) async {
-  await showDialog<void>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: const Text('Scaricato CSV!'),
-      content: Text(result.fileName),
-      actions: [
-        ElevatedButton(
-          onPressed: () => Navigator.of(dialogContext).pop(),
-          child: const Text('Chiudi'),
-        ),
-      ],
-    ),
-  );
+Rect? _sharePositionOrigin(BuildContext context) {
+  final renderObject = context.findRenderObject();
+  if (renderObject is! RenderBox) {
+    return null;
+  }
+  final origin = renderObject.localToGlobal(Offset.zero);
+  return origin & renderObject.size;
 }
 
 class _LeaderboardPane extends StatelessWidget {
@@ -251,7 +254,11 @@ class _LeaderboardPane extends StatelessWidget {
           const SizedBox(height: 24),
           _SectionLabel(sectionLabel),
           const SizedBox(height: 10),
-          ...ranked.sublist(3).asMap().entries.map(
+          ...ranked
+              .sublist(3)
+              .asMap()
+              .entries
+              .map(
                 (entry) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: _LeaderRow(
@@ -391,9 +398,7 @@ class _PodiumColumn extends StatelessWidget {
                           Icons.emoji_events_outlined,
                           color: _Hud.warm,
                           size: 22,
-                          shadows: [
-                            Shadow(color: _Hud.warm, blurRadius: 14),
-                          ],
+                          shadows: [Shadow(color: _Hud.warm, blurRadius: 14)],
                         ),
                       ),
                     _HudAvatar(
@@ -432,8 +437,10 @@ class _PodiumColumn extends StatelessWidget {
                         alignment: WrapAlignment.center,
                         spacing: 6,
                         runSpacing: 6,
-                        children:
-                            s.badges.take(2).map(_PodiumBadgeChip.new).toList(),
+                        children: s.badges
+                            .take(2)
+                            .map(_PodiumBadgeChip.new)
+                            .toList(),
                       ),
                     ],
                   ],
@@ -481,8 +488,9 @@ class _PodiumBar extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 12),
             margin: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(8)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(8),
+              ),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -512,8 +520,9 @@ class _PodiumBar extends StatelessWidget {
             height: 2,
             decoration: BoxDecoration(
               color: accent,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(8)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(8),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: accent.withValues(alpha: 0.55),
@@ -639,10 +648,7 @@ class _LeaderRow extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              _Hud.cyan.withValues(alpha: 0.07),
-              Colors.transparent,
-            ],
+            colors: [_Hud.cyan.withValues(alpha: 0.07), Colors.transparent],
           ),
         ),
         child: Row(
@@ -687,8 +693,10 @@ class _LeaderRow extends StatelessWidget {
                     Wrap(
                       spacing: 6,
                       runSpacing: 6,
-                      children:
-                          stats.badges.take(3).map(_RowBadgeChip.new).toList(),
+                      children: stats.badges
+                          .take(3)
+                          .map(_RowBadgeChip.new)
+                          .toList(),
                     ),
                   ],
                 ],

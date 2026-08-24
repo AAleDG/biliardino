@@ -4,49 +4,54 @@ class LeaderboardCsvService {
   const LeaderboardCsvService._();
 
   static String build(List<PlayerStats> stats) {
-    final rows = [
-      [
-        'posizione',
-        'giocatore',
-        'punti',
-        'partite',
-        'vittorie',
-        'sconfitte',
-        'gol',
-        'win_rate',
-        'striscia_vittorie',
+    final rows = <List<String>>[
+      const [
+        'Posizione',
+        'Giocatore',
+        'Punti',
+        'Partite',
+        'Vittorie',
+        'Sconfitte',
+        'Gol',
+        'Win rate',
+        'Striscia vittorie',
       ],
       ...stats.asMap().entries.map((entry) {
-        final rank = entry.key + 1;
-        final stat = entry.value;
+        final stats = entry.value;
         return [
-          '$rank',
-          stat.player.name,
-          '${stat.points}',
-          '${stat.games}',
-          '${stat.wins}',
-          '${stat.losses}',
-          '${stat.goalsScored}',
-          stat.winRate.toStringAsFixed(3),
-          '${stat.currentWinStreak}',
+          '${entry.key + 1}',
+          stats.player.name,
+          '${stats.points}',
+          '${stats.games}',
+          '${stats.wins}',
+          '${stats.losses}',
+          '${stats.goalsScored}',
+          '${(stats.winRate * 100).toStringAsFixed(1)}%',
+          '${stats.currentWinStreak}',
         ];
       }),
     ];
-    return rows.map(_serializeRow).join('\n');
+    return rows.map(_encodeRow).join('\n');
   }
+}
 
-  static String _serializeRow(List<String> values) {
-    return values.map(_serializeValue).join(',');
-  }
+String _encodeRow(List<String> row) {
+  return row.map(_encodeCell).join(',');
+}
 
-  static String _serializeValue(String value) {
-    final escaped = value.replaceAll('"', '""');
-    if (escaped.contains(',') ||
-        escaped.contains('"') ||
-        escaped.contains('\n') ||
-        escaped.contains('\r')) {
-      return '"$escaped"';
-    }
-    return escaped;
+String _encodeCell(String value) {
+  final sanitized = _sanitizeFormula(value);
+  final escaped = sanitized.replaceAll('"', '""');
+  return '"$escaped"';
+}
+
+String _sanitizeFormula(String value) {
+  if (value.isEmpty) {
+    return value;
   }
+  const formulaPrefixes = {'=', '+', '-', '@'};
+  if (formulaPrefixes.contains(value[0])) {
+    return "'$value";
+  }
+  return value;
 }

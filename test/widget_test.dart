@@ -9,6 +9,7 @@ import 'package:biliardino/repositories/match_repository.dart';
 import 'package:biliardino/repositories/player_repository.dart';
 import 'package:biliardino/screens/history_screen.dart';
 import 'package:biliardino/screens/home_screen.dart';
+import 'package:biliardino/screens/leaderboard_screen.dart';
 import 'package:biliardino/screens/new_match_screen.dart';
 import 'package:biliardino/screens/players_screen.dart';
 import 'package:biliardino/theme/app_theme.dart';
@@ -22,6 +23,11 @@ class _MockPlayerRepository extends Mock implements PlayerRepository {}
 class _MockMatchRepository extends Mock implements MatchRepository {}
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(MatchMode.twoVsTwo);
+    registerFallbackValue(<String>[]);
+  });
+
   testWidgets('App si avvia e mostra la home', (WidgetTester tester) async {
     final repos = _Repos.build(players: const [], matches: const []);
     await tester.pumpWidget(BiliardinoApp(
@@ -219,6 +225,68 @@ void main() {
     expect(find.text('Pronti a giocare'), findsOneWidget);
     expect(find.textContaining('Servono'), findsNothing);
   });
+
+  testWidgets(
+      'La classifica vuota per giocatori senza partite disabilita export CSV',
+      (WidgetTester tester) async {
+    final repos = _Repos.build(
+      players: [
+        Player(id: 'solo', name: 'Solo', createdAt: DateTime(2026)),
+      ],
+      matches: const [],
+    );
+    await _pumpHome(
+      tester,
+      home: const LeaderboardScreen(),
+      repos: repos,
+    );
+    await tester.pumpAndSettle();
+
+    final exportButton = tester.widget<IconButton>(
+      find.byKey(const ValueKey('leaderboard-export-csv')),
+    );
+
+    expect(find.text('Nessuna partita giocata'), findsOneWidget);
+    expect(find.text('Solo'), findsNothing);
+    expect(exportButton.onPressed, isNull);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('La vittoria sparisce quando si lascia il tab partita',
+      (WidgetTester tester) async {
+    final repos = _sampleData();
+    await _pumpHome(
+      tester,
+      home: const HomeScreen(),
+      repos: repos,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Partita'));
+    await tester.pumpAndSettle();
+    await _assignTeam(tester, 'Alessandro Antonio Delgaudio', 'S1');
+    await _assignTeam(tester, 'Beatrice Lunghissimo Cognome', 'S1');
+    await _assignTeam(tester, 'Cristiano Nome Molto Esteso', 'S2');
+    await _assignTeam(tester, 'Daniela Super Competitiva', 'S2');
+    await tester.tap(find.text('INIZIA PARTITA'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('+1 GOAL').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Alessandro Antonio Delgaudio').last);
+    await tester.pumpAndSettle(const Duration(milliseconds: 1200));
+    await tester.tap(find.text('REGISTRA RISULTATO'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('VITTORIA'), findsOneWidget);
+
+    tester.element(find.byType(HomeScreen)).read<HomeCubit>().selectTab(3);
+    await tester.pumpAndSettle();
+
+    expect(find.text('VITTORIA'), findsNothing);
+    expect(find.text('CLASSIFICA'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _Repos {
@@ -239,8 +307,36 @@ class _Repos {
     when(() => matchRepo.matches).thenReturn(matches);
     when(() => matchRepo.watchMatches())
         .thenAnswer((_) => Stream.value(matches));
+    when(
+      () => matchRepo.addMatch(
+        mode: any(named: 'mode'),
+        isRivalry: any(named: 'isRivalry'),
+        team1: any(named: 'team1'),
+        team2: any(named: 'team2'),
+        score1: any(named: 'score1'),
+        score2: any(named: 'score2'),
+        scorerIds: any(named: 'scorerIds'),
+      ),
+    ).thenAnswer((_) async {});
     return _Repos(playerRepo: playerRepo, matchRepo: matchRepo);
   }
+}
+
+Future<void> _assignTeam(
+  WidgetTester tester,
+  String playerName,
+  String chipLabel,
+) async {
+  await tester.ensureVisible(find.text(playerName));
+  await tester.pumpAndSettle();
+  final row = find.ancestor(
+    of: find.text(playerName),
+    matching: find.byType(Card),
+  );
+  await tester.tap(
+    find.descendant(of: row, matching: find.text(chipLabel)),
+  );
+  await tester.pumpAndSettle();
 }
 
 Future<void> _pumpHome(

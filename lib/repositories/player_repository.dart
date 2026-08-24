@@ -31,6 +31,13 @@ class PlayerRepository {
       throw ArgumentError.value(name, 'name', 'Player name cannot be empty.');
     }
     _validateUniqueName(trimmed, ignoredPlayerId: null);
+    if (await _db.playerNameExists(trimmed)) {
+      throw ArgumentError.value(
+        trimmed,
+        'name',
+        'A player with this name already exists.',
+      );
+    }
     final player = Player(
       id: _uuid.v4(),
       name: trimmed,
