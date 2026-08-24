@@ -80,9 +80,37 @@ void main() {
         await repository.dispose();
       },
     );
+
+    test(
+      'rejects duplicate names with unicode whitespace from the cache',
+      () async {
+        final database = FakeDatabaseHelper(
+          players: [_playerWithName(id: 'p1', name: 'Ada Lovelace')],
+        );
+        final repository = PlayerRepository(database);
+        await repository.load();
+
+        await expectLater(
+          repository.addPlayer(' ADA\u00A0LOVELACE '),
+          throwsArgumentError,
+        );
+        await expectLater(
+          repository.renamePlayer(_player('p2'), 'Ada\u2007Lovelace'),
+          throwsArgumentError,
+        );
+
+        expect(database.insertPlayerCalls, 0);
+        expect(database.updatePlayerCalls, 0);
+        await repository.dispose();
+      },
+    );
   });
 }
 
 Player _player(String id) {
   return Player(id: id, name: id, createdAt: DateTime(2026), isPresent: true);
+}
+
+Player _playerWithName({required String id, required String name}) {
+  return Player(id: id, name: name, createdAt: DateTime(2026), isPresent: true);
 }

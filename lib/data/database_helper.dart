@@ -13,7 +13,7 @@ class DatabaseHelper {
 
   Future<Database> _open() async => openDatabase(
     join(await getDatabasesPath(), 'biliardino.db'),
-    version: 4,
+    version: 5,
     onCreate: _onCreate,
     onUpgrade: _onUpgrade,
   );
@@ -23,6 +23,7 @@ class DatabaseHelper {
       CREATE TABLE players (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
+        name_key TEXT NOT NULL,
         created_at INTEGER NOT NULL,
         is_present INTEGER NOT NULL
       )
@@ -68,11 +69,13 @@ class DatabaseHelper {
     }
     if (oldVersion < 4) {
       await migratePlayersToUniqueNames(db);
-      await _createIndexes(db);
+    }
+    if (oldVersion < 5) {
+      await migratePlayersToPersistedUniqueNameKeys(db);
     }
   }
 
-  Future<void> _createIndexes(Database db) async {
+  static Future<void> _createIndexes(Database db) async {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_matches_played_at ON matches(played_at)',
     );
@@ -88,12 +91,46 @@ class DatabaseHelper {
     for (final player in renamedPlayers) {
       await db.update(
         'players',
-        {'name': player.name},
+        {
+          'name': player.name,
+          if (await _hasColumn(db, table: 'players', column: 'name_key'))
+            'name_key': Player.normalizedNameKey(player.name),
+        },
         where: 'id = ?',
         whereArgs: [player.id],
       );
     }
-    await _createPlayersNameIndex(db);
+  }
+
+  static Future<void> migratePlayersToPersistedNameKeys(Database db) async {
+    final hasNameKey = await _hasColumn(
+      db,
+      table: 'players',
+      column: 'name_key',
+    );
+    if (!hasNameKey) {
+      await db.execute("ALTER TABLE players ADD COLUMN name_key TEXT");
+    }
+
+    final players = await db.query('players');
+    for (final row in players) {
+      final player = _PlayerRow.fromMap(row);
+      await db.update(
+        'players',
+        {'name_key': Player.normalizedNameKey(player.name)},
+        where: 'id = ?',
+        whereArgs: [player.id],
+      );
+    }
+  }
+
+  static Future<void> migratePlayersToPersistedUniqueNameKeys(
+    Database db,
+  ) async {
+    await migratePlayersToPersistedNameKeys(db);
+    await migratePlayersToUniqueNames(db);
+    await _dropLegacyPlayersNameIndex(db);
+    await _createIndexes(db);
   }
 
   Future<List<Player>> getPlayers() async {
@@ -106,8 +143,8 @@ class DatabaseHelper {
     final rows = await (await _database).query(
       'players',
       columns: const ['id'],
-      where: 'TRIM(name) = ? COLLATE NOCASE',
-      whereArgs: [name.trim()],
+      where: 'name_key = ?',
+      whereArgs: [Player.normalizedNameKey(name)],
       limit: 1,
     );
     return rows.isNotEmpty;
@@ -170,16 +207,29 @@ class DatabaseHelper {
 
 Future<void> _createPlayersNameIndex(DatabaseExecutor db) {
   return db.execute(
-    'CREATE UNIQUE INDEX IF NOT EXISTS idx_players_name_nocase '
-    'ON players(TRIM(name) COLLATE NOCASE)',
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_players_name_key '
+    'ON players(name_key)',
   );
+}
+
+Future<void> _dropLegacyPlayersNameIndex(DatabaseExecutor db) {
+  return db.execute('DROP INDEX IF EXISTS idx_players_name_nocase');
+}
+
+Future<bool> _hasColumn(
+  DatabaseExecutor db, {
+  required String table,
+  required String column,
+}) async {
+  final rows = await db.rawQuery('PRAGMA table_info($table)');
+  return rows.any((row) => row['name'] == column);
 }
 
 List<_PlayerRow> _uniquePlayerNames(List<Map<String, Object?>> players) {
   final groups = <String, List<_PlayerRow>>{};
   for (final row in players) {
     final player = _PlayerRow.fromMap(row);
-    final normalizedName = player.name.trim().toLowerCase();
+    final normalizedName = Player.normalizedNameKey(player.name);
     groups.putIfAbsent(normalizedName, () => []).add(player);
   }
 
@@ -215,7 +265,7 @@ List<_PlayerRow> _uniquePlayerNames(List<Map<String, Object?>> players) {
               startSuffix: index + 1,
               usedNames: usedNames,
             );
-      usedNames.add(candidateName.toLowerCase());
+      usedNames.add(Player.normalizedNameKey(candidateName));
       if (candidateName != player.name) {
         renamedPlayers.add(player.copyWith(name: candidateName));
       }
@@ -229,13 +279,14 @@ String _nextAvailableName({
   required int startSuffix,
   required Set<String> usedNames,
 }) {
-  if (startSuffix == 1 && !usedNames.contains(baseName.toLowerCase())) {
+  if (startSuffix == 1 &&
+      !usedNames.contains(Player.normalizedNameKey(baseName))) {
     return baseName;
   }
   var suffix = startSuffix < 2 ? 2 : startSuffix;
   while (true) {
     final candidateName = '$baseName ($suffix)';
-    if (!usedNames.contains(candidateName.toLowerCase())) {
+    if (!usedNames.contains(Player.normalizedNameKey(candidateName))) {
       return candidateName;
     }
     suffix += 1;
@@ -254,11 +305,7 @@ class _PlayerRow {
   final int createdAt;
 
   _PlayerRow copyWith({required String name}) {
-    return _PlayerRow(
-      id: id,
-      name: name,
-      createdAt: createdAt,
-    );
+    return _PlayerRow(id: id, name: name, createdAt: createdAt);
   }
 
   factory _PlayerRow.fromMap(Map<String, Object?> map) {

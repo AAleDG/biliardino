@@ -75,11 +75,11 @@ class PlayerRepository {
   }
 
   void _validateUniqueName(String name, {required String? ignoredPlayerId}) {
-    final normalized = name.toLowerCase();
+    final normalized = Player.normalizedNameKey(name);
     final exists = _cache.any(
       (player) =>
           player.id != ignoredPlayerId &&
-          player.name.trim().toLowerCase() == normalized,
+          Player.normalizedNameKey(player.name) == normalized,
     );
     if (exists) {
       throw ArgumentError.value(name, 'name', 'Player name already exists.');

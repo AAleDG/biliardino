@@ -93,14 +93,10 @@ class _HistoryViewState extends State<_HistoryView>
                           players: state.players,
                           anim: _ctrl,
                           delay: math.min(i, 8) * 0.08,
-                          onEdit: (match) => _openEditMatchDialog(
-                            context,
-                            match,
-                          ),
-                          onDelete: (match) => _confirmDeleteMatch(
-                            context,
-                            match,
-                          ),
+                          onEdit: (match) =>
+                              _openEditMatchDialog(context, match),
+                          onDelete: (match) =>
+                              _confirmDeleteMatch(context, match),
                         ),
                       ),
               ),
@@ -120,10 +116,8 @@ Future<void> _openEditMatchDialog(
   final state = cubit.state;
   final updatedMatch = await showDialog<GameMatch>(
     context: rootContext,
-    builder: (dialogContext) => _EditMatchDialog(
-      match: match,
-      players: state.players,
-    ),
+    builder: (dialogContext) =>
+        _EditMatchDialog(match: match, players: state.players),
   );
   if (updatedMatch == null || !rootContext.mounted) {
     return;
@@ -192,8 +186,8 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
   late bool _isRivalry;
   late List<String> _team1;
   late List<String> _team2;
-  late List<String> _team1Scorers;
-  late List<String> _team2Scorers;
+  late List<String?> _team1Scorers;
+  late List<String?> _team2Scorers;
   late final TextEditingController _dateController;
   late final TextEditingController _timeController;
   late final TextEditingController _score1Controller;
@@ -265,8 +259,9 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
                   Expanded(
                     child: TextField(
                       controller: _dateController,
-                      decoration:
-                          const InputDecoration(labelText: 'Data gg/mm/aaaa'),
+                      decoration: const InputDecoration(
+                        labelText: 'Data gg/mm/aaaa',
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -310,8 +305,9 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
                     child: TextField(
                       controller: _score1Controller,
                       keyboardType: TextInputType.number,
-                      decoration:
-                          const InputDecoration(labelText: 'Score squadra 1'),
+                      decoration: const InputDecoration(
+                        labelText: 'Score squadra 1',
+                      ),
                       onChanged: (_) => setState(_resizeScorers),
                     ),
                   ),
@@ -320,8 +316,9 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
                     child: TextField(
                       controller: _score2Controller,
                       keyboardType: TextInputType.number,
-                      decoration:
-                          const InputDecoration(labelText: 'Score squadra 2'),
+                      decoration: const InputDecoration(
+                        labelText: 'Score squadra 2',
+                      ),
                       onChanged: (_) => setState(_resizeScorers),
                     ),
                   ),
@@ -353,10 +350,7 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
               ),
               if (_error != null) ...[
                 const SizedBox(height: 8),
-                Text(
-                  _error!,
-                  style: const TextStyle(color: NttColors.warning),
-                ),
+                Text(_error!, style: const TextStyle(color: NttColors.warning)),
               ],
             ],
           ),
@@ -367,10 +361,7 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Annulla'),
         ),
-        ElevatedButton(
-          onPressed: _submit,
-          child: const Text('Salva'),
-        ),
+        ElevatedButton(onPressed: _submit, child: const Text('Salva')),
       ],
     );
   }
@@ -397,7 +388,9 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
       t2Score: score2,
       winningTeam: score1! > score2! ? 1 : 2,
       isRivalry: _isRivalry,
-      scorerIds: List.unmodifiable([..._team1Scorers, ..._team2Scorers]),
+      scorerIds: List.unmodifiable(
+        [..._team1Scorers, ..._team2Scorers].whereType<String>(),
+      ),
     );
     Navigator.of(context).pop(match);
   }
@@ -423,6 +416,10 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
     if (_team1Scorers.length != score1 || _team2Scorers.length != score2) {
       return 'Il numero di marcatori deve corrispondere allo score.';
     }
+    if (_team1Scorers.any((id) => id == null) ||
+        _team2Scorers.any((id) => id == null)) {
+      return 'Assegna tutti i marcatori prima di salvare.';
+    }
     if (!_team1Scorers.every(_team1.contains) ||
         !_team2Scorers.every(_team2.contains)) {
       return 'Ogni marcatore deve appartenere alla propria squadra.';
@@ -432,9 +429,9 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
 
   DateTime? _parsePlayedAt() {
     try {
-      final date = DateFormat('dd/MM/yyyy').parseStrict(
-        _dateController.text.trim(),
-      );
+      final date = DateFormat(
+        'dd/MM/yyyy',
+      ).parseStrict(_dateController.text.trim());
       final time = DateFormat('HH:mm').parseStrict(_timeController.text.trim());
       return DateTime(date.year, date.month, date.day, time.hour, time.minute);
     } on FormatException {
@@ -453,8 +450,12 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
   }
 
   void _sanitizeScorers() {
-    _team1Scorers = _team1Scorers.where(_team1.contains).toList();
-    _team2Scorers = _team2Scorers.where(_team2.contains).toList();
+    _team1Scorers = _team1Scorers
+        .map((id) => id == null || _team1.contains(id) ? id : null)
+        .toList();
+    _team2Scorers = _team2Scorers
+        .map((id) => id == null || _team2.contains(id) ? id : null)
+        .toList();
     _resizeScorers();
   }
 }
@@ -484,8 +485,9 @@ class _TeamEditor extends StatelessWidget {
         _FilterSectionLabel(title),
         const SizedBox(height: 6),
         ...List.generate(teamSize, (index) {
-          final selectedId =
-              index < selectedIds.length ? selectedIds[index] : null;
+          final selectedId = index < selectedIds.length
+              ? selectedIds[index]
+              : null;
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: DropdownButtonFormField<String>(
@@ -535,7 +537,7 @@ class _ScorersEditor extends StatelessWidget {
   final String title;
   final List<String> teamIds;
   final List<Player> players;
-  final List<String> scorerIds;
+  final List<String?> scorerIds;
   final void Function(int index, String playerId) onChanged;
 
   @override
@@ -553,7 +555,7 @@ class _ScorersEditor extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 8),
             child: DropdownButtonFormField<String>(
               key: ValueKey<String>(
-                '$title-${entry.key}-${entry.value}-${teamIds.join('|')}',
+                '$title-${entry.key}-${entry.value ?? 'none'}-${teamIds.join('|')}',
               ),
               initialValue: teamIds.contains(entry.value) ? entry.value : null,
               decoration: InputDecoration(labelText: 'Gol ${entry.key + 1}'),
@@ -578,9 +580,12 @@ class _ScorersEditor extends StatelessWidget {
   }
 }
 
-List<String> _scorersForTeam(GameMatch match, List<String> teamIds) {
+List<String?> _scorersForTeam(GameMatch match, List<String> teamIds) {
   final teamSet = teamIds.toSet();
-  return match.scorerIds.where(teamSet.contains).toList();
+  return match.scorerIds
+      .where(teamSet.contains)
+      .map<String?>((playerId) => playerId)
+      .toList();
 }
 
 List<String> _normalizedTeam(List<String> ids) {
@@ -596,16 +601,15 @@ int _currentScore(TextEditingController controller) {
 }
 
 void _fitTeamScorers(
-  List<String> scorerIds,
+  List<String?> scorerIds,
   List<String> teamIds,
   int targetGoals,
 ) {
   if (targetGoals < scorerIds.length) {
     scorerIds.removeRange(targetGoals, scorerIds.length);
   }
-  final fallbackScorerId = teamIds.isEmpty ? '' : teamIds.first;
   while (scorerIds.length < targetGoals) {
-    scorerIds.add(fallbackScorerId);
+    scorerIds.add(null);
   }
 }
 
@@ -1036,8 +1040,9 @@ class _SegmentedFilter<T> extends StatelessWidget {
                 ? NttColors.accent
                 : Colors.white.withValues(alpha: 0.06),
           ),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         );
       }).toList(),
     );
@@ -1086,7 +1091,8 @@ class _PlayerSelector extends StatelessWidget {
                     : Colors.white.withValues(alpha: 0.06),
               ),
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             ...players.map((player) {
               final selected = selectedPlayerId == player.id;
@@ -1096,8 +1102,9 @@ class _PlayerSelector extends StatelessWidget {
                 selected: selected,
                 onSelected: (_) => onSelected(player.id),
                 labelStyle: TextStyle(
-                  color:
-                      selected ? NttColors.surfaceDark : NttColors.textPrimary,
+                  color: selected
+                      ? NttColors.surfaceDark
+                      : NttColors.textPrimary,
                   fontSize: 13,
                   fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
                 ),
@@ -1218,18 +1225,21 @@ class _MatchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final timeLabel = DateFormat('HH:mm').format(match.playedAt);
     final baseModeLabel = match.mode == MatchMode.oneVsOne ? '1v1' : '2v2';
-    final modeLabel =
-        match.isRivalry ? 'Rivalita · $baseModeLabel' : baseModeLabel;
-    final t1Names =
-        match.team1.map((id) => StatsService.playerName(players, id)).toList();
-    final t2Names =
-        match.team2.map((id) => StatsService.playerName(players, id)).toList();
+    final modeLabel = match.isRivalry
+        ? 'Rivalita · $baseModeLabel'
+        : baseModeLabel;
+    final t1Names = match.team1
+        .map((id) => StatsService.playerName(players, id))
+        .toList();
+    final t2Names = match.team2
+        .map((id) => StatsService.playerName(players, id))
+        .toList();
     final winColor = match.winningTeam == 1 ? NttColors.team1 : NttColors.team2;
     final modeColor = match.isRivalry
         ? NttColors.team2
         : (match.mode == MatchMode.oneVsOne
-            ? NttColors.warning
-            : NttColors.accentSoft);
+              ? NttColors.warning
+              : NttColors.accentSoft);
 
     return Card(
       clipBehavior: Clip.antiAlias,

@@ -45,10 +45,14 @@ class _NewMatchViewState extends State<_NewMatchView> {
     return MultiBlocListener(
       listeners: [
         BlocListener<HomeCubit, int>(
-          listenWhen: (previous, current) => previous != current && current != 1,
+          listenWhen: (previous, current) =>
+              previous != current && current != 1,
           listener: (ctx, state) {
             _dismissVictoryOverlay();
-            ctx.read<NewMatchCubit>().acknowledgeVictory();
+            final cubit = ctx.read<NewMatchCubit>();
+            if (cubit.state.lastVictory != null) {
+              cubit.acknowledgeVictory();
+            }
           },
         ),
         BlocListener<NewMatchCubit, NewMatchState>(
@@ -69,8 +73,9 @@ class _NewMatchViewState extends State<_NewMatchView> {
               n.lastVictory != null && n.lastVictory != p.lastVictory,
           listener: (ctx, state) {
             final victory = state.lastVictory!;
-            final color =
-                victory.winningTeam == 1 ? NttColors.team1 : NttColors.team2;
+            final color = victory.winningTeam == 1
+                ? NttColors.team1
+                : NttColors.team2;
             _dismissVictoryOverlay();
             _victoryOverlay = Celebrations.showVictory(
               ctx,
@@ -179,10 +184,8 @@ class _NewMatchViewState extends State<_NewMatchView> {
 List<_MatchPlayer> _matchPlayers(List<Player> players, List<String> ids) {
   return ids
       .map(
-        (id) => _MatchPlayer(
-          id: id,
-          name: StatsService.playerName(players, id),
-        ),
+        (id) =>
+            _MatchPlayer(id: id, name: StatsService.playerName(players, id)),
       )
       .toList(growable: false);
 }
@@ -241,10 +244,7 @@ Future<void> _handleAddGoal(
                   const SizedBox(height: 6),
                   const Text(
                     'Assegna il gol al giocatore corretto.',
-                    style: TextStyle(
-                      color: NttColors.textMuted,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: NttColors.textMuted, fontSize: 13),
                   ),
                   const SizedBox(height: 14),
                   ...players.map(
@@ -420,10 +420,7 @@ class _Setup extends StatelessWidget {
             children: [
               const Icon(Icons.group_off, size: 64, color: NttColors.textFaint),
               const SizedBox(height: 16),
-              _MatchModeSelector(
-                selectedMode: mode,
-                onChanged: onModeChanged,
-              ),
+              _MatchModeSelector(selectedMode: mode, onChanged: onModeChanged),
               const SizedBox(height: 20),
               Text(
                 _playersNeededMessage(mode),
@@ -454,10 +451,7 @@ class _Setup extends StatelessWidget {
             children: [
               const _SectionLabel('MODALITA PARTITA'),
               const SizedBox(height: 8),
-              _MatchModeSelector(
-                selectedMode: mode,
-                onChanged: onModeChanged,
-              ),
+              _MatchModeSelector(selectedMode: mode, onChanged: onModeChanged),
               const SizedBox(height: 24),
               const _SectionLabel('COMPONI LE SQUADRE'),
               const SizedBox(height: 8),
@@ -524,8 +518,10 @@ class _Setup extends StatelessWidget {
                 final t2Full = team2.length >= mode.teamSize && a != 2;
                 return Card(
                   child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     child: Row(
                       children: [
                         PlayerAvatar(name: p.name),
@@ -640,8 +636,9 @@ class _Scoreboard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: NttColors.surfaceMid,
                   borderRadius: BorderRadius.circular(18),
-                  border:
-                      Border.all(color: Colors.white.withValues(alpha: 0.06)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.06),
+                  ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -650,8 +647,9 @@ class _Scoreboard extends StatelessWidget {
                       child: _TeamPanel(
                         label: 'SQUADRA 1',
                         color: NttColors.team1,
-                        playerNames:
-                            team1Players.map((player) => player.name).toList(),
+                        playerNames: team1Players
+                            .map((player) => player.name)
+                            .toList(),
                         score: score1,
                         enabled: !isSaving,
                         onAddGoal: () => onAddGoal(1, team1Players),
@@ -666,8 +664,9 @@ class _Scoreboard extends StatelessWidget {
                       child: _TeamPanel(
                         label: 'SQUADRA 2',
                         color: NttColors.team2,
-                        playerNames:
-                            team2Players.map((player) => player.name).toList(),
+                        playerNames: team2Players
+                            .map((player) => player.name)
+                            .toList(),
                         score: score2,
                         enabled: !isSaving,
                         onAddGoal: () => onAddGoal(2, team2Players),
@@ -694,9 +693,7 @@ class _Scoreboard extends StatelessWidget {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.flag),
-                label: Text(
-                  isSaving ? 'SALVATAGGIO...' : 'REGISTRA RISULTATO',
-                ),
+                label: Text(isSaving ? 'SALVATAGGIO...' : 'REGISTRA RISULTATO'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   textStyle: const TextStyle(
@@ -940,8 +937,9 @@ class _SetupTeamCard extends StatelessWidget {
         color: NttColors.surfaceMid,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color:
-              filled == capacity ? color : Colors.white.withValues(alpha: 0.08),
+          color: filled == capacity
+              ? color
+              : Colors.white.withValues(alpha: 0.08),
           width: filled == capacity ? 1.5 : 1,
         ),
       ),
@@ -1036,75 +1034,80 @@ class _MatchModeSelector extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxWidth < 360;
-        final children = _modeOptions.asMap().entries.map((entry) {
-          final index = entry.key;
-          final option = entry.value;
-          final selected = option.mode == selectedMode;
-          final card = InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: () => onChanged(option.mode),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: selected
-                    ? NttColors.accent.withValues(alpha: 0.12)
-                    : NttColors.surfaceMid,
+        final children = _modeOptions
+            .asMap()
+            .entries
+            .map((entry) {
+              final index = entry.key;
+              final option = entry.value;
+              final selected = option.mode == selectedMode;
+              final card = InkWell(
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: selected
-                      ? NttColors.accent
-                      : Colors.white.withValues(alpha: 0.08),
-                  width: selected ? 1.5 : 1,
+                onTap: () => onChanged(option.mode),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? NttColors.accent.withValues(alpha: 0.12)
+                        : NttColors.surfaceMid,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: selected
+                          ? NttColors.accent
+                          : Colors.white.withValues(alpha: 0.08),
+                      width: selected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        option.title,
+                        style: TextStyle(
+                          color: selected
+                              ? NttColors.accent
+                              : NttColors.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        option.description,
+                        style: const TextStyle(
+                          color: NttColors.textMuted,
+                          fontSize: 12,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    option.title,
-                    style: TextStyle(
-                      color:
-                          selected ? NttColors.accent : NttColors.textPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    option.description,
-                    style: const TextStyle(
-                      color: NttColors.textMuted,
-                      fontSize: 12,
-                      height: 1.35,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
+              );
 
-          if (compact) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: index == 0 ? 0 : 8,
-                right: index == _modeOptions.length - 1 ? 0 : 0,
-              ),
-              child: SizedBox(width: 172, child: card),
-            );
-          }
+              if (compact) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    left: index == 0 ? 0 : 8,
+                    right: index == _modeOptions.length - 1 ? 0 : 0,
+                  ),
+                  child: SizedBox(width: 172, child: card),
+                );
+              }
 
-          return Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(
-                left: index == 0 ? 0 : 6,
-                right: index == _modeOptions.length - 1 ? 0 : 6,
-              ),
-              child: card,
-            ),
-          );
-        }).toList(growable: false);
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: index == 0 ? 0 : 6,
+                    right: index == _modeOptions.length - 1 ? 0 : 6,
+                  ),
+                  child: card,
+                ),
+              );
+            })
+            .toList(growable: false);
 
         if (compact) {
           return SingleChildScrollView(
@@ -1412,8 +1415,9 @@ String _rivalryHeadline(
   if (overview.isTied) {
     return '$team1Name e $team2Name sono in parita: ${overview.team1Wins}-${overview.team2Wins} nei duelli diretti.';
   }
-  final leaderName =
-      overview.team1Wins > overview.team2Wins ? team1Name : team2Name;
+  final leaderName = overview.team1Wins > overview.team2Wins
+      ? team1Name
+      : team2Name;
   return '$leaderName conduce ${overview.team1Wins}-${overview.team2Wins}, con ${overview.team1Goals}-${overview.team2Goals} nei gol assegnati.';
 }
 

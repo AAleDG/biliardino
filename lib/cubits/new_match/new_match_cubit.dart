@@ -14,12 +14,14 @@ class NewMatchCubit extends Cubit<NewMatchState> {
   NewMatchCubit({
     required PlayerRepository playerRepository,
     required MatchRepository matchRepository,
-  })  : _playerRepo = playerRepository,
-        _matchRepo = matchRepository,
-        super(NewMatchState(
-          players: playerRepository.players,
-          matches: matchRepository.matches,
-        )) {
+  }) : _playerRepo = playerRepository,
+       _matchRepo = matchRepository,
+       super(
+         NewMatchState(
+           players: playerRepository.players,
+           matches: matchRepository.matches,
+         ),
+       ) {
     _playersSub = _playerRepo.watchPlayers().listen(_onPlayersChanged);
     _matchesSub = _matchRepo.watchMatches().listen(_onMatchesChanged);
   }
@@ -71,28 +73,29 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         ? NewMatchFeedback.playersUnavailable
         : fallbackFeedback;
 
-    emit(state.copyWith(
-      players: players,
-      assignment: assignment,
-      isRivalry: invalidated ? false : state.isRivalry,
-      kickedOff: interruptedMatch ? false : null,
-      scorerIds: interruptedMatch ? const [] : null,
-      score1: interruptedMatch ? 0 : null,
-      score2: interruptedMatch ? 0 : null,
-      isSaving: isSaving,
-      lastFeedback: feedbackKind != null
-          ? FeedbackEvent(
-              kind: feedbackKind,
-              signalId: _nextSignal(),
-            )
-          : state.lastFeedback,
-    ));
+    emit(
+      state.copyWith(
+        players: players,
+        assignment: assignment,
+        isRivalry: invalidated ? false : state.isRivalry,
+        kickedOff: interruptedMatch ? false : null,
+        scorerIds: interruptedMatch ? const [] : null,
+        score1: interruptedMatch ? 0 : null,
+        score2: interruptedMatch ? 0 : null,
+        isSaving: isSaving,
+        lastFeedback: feedbackKind != null
+            ? FeedbackEvent(kind: feedbackKind, signalId: _nextSignal())
+            : state.lastFeedback,
+      ),
+    );
   }
 
   void _feedback(NewMatchFeedback kind) {
-    emit(state.copyWith(
-      lastFeedback: FeedbackEvent(kind: kind, signalId: _nextSignal()),
-    ));
+    emit(
+      state.copyWith(
+        lastFeedback: FeedbackEvent(kind: kind, signalId: _nextSignal()),
+      ),
+    );
   }
 
   void setTeam(String playerId, int team) {
@@ -108,24 +111,25 @@ class NewMatchCubit extends Cubit<NewMatchState> {
       if (targetTeam.length >= state.mode.teamSize) return;
       current[playerId] = team;
     }
-    emit(state.copyWith(
-      assignment: Map.unmodifiable(current),
-      isRivalry: false,
-    ));
+    emit(
+      state.copyWith(assignment: Map.unmodifiable(current), isRivalry: false),
+    );
   }
 
   void setMatchMode(MatchMode mode) {
     if (state.kickedOff || state.isSaving || state.mode == mode) return;
-    emit(state.copyWith(
-      mode: mode,
-      isRivalry: false,
-      assignment: const {},
-      scorerIds: const [],
-      score1: 0,
-      score2: 0,
-      clearLastGoal: true,
-      clearLastFeedback: true,
-    ));
+    emit(
+      state.copyWith(
+        mode: mode,
+        isRivalry: false,
+        assignment: const {},
+        scorerIds: const [],
+        score1: 0,
+        score2: 0,
+        clearLastGoal: true,
+        clearLastFeedback: true,
+      ),
+    );
   }
 
   void setRivalry(bool enabled) {
@@ -152,27 +156,31 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     final scorerIds = List<String>.from(state.scorerIds)..add(scorerId);
 
     if (team == 1) {
-      emit(state.copyWith(
-        scorerIds: List.unmodifiable(scorerIds),
-        score1: state.score1 + 1,
-        lastGoal: GoalEvent(
-          team: 1,
-          scorerId: scorerId,
-          scorerName: scorerName,
-          signalId: _nextSignal(),
+      emit(
+        state.copyWith(
+          scorerIds: List.unmodifiable(scorerIds),
+          score1: state.score1 + 1,
+          lastGoal: GoalEvent(
+            team: 1,
+            scorerId: scorerId,
+            scorerName: scorerName,
+            signalId: _nextSignal(),
+          ),
         ),
-      ));
+      );
     } else if (team == 2) {
-      emit(state.copyWith(
-        scorerIds: List.unmodifiable(scorerIds),
-        score2: state.score2 + 1,
-        lastGoal: GoalEvent(
-          team: 2,
-          scorerId: scorerId,
-          scorerName: scorerName,
-          signalId: _nextSignal(),
+      emit(
+        state.copyWith(
+          scorerIds: List.unmodifiable(scorerIds),
+          score2: state.score2 + 1,
+          lastGoal: GoalEvent(
+            team: 2,
+            scorerId: scorerId,
+            scorerName: scorerName,
+            signalId: _nextSignal(),
+          ),
         ),
-      ));
+      );
     }
   }
 
@@ -188,15 +196,19 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     scorerIds.removeAt(removeIndex);
     HapticFeedback.selectionClick();
     if (team == 1 && state.score1 > 0) {
-      emit(state.copyWith(
-        scorerIds: List.unmodifiable(scorerIds),
-        score1: state.score1 - 1,
-      ));
+      emit(
+        state.copyWith(
+          scorerIds: List.unmodifiable(scorerIds),
+          score1: state.score1 - 1,
+        ),
+      );
     } else if (team == 2 && state.score2 > 0) {
-      emit(state.copyWith(
-        scorerIds: List.unmodifiable(scorerIds),
-        score2: state.score2 - 1,
-      ));
+      emit(
+        state.copyWith(
+          scorerIds: List.unmodifiable(scorerIds),
+          score2: state.score2 - 1,
+        ),
+      );
     }
   }
 
@@ -207,12 +219,14 @@ class NewMatchCubit extends Cubit<NewMatchState> {
 
   void abortMatch() {
     if (state.isSaving) return;
-    emit(state.copyWith(
-      kickedOff: false,
-      scorerIds: const [],
-      score1: 0,
-      score2: 0,
-    ));
+    emit(
+      state.copyWith(
+        kickedOff: false,
+        scorerIds: const [],
+        score1: 0,
+        score2: 0,
+      ),
+    );
   }
 
   Future<void> save() async {
@@ -231,11 +245,13 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     }
 
     final snapshot = _MatchSnapshot.fromState(state);
-    emit(state.copyWith(
-      isSaving: true,
-      clearLastFeedback: true,
-      clearLastVictory: true,
-    ));
+    emit(
+      state.copyWith(
+        isSaving: true,
+        clearLastFeedback: true,
+        clearLastVictory: true,
+      ),
+    );
 
     try {
       await _matchRepo.addMatch(
@@ -265,55 +281,63 @@ class NewMatchCubit extends Cubit<NewMatchState> {
 
     if (isClosed) return;
 
-    emit(state.copyWith(
-      isSaving: false,
-      lastVictory: snapshot.victory(signalId: _nextSignal()),
-    ));
+    emit(
+      state.copyWith(
+        isSaving: false,
+        lastVictory: snapshot.victory(signalId: _nextSignal()),
+      ),
+    );
   }
 
   void _feedbackAfterSaveFailure() {
-    emit(state.copyWith(
-      isSaving: false,
-      lastFeedback: FeedbackEvent(
-        kind: NewMatchFeedback.saveFailed,
-        signalId: _nextSignal(),
+    emit(
+      state.copyWith(
+        isSaving: false,
+        lastFeedback: FeedbackEvent(
+          kind: NewMatchFeedback.saveFailed,
+          signalId: _nextSignal(),
+        ),
       ),
-    ));
+    );
   }
 
   void acknowledgeVictory() {
-    if (state.isSaving) return;
+    if (state.isSaving || state.lastVictory == null) return;
     final players = _deferredPlayers ?? state.players;
     _deferredPlayers = null;
-    emit(state.copyWith(
-      players: players,
-      assignment: const {},
-      scorerIds: const [],
-      score1: 0,
-      score2: 0,
-      kickedOff: false,
-      clearLastGoal: true,
-      clearLastVictory: true,
-      clearLastFeedback: true,
-    ));
+    emit(
+      state.copyWith(
+        players: players,
+        assignment: const {},
+        scorerIds: const [],
+        score1: 0,
+        score2: 0,
+        kickedOff: false,
+        clearLastGoal: true,
+        clearLastVictory: true,
+        clearLastFeedback: true,
+      ),
+    );
   }
 
   void changeTeamsAfterVictory() {
     if (state.isSaving) return;
     final players = _deferredPlayers ?? state.players;
     _deferredPlayers = null;
-    emit(state.copyWith(
-      players: players,
-      assignment: const {},
-      scorerIds: const [],
-      score1: 0,
-      score2: 0,
-      kickedOff: false,
-      isRivalry: false,
-      clearLastGoal: true,
-      clearLastVictory: true,
-      clearLastFeedback: true,
-    ));
+    emit(
+      state.copyWith(
+        players: players,
+        assignment: const {},
+        scorerIds: const [],
+        score1: 0,
+        score2: 0,
+        kickedOff: false,
+        isRivalry: false,
+        clearLastGoal: true,
+        clearLastVictory: true,
+        clearLastFeedback: true,
+      ),
+    );
   }
 
   void rematchAfterVictory() {
@@ -333,28 +357,31 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         ),
       ),
     );
-    final teamsValid = assignment.values.where((team) => team == 1).length ==
+    final teamsValid =
+        assignment.values.where((team) => team == 1).length ==
             state.mode.teamSize &&
         assignment.values.where((team) => team == 2).length ==
             state.mode.teamSize;
-    emit(state.copyWith(
-      players: players,
-      assignment: assignment,
-      scorerIds: const [],
-      score1: 0,
-      score2: 0,
-      kickedOff: teamsValid,
-      isRivalry: teamsValid ? null : false,
-      clearLastGoal: true,
-      clearLastVictory: true,
-      lastFeedback: teamsValid
-          ? null
-          : FeedbackEvent(
-              kind: NewMatchFeedback.playersUnavailable,
-              signalId: _nextSignal(),
-            ),
-      clearLastFeedback: teamsValid,
-    ));
+    emit(
+      state.copyWith(
+        players: players,
+        assignment: assignment,
+        scorerIds: const [],
+        score1: 0,
+        score2: 0,
+        kickedOff: teamsValid,
+        isRivalry: teamsValid ? null : false,
+        clearLastGoal: true,
+        clearLastVictory: true,
+        lastFeedback: teamsValid
+            ? null
+            : FeedbackEvent(
+                kind: NewMatchFeedback.playersUnavailable,
+                signalId: _nextSignal(),
+              ),
+        clearLastFeedback: teamsValid,
+      ),
+    );
   }
 
   @override

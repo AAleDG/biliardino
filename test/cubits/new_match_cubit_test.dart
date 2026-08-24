@@ -44,167 +44,208 @@ void main() {
       await players.dispose();
     });
 
-    test('defers player invalidation until a successful save is acknowledged',
-        () async {
-      final initialPlayers = _players();
-      final players = _PlayerRepositoryFake(initialPlayers);
-      final matches = _MatchRepositoryFake();
-      final pendingSave = Completer<void>();
-      matches.onSave = (_) => pendingSave.future;
-      final cubit = _readyCubit(players: players, matches: matches);
+    test(
+      'defers player invalidation until a successful save is acknowledged',
+      () async {
+        final initialPlayers = _players();
+        final players = _PlayerRepositoryFake(initialPlayers);
+        final matches = _MatchRepositoryFake();
+        final pendingSave = Completer<void>();
+        matches.onSave = (_) => pendingSave.future;
+        final cubit = _readyCubit(players: players, matches: matches);
 
-      final save = cubit.save();
-      players.emit([
-        initialPlayers.first.copyWith(isPresent: false),
-        ...initialPlayers.skip(1),
-      ]);
-      await Future<void>.delayed(Duration.zero);
+        final save = cubit.save();
+        players.emit([
+          initialPlayers.first.copyWith(isPresent: false),
+          ...initialPlayers.skip(1),
+        ]);
+        await Future<void>.delayed(Duration.zero);
 
-      expect(cubit.state.isSaving, isTrue);
-      expect(cubit.state.kickedOff, isTrue);
-      expect(cubit.state.teamsValid, isTrue);
-      expect(cubit.state.lastFeedback, isNull);
+        expect(cubit.state.isSaving, isTrue);
+        expect(cubit.state.kickedOff, isTrue);
+        expect(cubit.state.teamsValid, isTrue);
+        expect(cubit.state.lastFeedback, isNull);
 
-      pendingSave.complete();
-      await save;
+        pendingSave.complete();
+        await save;
 
-      expect(cubit.state.lastVictory, isNotNull);
-      expect(cubit.state.lastFeedback, isNull);
-      expect(cubit.state.players.first.isPresent, isTrue);
+        expect(cubit.state.lastVictory, isNotNull);
+        expect(cubit.state.lastFeedback, isNull);
+        expect(cubit.state.players.first.isPresent, isTrue);
 
-      cubit.acknowledgeVictory();
+        cubit.acknowledgeVictory();
 
-      expect(cubit.state.lastVictory, isNull);
-      expect(cubit.state.assignment, isEmpty);
-      expect(cubit.state.players.first.isPresent, isFalse);
+        expect(cubit.state.lastVictory, isNull);
+        expect(cubit.state.assignment, isEmpty);
+        expect(cubit.state.players.first.isPresent, isFalse);
 
-      await cubit.close();
-      await players.dispose();
-    });
+        await cubit.close();
+        await players.dispose();
+      },
+    );
 
-    test('retains the active match after a failed save and allows retry',
-        () async {
-      final players = _PlayerRepositoryFake(_players());
-      final matches = _MatchRepositoryFake();
-      matches.onSave = (_) => Future<void>.error(StateError('database down'));
-      final cubit = _readyCubit(players: players, matches: matches);
+    test(
+      'retains the active match after a failed save and allows retry',
+      () async {
+        final players = _PlayerRepositoryFake(_players());
+        final matches = _MatchRepositoryFake();
+        matches.onSave = (_) => Future<void>.error(StateError('database down'));
+        final cubit = _readyCubit(players: players, matches: matches);
 
-      await cubit.save();
+        await cubit.save();
 
-      expect(cubit.state.isSaving, isFalse);
-      expect(cubit.state.kickedOff, isTrue);
-      expect(cubit.state.score1, 1);
-      expect(cubit.state.lastVictory, isNull);
-      expect(
-        cubit.state.lastFeedback?.kind,
-        NewMatchFeedback.saveFailed,
-      );
+        expect(cubit.state.isSaving, isFalse);
+        expect(cubit.state.kickedOff, isTrue);
+        expect(cubit.state.score1, 1);
+        expect(cubit.state.lastVictory, isNull);
+        expect(cubit.state.lastFeedback?.kind, NewMatchFeedback.saveFailed);
 
-      matches.onSave = (_) async {};
-      await cubit.save();
+        matches.onSave = (_) async {};
+        await cubit.save();
 
-      expect(matches.saved, hasLength(2));
-      expect(cubit.state.lastVictory, isNotNull);
+        expect(matches.saved, hasLength(2));
+        expect(cubit.state.lastVictory, isNotNull);
 
-      await cubit.close();
-      await players.dispose();
-    });
+        await cubit.close();
+        await players.dispose();
+      },
+    );
 
-    test('clears teams after choosing change teams from victory overlay',
-        () async {
-      final players = _PlayerRepositoryFake(_players());
-      final matches = _MatchRepositoryFake();
-      final cubit = _readyCubit(players: players, matches: matches);
+    test(
+      'ignores victory acknowledgement when no victory is pending',
+      () async {
+        final players = _PlayerRepositoryFake(_players());
+        final matches = _MatchRepositoryFake();
+        final cubit = NewMatchCubit(
+          playerRepository: players,
+          matchRepository: matches,
+        );
 
-      await cubit.save();
-      cubit.changeTeamsAfterVictory();
+        cubit
+          ..setTeam('p1', 1)
+          ..setTeam('p2', 1);
+        final assignment = Map<String, int>.from(cubit.state.assignment);
 
-      expect(cubit.state.lastVictory, isNull);
-      expect(cubit.state.assignment, isEmpty);
-      expect(cubit.state.kickedOff, isFalse);
-      expect(cubit.state.isRivalry, isFalse);
+        cubit.acknowledgeVictory();
 
-      await cubit.close();
-      await players.dispose();
-    });
+        expect(cubit.state.assignment, assignment);
+        expect(cubit.state.score1, 0);
+        expect(cubit.state.score2, 0);
+        expect(cubit.state.kickedOff, isFalse);
+        expect(cubit.state.lastVictory, isNull);
 
-    test('starts a rematch with same teams after victory overlay action',
-        () async {
-      final players = _PlayerRepositoryFake(_players());
-      final matches = _MatchRepositoryFake();
-      final cubit = _readyCubit(players: players, matches: matches);
+        await cubit.close();
+        await players.dispose();
+      },
+    );
 
-      await cubit.save();
-      final previousAssignment = Map<String, int>.from(cubit.state.assignment);
-      cubit.rematchAfterVictory();
+    test(
+      'clears teams after choosing change teams from victory overlay',
+      () async {
+        final players = _PlayerRepositoryFake(_players());
+        final matches = _MatchRepositoryFake();
+        final cubit = _readyCubit(players: players, matches: matches);
 
-      expect(cubit.state.lastVictory, isNull);
-      expect(cubit.state.assignment, previousAssignment);
-      expect(cubit.state.kickedOff, isTrue);
-      expect(cubit.state.score1, 0);
-      expect(cubit.state.score2, 0);
-      expect(cubit.state.scorerIds, isEmpty);
+        await cubit.save();
+        cubit.changeTeamsAfterVictory();
 
-      await cubit.close();
-      await players.dispose();
-    });
+        expect(cubit.state.lastVictory, isNull);
+        expect(cubit.state.assignment, isEmpty);
+        expect(cubit.state.kickedOff, isFalse);
+        expect(cubit.state.isRivalry, isFalse);
 
-    test('returns to setup when a deferred player invalidates a rematch',
-        () async {
-      final initialPlayers = _players();
-      final players = _PlayerRepositoryFake(initialPlayers);
-      final matches = _MatchRepositoryFake();
-      final pendingSave = Completer<void>();
-      matches.onSave = (_) => pendingSave.future;
-      final cubit = _readyCubit(players: players, matches: matches);
+        await cubit.close();
+        await players.dispose();
+      },
+    );
 
-      final save = cubit.save();
-      players.emit([
-        initialPlayers.first.copyWith(isPresent: false),
-        ...initialPlayers.skip(1),
-      ]);
-      await Future<void>.delayed(Duration.zero);
-      pendingSave.complete();
-      await save;
+    test(
+      'starts a rematch with same teams after victory overlay action',
+      () async {
+        final players = _PlayerRepositoryFake(_players());
+        final matches = _MatchRepositoryFake();
+        final cubit = _readyCubit(players: players, matches: matches);
 
-      cubit.rematchAfterVictory();
+        await cubit.save();
+        final previousAssignment = Map<String, int>.from(
+          cubit.state.assignment,
+        );
+        cubit.rematchAfterVictory();
 
-      expect(cubit.state.lastVictory, isNull);
-      expect(cubit.state.assignment, isNot(contains('p1')));
-      expect(cubit.state.kickedOff, isFalse);
-      expect(cubit.state.teamsValid, isFalse);
-      expect(
-          cubit.state.lastFeedback?.kind, NewMatchFeedback.playersUnavailable);
+        expect(cubit.state.lastVictory, isNull);
+        expect(cubit.state.assignment, previousAssignment);
+        expect(cubit.state.kickedOff, isTrue);
+        expect(cubit.state.score1, 0);
+        expect(cubit.state.score2, 0);
+        expect(cubit.state.scorerIds, isEmpty);
 
-      await cubit.close();
-      await players.dispose();
-    });
+        await cubit.close();
+        await players.dispose();
+      },
+    );
 
-    test('removes absent players and interrupts an invalidated match',
-        () async {
-      final initialPlayers = _players();
-      final players = _PlayerRepositoryFake(initialPlayers);
-      final matches = _MatchRepositoryFake();
-      final cubit = _readyCubit(players: players, matches: matches);
+    test(
+      'returns to setup when a deferred player invalidates a rematch',
+      () async {
+        final initialPlayers = _players();
+        final players = _PlayerRepositoryFake(initialPlayers);
+        final matches = _MatchRepositoryFake();
+        final pendingSave = Completer<void>();
+        matches.onSave = (_) => pendingSave.future;
+        final cubit = _readyCubit(players: players, matches: matches);
 
-      players.emit([
-        initialPlayers.first.copyWith(isPresent: false),
-        ...initialPlayers.skip(1),
-      ]);
-      await Future<void>.delayed(Duration.zero);
+        final save = cubit.save();
+        players.emit([
+          initialPlayers.first.copyWith(isPresent: false),
+          ...initialPlayers.skip(1),
+        ]);
+        await Future<void>.delayed(Duration.zero);
+        pendingSave.complete();
+        await save;
 
-      expect(cubit.state.assignment, isNot(contains('p1')));
-      expect(cubit.state.teamsValid, isFalse);
-      expect(cubit.state.kickedOff, isFalse);
-      expect(cubit.state.score1, 0);
-      expect(
-        cubit.state.lastFeedback?.kind,
-        NewMatchFeedback.playersUnavailable,
-      );
+        cubit.rematchAfterVictory();
 
-      await cubit.close();
-      await players.dispose();
-    });
+        expect(cubit.state.lastVictory, isNull);
+        expect(cubit.state.assignment, isNot(contains('p1')));
+        expect(cubit.state.kickedOff, isFalse);
+        expect(cubit.state.teamsValid, isFalse);
+        expect(
+          cubit.state.lastFeedback?.kind,
+          NewMatchFeedback.playersUnavailable,
+        );
+
+        await cubit.close();
+        await players.dispose();
+      },
+    );
+
+    test(
+      'removes absent players and interrupts an invalidated match',
+      () async {
+        final initialPlayers = _players();
+        final players = _PlayerRepositoryFake(initialPlayers);
+        final matches = _MatchRepositoryFake();
+        final cubit = _readyCubit(players: players, matches: matches);
+
+        players.emit([
+          initialPlayers.first.copyWith(isPresent: false),
+          ...initialPlayers.skip(1),
+        ]);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(cubit.state.assignment, isNot(contains('p1')));
+        expect(cubit.state.teamsValid, isFalse);
+        expect(cubit.state.kickedOff, isFalse);
+        expect(cubit.state.score1, 0);
+        expect(
+          cubit.state.lastFeedback?.kind,
+          NewMatchFeedback.playersUnavailable,
+        );
+
+        await cubit.close();
+        await players.dispose();
+      },
+    );
 
     test('rejects non-present players and overfilled teams', () async {
       final players = _PlayerRepositoryFake([
@@ -335,7 +376,7 @@ class _MatchRepositoryFake implements MatchRepository {
 
 class _PlayerRepositoryFake implements PlayerRepository {
   _PlayerRepositoryFake(List<Player> players)
-      : _players = List.unmodifiable(players);
+    : _players = List.unmodifiable(players);
 
   final StreamController<List<Player>> _controller =
       StreamController<List<Player>>.broadcast();

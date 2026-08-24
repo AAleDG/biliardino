@@ -26,50 +26,48 @@ void main() {
   setUpAll(() {
     registerFallbackValue(MatchMode.twoVsTwo);
     registerFallbackValue(<String>[]);
+    registerFallbackValue(_fallbackMatch());
+    registerFallbackValue('');
   });
 
   testWidgets('App si avvia e mostra la home', (WidgetTester tester) async {
     final repos = _Repos.build(players: const [], matches: const []);
-    await tester.pumpWidget(BiliardinoApp(
-      playerRepository: repos.playerRepo,
-      matchRepository: repos.matchRepo,
-    ));
+    await tester.pumpWidget(
+      BiliardinoApp(
+        playerRepository: repos.playerRepo,
+        matchRepository: repos.matchRepo,
+      ),
+    );
     await tester.pump();
     expect(find.byType(MaterialApp), findsOneWidget);
   });
 
   testWidgets(
-      'Le schermate principali non generano overflow su schermo piccolo',
-      (WidgetTester tester) async {
-    tester.view.physicalSize = const Size(320, 568);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+    'Le schermate principali non generano overflow su schermo piccolo',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    final sample = _sampleData();
-    await _pumpHome(
-      tester,
-      home: const HomeScreen(),
-      repos: sample,
-    );
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
-
-    for (final label in ['Partita', 'Storico', 'Classifica', 'Giocatori']) {
-      await tester.tap(find.text(label));
+      final sample = _sampleData();
+      await _pumpHome(tester, home: const HomeScreen(), repos: sample);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-    }
-  });
 
-  testWidgets('Lo storico raggruppa le partite per data',
-      (WidgetTester tester) async {
+      for (final label in ['Partita', 'Storico', 'Classifica', 'Giocatori']) {
+        await tester.tap(find.text(label));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
+
+  testWidgets('Lo storico raggruppa le partite per data', (
+    WidgetTester tester,
+  ) async {
     final sample = _sampleData();
-    await _pumpHome(
-      tester,
-      home: const HistoryScreen(),
-      repos: sample,
-    );
+    await _pumpHome(tester, home: const HistoryScreen(), repos: sample);
     await tester.pumpAndSettle();
 
     expect(find.text('17 giugno 2026'), findsOneWidget);
@@ -80,14 +78,11 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('La Rivalita compare solo a squadre complete e apre il popup',
-      (WidgetTester tester) async {
+  testWidgets('La Rivalita compare solo a squadre complete e apre il popup', (
+    WidgetTester tester,
+  ) async {
     final sample = _sampleData();
-    await _pumpHome(
-      tester,
-      home: const NewMatchScreen(),
-      repos: sample,
-    );
+    await _pumpHome(tester, home: const NewMatchScreen(), repos: sample);
     await tester.pumpAndSettle();
 
     expect(find.text('Attiva Rivalita'), findsNothing);
@@ -116,46 +111,47 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Attivare Rivalita?'), findsOneWidget);
-    expect(find.textContaining('Lo storico terra separati precedenti'),
-        findsOneWidget);
+    expect(
+      find.textContaining('Lo storico terra separati precedenti'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Lo storico mostra uno stato vuoto per filtro senza partite',
-      (WidgetTester tester) async {
+  testWidgets('Lo storico mostra uno stato vuoto per filtro senza partite', (
+    WidgetTester tester,
+  ) async {
     final sample = _sampleDataNoMatchPlayerFirst();
-    await _pumpHome(
-      tester,
-      home: const HistoryScreen(),
-      repos: sample,
-    );
+    await _pumpHome(tester, home: const HistoryScreen(), repos: sample);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('history-open-filters')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-player-p5')));
-    await tester
-        .ensureVisible(find.byKey(const ValueKey('history-apply-filters')));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('history-apply-filters')),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-apply-filters')));
     await tester.pumpAndSettle();
 
     expect(find.text('Nessuna partita trovata'), findsOneWidget);
-    expect(find.text('Tutti i risultati · Elena Riserva Straordinaria'),
-        findsWidgets);
-    expect(find.text('Cambia filtro per consultare altri risultati.'),
-        findsOneWidget);
+    expect(
+      find.text('Tutti i risultati · Elena Riserva Straordinaria'),
+      findsWidgets,
+    );
+    expect(
+      find.text('Cambia filtro per consultare altri risultati.'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Lo storico filtra le partite vinte da un giocatore',
-      (WidgetTester tester) async {
+  testWidgets('Lo storico filtra le partite vinte da un giocatore', (
+    WidgetTester tester,
+  ) async {
     final sample = _sampleData();
-    await _pumpHome(
-      tester,
-      home: const HistoryScreen(),
-      repos: sample,
-    );
+    await _pumpHome(tester, home: const HistoryScreen(), repos: sample);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('history-open-filters')));
@@ -163,16 +159,18 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('history-player-p1')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-filter-wins')));
-    await tester
-        .ensureVisible(find.byKey(const ValueKey('history-apply-filters')));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('history-apply-filters')),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-apply-filters')));
     await tester.pumpAndSettle();
 
     expect(find.text('Ultimi 30 giorni'), findsNothing);
     expect(
-        find.text('Tutti i risultati · Alessandro Antonio Delgaudio · Vinte'),
-        findsWidgets);
+      find.text('Tutti i risultati · Alessandro Antonio Delgaudio · Vinte'),
+      findsWidgets,
+    );
     expect(find.text('10'), findsOneWidget);
     expect(find.text('6'), findsNothing);
     expect(tester.takeException(), isNull);
@@ -180,18 +178,15 @@ void main() {
 
   testWidgets('Lo storico filtra le partite 1v1', (WidgetTester tester) async {
     final sample = _sampleDataMixedFormats();
-    await _pumpHome(
-      tester,
-      home: const HistoryScreen(),
-      repos: sample,
-    );
+    await _pumpHome(tester, home: const HistoryScreen(), repos: sample);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const ValueKey('history-open-filters')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-filter-oneVsOne')));
-    await tester
-        .ensureVisible(find.byKey(const ValueKey('history-apply-filters')));
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('history-apply-filters')),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('history-apply-filters')));
     await tester.pumpAndSettle();
@@ -204,8 +199,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('Due giocatori presenti sono pronti per una partita 1v1',
-      (WidgetTester tester) async {
+  testWidgets('Due giocatori presenti sono pronti per una partita 1v1', (
+    WidgetTester tester,
+  ) async {
     final now = DateTime(2026, 6, 17, 12);
     final repos = _Repos.build(
       players: [
@@ -214,11 +210,7 @@ void main() {
       ],
       matches: const [],
     );
-    await _pumpHome(
-      tester,
-      home: const PlayersScreen(),
-      repos: repos,
-    );
+    await _pumpHome(tester, home: const PlayersScreen(), repos: repos);
     await tester.pumpAndSettle();
 
     expect(find.text('2/2 presenti'), findsOneWidget);
@@ -227,44 +219,38 @@ void main() {
   });
 
   testWidgets(
-      'La classifica vuota per giocatori senza partite disabilita export CSV',
-      (WidgetTester tester) async {
-    final repos = _Repos.build(
-      players: [
-        Player(
-          id: 'solo',
-          name: 'Solo',
-          createdAt: DateTime(2026),
-          isPresent: true,
-        ),
-      ],
-      matches: const [],
-    );
-    await _pumpHome(
-      tester,
-      home: const LeaderboardScreen(),
-      repos: repos,
-    );
-    await tester.pumpAndSettle();
+    'La classifica vuota per giocatori senza partite disabilita export CSV',
+    (WidgetTester tester) async {
+      final repos = _Repos.build(
+        players: [
+          Player(
+            id: 'solo',
+            name: 'Solo',
+            createdAt: DateTime(2026),
+            isPresent: true,
+          ),
+        ],
+        matches: const [],
+      );
+      await _pumpHome(tester, home: const LeaderboardScreen(), repos: repos);
+      await tester.pumpAndSettle();
 
-    final exportButton = tester.widget<IconButton>(
-      find.byKey(const ValueKey('leaderboard-export-csv')),
-    );
+      final exportButton = tester.widget<IconButton>(
+        find.byKey(const ValueKey('leaderboard-export-csv')),
+      );
 
-    expect(find.text('Nessuna partita giocata'), findsOneWidget);
-    expect(find.text('Solo'), findsNothing);
-    expect(exportButton.onPressed, isNull);
-    expect(tester.takeException(), isNull);
-  });
+      expect(find.text('Nessuna partita giocata'), findsOneWidget);
+      expect(find.text('Solo'), findsNothing);
+      expect(exportButton.onPressed, isNull);
+      expect(tester.takeException(), isNull);
+    },
+  );
 
-  testWidgets('La vittoria sparisce quando si lascia il tab partita',
-      (WidgetTester tester) async {
+  testWidgets('La vittoria sparisce quando si lascia il tab partita', (
+    WidgetTester tester,
+  ) async {
     final repos = _sampleData();
-    await _pumpHome(
-      tester,
-      home: const HomeScreen(),
-      repos: repos,
-    );
+    await _pumpHome(tester, home: const HomeScreen(), repos: repos);
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Partita'));
@@ -292,13 +278,165 @@ void main() {
     expect(find.text('CLASSIFICA'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('Cambiare tab senza vittoria preserva la composizione', (
+    WidgetTester tester,
+  ) async {
+    final repos = _sampleData();
+    await _pumpHome(tester, home: const HomeScreen(), repos: repos);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Partita'));
+    await tester.pumpAndSettle();
+    await _assignTeam(tester, 'Alessandro Antonio Delgaudio', 'S1');
+    await _assignTeam(tester, 'Beatrice Lunghissimo Cognome', 'S1');
+
+    final cubit = tester.element(find.byType(HomeScreen)).read<NewMatchCubit>();
+    expect(cubit.state.assignment, {'p1': 1, 'p2': 1});
+
+    await tester.tap(find.text('Storico'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Partita'));
+    await tester.pumpAndSettle();
+
+    expect(cubit.state.assignment, {'p1': 1, 'p2': 1});
+    expect(cubit.state.kickedOff, isFalse);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Lo storico richiede marcatori legacy espliciti', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(900, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repos = _legacyScorerData();
+    await _pumpHome(tester, home: const HistoryScreen(), repos: repos);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Azioni partita'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Correggi'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Marcatori squadra 1'), findsOneWidget);
+    expect(_scorerDropdown('Gol 1'), findsOneWidget);
+
+    await tester.tap(find.text('Salva'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Assegna tutti i marcatori prima di salvare.'),
+      findsOneWidget,
+    );
+    expect(repos.updatedMatches, isEmpty);
+
+    await tester.ensureVisible(_scorerDropdown('Gol 1'));
+    await tester.pumpAndSettle();
+    await tester.tap(_scorerDropdown('Gol 1'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ale').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Salva'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Salva'));
+    await tester.pumpAndSettle();
+
+    expect(repos.updatedMatches, hasLength(1));
+    expect(repos.updatedMatches.single.scorerIds, ['p1']);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Lo storico non inventa marcatori mancanti parziali', (
+    WidgetTester tester,
+  ) async {
+    await _setTallTestViewport(tester);
+    final repos = _partialScorerData();
+    await _pumpHome(tester, home: const HistoryScreen(), repos: repos);
+    await tester.pumpAndSettle();
+    await _openFirstMatchEditDialog(tester);
+
+    expect(_scorerDropdown('Gol 1'), findsOneWidget);
+    expect(_scorerDropdown('Gol 2'), findsOneWidget);
+
+    await tester.tap(find.text('Salva'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Assegna tutti i marcatori prima di salvare.'),
+      findsOneWidget,
+    );
+    expect(repos.updatedMatches, isEmpty);
+
+    await _selectDropdownValue(
+      tester,
+      dropdown: _scorerDropdown('Gol 2'),
+      valueText: 'Ale',
+    );
+    await tester.ensureVisible(find.text('Salva'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Salva'));
+    await tester.pumpAndSettle();
+
+    expect(repos.updatedMatches, hasLength(1));
+    expect(repos.updatedMatches.single.scorerIds, ['p1', 'p1']);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Lo storico invalida marcatori se cambia la squadra', (
+    WidgetTester tester,
+  ) async {
+    await _setTallTestViewport(tester);
+    final repos = _teamChangeScorerData();
+    await _pumpHome(tester, home: const HistoryScreen(), repos: repos);
+    await tester.pumpAndSettle();
+    await _openFirstMatchEditDialog(tester);
+
+    await _selectDropdownValue(
+      tester,
+      dropdown: _dropdownByLabel('Giocatore 1').first,
+      valueText: 'Nora',
+    );
+    await tester.ensureVisible(find.text('Salva'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Salva'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Assegna tutti i marcatori prima di salvare.'),
+      findsOneWidget,
+    );
+    expect(repos.updatedMatches, isEmpty);
+
+    await _selectDropdownValue(
+      tester,
+      dropdown: _scorerDropdown('Gol 1'),
+      valueText: 'Bea',
+    );
+    await tester.ensureVisible(find.text('Salva'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Salva'));
+    await tester.pumpAndSettle();
+
+    expect(repos.updatedMatches, hasLength(1));
+    expect(repos.updatedMatches.single.team1, ['p5', 'p2']);
+    expect(repos.updatedMatches.single.scorerIds, ['p2']);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _Repos {
-  _Repos({required this.playerRepo, required this.matchRepo});
+  _Repos({
+    required this.playerRepo,
+    required this.matchRepo,
+    required this.updatedMatches,
+  });
 
   final PlayerRepository playerRepo;
   final MatchRepository matchRepo;
+  final List<GameMatch> updatedMatches;
 
   static _Repos build({
     required List<Player> players,
@@ -306,12 +444,15 @@ class _Repos {
   }) {
     final playerRepo = _MockPlayerRepository();
     final matchRepo = _MockMatchRepository();
+    final updatedMatches = <GameMatch>[];
     when(() => playerRepo.players).thenReturn(players);
-    when(() => playerRepo.watchPlayers())
-        .thenAnswer((_) => Stream.value(players));
+    when(
+      () => playerRepo.watchPlayers(),
+    ).thenAnswer((_) => Stream.value(players));
     when(() => matchRepo.matches).thenReturn(matches);
-    when(() => matchRepo.watchMatches())
-        .thenAnswer((_) => Stream.value(matches));
+    when(
+      () => matchRepo.watchMatches(),
+    ).thenAnswer((_) => Stream.value(matches));
     when(
       () => matchRepo.addMatch(
         mode: any(named: 'mode'),
@@ -323,8 +464,55 @@ class _Repos {
         scorerIds: any(named: 'scorerIds'),
       ),
     ).thenAnswer((_) async {});
-    return _Repos(playerRepo: playerRepo, matchRepo: matchRepo);
+    when(() => matchRepo.updateMatch(any())).thenAnswer((invocation) async {
+      updatedMatches.add(invocation.positionalArguments.single as GameMatch);
+    });
+    when(() => matchRepo.deleteMatch(any())).thenAnswer((_) async {});
+    return _Repos(
+      playerRepo: playerRepo,
+      matchRepo: matchRepo,
+      updatedMatches: updatedMatches,
+    );
   }
+}
+
+Finder _scorerDropdown(String label) {
+  return _dropdownByLabel(label);
+}
+
+Finder _dropdownByLabel(String label) {
+  return find.byWidgetPredicate(
+    (widget) =>
+        widget is DropdownButtonFormField<String> &&
+        widget.decoration.labelText == label,
+  );
+}
+
+Future<void> _setTallTestViewport(WidgetTester tester) async {
+  tester.view.physicalSize = const Size(900, 1200);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
+Future<void> _openFirstMatchEditDialog(WidgetTester tester) async {
+  await tester.tap(find.byTooltip('Azioni partita').first);
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Correggi'));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _selectDropdownValue(
+  WidgetTester tester, {
+  required Finder dropdown,
+  required String valueText,
+}) async {
+  await tester.ensureVisible(dropdown);
+  await tester.pumpAndSettle();
+  await tester.tap(dropdown);
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(valueText).last);
+  await tester.pumpAndSettle();
 }
 
 Future<void> _assignTeam(
@@ -338,9 +526,7 @@ Future<void> _assignTeam(
     of: find.text(playerName),
     matching: find.byType(Card),
   );
-  await tester.tap(
-    find.descendant(of: row, matching: find.text(chipLabel)),
-  );
+  await tester.tap(find.descendant(of: row, matching: find.text(chipLabel)));
   await tester.pumpAndSettle();
 }
 
@@ -374,10 +560,7 @@ Future<void> _pumpHome(
             ),
           ),
         ],
-        child: MaterialApp(
-          theme: AppTheme.dark(),
-          home: home,
-        ),
+        child: MaterialApp(theme: AppTheme.dark(), home: home),
       ),
     ),
   );
@@ -447,7 +630,7 @@ _Repos _sampleData() {
         'p3',
         'p4',
         'p3',
-        'p4'
+        'p4',
       ],
     ),
     GameMatch(
@@ -477,7 +660,7 @@ _Repos _sampleData() {
         'p2',
         'p4',
         'p2',
-        'p4'
+        'p4',
       ],
     ),
   ];
@@ -534,4 +717,95 @@ _Repos _sampleDataMixedFormats() {
     ),
   ];
   return _Repos.build(players: players, matches: matches);
+}
+
+_Repos _legacyScorerData() {
+  final now = DateTime(2026, 6, 17, 12);
+  final players = [
+    Player(id: 'p1', name: 'Ale', createdAt: now, isPresent: true),
+    Player(id: 'p2', name: 'Max', createdAt: now, isPresent: true),
+  ];
+  final matches = [
+    GameMatch(
+      id: 'legacy',
+      playedAt: now,
+      mode: MatchMode.oneVsOne,
+      t1p1: 'p1',
+      t1p2: '',
+      t2p1: 'p2',
+      t2p2: '',
+      t1Score: 1,
+      t2Score: 0,
+      winningTeam: 1,
+      scorerIds: const [],
+    ),
+  ];
+  return _Repos.build(players: players, matches: matches);
+}
+
+_Repos _partialScorerData() {
+  final now = DateTime(2026, 6, 17, 12);
+  final players = [
+    Player(id: 'p1', name: 'Ale', createdAt: now, isPresent: true),
+    Player(id: 'p2', name: 'Max', createdAt: now, isPresent: true),
+  ];
+  final matches = [
+    GameMatch(
+      id: 'partial',
+      playedAt: now,
+      mode: MatchMode.oneVsOne,
+      t1p1: 'p1',
+      t1p2: '',
+      t2p1: 'p2',
+      t2p2: '',
+      t1Score: 2,
+      t2Score: 0,
+      winningTeam: 1,
+      scorerIds: const ['p1'],
+    ),
+  ];
+  return _Repos.build(players: players, matches: matches);
+}
+
+_Repos _teamChangeScorerData() {
+  final now = DateTime(2026, 6, 17, 12);
+  final players = [
+    Player(id: 'p1', name: 'Ale', createdAt: now, isPresent: true),
+    Player(id: 'p2', name: 'Bea', createdAt: now, isPresent: true),
+    Player(id: 'p3', name: 'Ciro', createdAt: now, isPresent: true),
+    Player(id: 'p4', name: 'Dina', createdAt: now, isPresent: true),
+    Player(id: 'p5', name: 'Nora', createdAt: now, isPresent: true),
+  ];
+  final matches = [
+    GameMatch(
+      id: 'team-change',
+      playedAt: now,
+      mode: MatchMode.twoVsTwo,
+      t1p1: 'p1',
+      t1p2: 'p2',
+      t2p1: 'p3',
+      t2p2: 'p4',
+      t1Score: 1,
+      t2Score: 0,
+      winningTeam: 1,
+      scorerIds: const ['p1'],
+    ),
+  ];
+  return _Repos.build(players: players, matches: matches);
+}
+
+GameMatch _fallbackMatch() {
+  return GameMatch(
+    id: 'fallback',
+    playedAt: DateTime(2026),
+    mode: MatchMode.oneVsOne,
+    t1p1: 'p1',
+    t1p2: '',
+    t2p1: 'p2',
+    t2p2: '',
+    t1Score: 1,
+    t2Score: 0,
+    winningTeam: 1,
+    scorerIds: const ['p1'],
+  );
 }
