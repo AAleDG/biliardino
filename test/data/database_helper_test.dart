@@ -43,43 +43,43 @@ void main() {
     await database.close();
   });
 
-  test('migrates duplicate player names without losing match history',
+  test('renames duplicate player names without changing match identities',
       () async {
     await _insertPlayer(
       database,
-      id: 'old',
-      name: 'Mario',
+      id: 'marco-old',
+      name: 'Marco',
       createdAt: 1,
     );
     await _insertPlayer(
       database,
-      id: 'busy',
-      name: 'mario',
+      id: 'marco-new',
+      name: 'marco',
       createdAt: 2,
     );
     await _insertPlayer(
       database,
-      id: 'other',
-      name: 'Luigi',
+      id: 'existing-suffix',
+      name: 'Marco (2)',
       createdAt: 3,
     );
     await _insertMatch(
       database,
       id: 'm1',
-      t1p1: 'busy',
-      t1p2: 'other',
-      t2p1: 'p3',
+      t1p1: 'marco-old',
+      t1p2: 'existing-suffix',
+      t2p1: 'marco-new',
       t2p2: 'p4',
-      scorerIds: const ['busy', 'busy', 'busy', 'old'],
+      scorerIds: const ['marco-old', 'marco-new', 'marco-new'],
     );
     await _insertMatch(
       database,
       id: 'm2',
-      t1p1: 'old',
-      t1p2: 'other',
+      t1p1: 'marco-new',
+      t1p2: 'existing-suffix',
       t2p1: 'p3',
-      t2p2: 'p4',
-      scorerIds: const ['old'],
+      t2p2: 'marco-old',
+      scorerIds: const ['marco-new', 'marco-old'],
     );
 
     await DatabaseHelper.migratePlayersToUniqueNames(database);
@@ -87,17 +87,29 @@ void main() {
     final players = await database.query('players', orderBy: 'id');
     final matches = await database.query('matches', orderBy: 'id');
 
-    expect(players.map((row) => row['id']), ['busy', 'other']);
-    expect(matches[0]['t1p1'], 'busy');
-    expect(matches[0]['scorer_ids_json'], '["busy","busy","busy","busy"]');
-    expect(matches[1]['t1p1'], 'busy');
-    expect(matches[1]['scorer_ids_json'], '["busy"]');
+    expect(
+      players.map((row) => row['id']),
+      ['existing-suffix', 'marco-new', 'marco-old'],
+    );
+    expect(
+      players.map((row) => row['name']),
+      ['Marco (2)', 'Marco (3)', 'Marco'],
+    );
+    expect(matches[0]['t1p1'], 'marco-old');
+    expect(matches[0]['t2p1'], 'marco-new');
+    expect(
+      matches[0]['scorer_ids_json'],
+      '["marco-old","marco-new","marco-new"]',
+    );
+    expect(matches[1]['t1p1'], 'marco-new');
+    expect(matches[1]['t2p2'], 'marco-old');
+    expect(matches[1]['scorer_ids_json'], '["marco-new","marco-old"]');
     await expectLater(
       database.insert(
         'players',
         {
           'id': 'new',
-          'name': ' MARIO ',
+          'name': ' MARCO ',
           'created_at': 4,
           'is_present': 1,
         },
@@ -105,7 +117,6 @@ void main() {
       throwsA(isA<DatabaseException>()),
     );
   });
-
 }
 
 Future<void> _insertPlayer(

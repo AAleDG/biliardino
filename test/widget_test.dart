@@ -231,7 +231,12 @@ void main() {
       (WidgetTester tester) async {
     final repos = _Repos.build(
       players: [
-        Player(id: 'solo', name: 'Solo', createdAt: DateTime(2026)),
+        Player(
+          id: 'solo',
+          name: 'Solo',
+          createdAt: DateTime(2026),
+          isPresent: true,
+        ),
       ],
       matches: const [],
     );

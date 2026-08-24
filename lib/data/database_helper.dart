@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -86,24 +84,14 @@ class DatabaseHelper {
 
   static Future<void> migratePlayersToUniqueNames(Database db) async {
     final players = await db.query('players');
-    final matches = await db.query('matches');
-    final duplicateIdsByCanonicalId = _duplicatePlayerIdsByCanonicalId(
-      players: players,
-      matches: matches,
-    );
-    if (duplicateIdsByCanonicalId.isNotEmpty) {
-      final replacementById = <String, String>{};
-      for (final entry in duplicateIdsByCanonicalId.entries) {
-        for (final duplicateId in entry.value) {
-          replacementById[duplicateId] = entry.key;
-        }
-      }
-      await _rewriteMatchPlayerReferences(db, matches, replacementById);
-      for (final duplicateIds in duplicateIdsByCanonicalId.values) {
-        for (final duplicateId in duplicateIds) {
-          await db.delete('players', where: 'id = ?', whereArgs: [duplicateId]);
-        }
-      }
+    final renamedPlayers = _uniquePlayerNames(players);
+    for (final player in renamedPlayers) {
+      await db.update(
+        'players',
+        {'name': player.name},
+        where: 'id = ?',
+        whereArgs: [player.id],
+      );
     }
     await _createPlayersNameIndex(db);
   }
@@ -187,125 +175,71 @@ Future<void> _createPlayersNameIndex(DatabaseExecutor db) {
   );
 }
 
-Map<String, List<String>> _duplicatePlayerIdsByCanonicalId({
-  required List<Map<String, Object?>> players,
-  required List<Map<String, Object?>> matches,
-}) {
+List<_PlayerRow> _uniquePlayerNames(List<Map<String, Object?>> players) {
   final groups = <String, List<_PlayerRow>>{};
-  final referenceCounts = _playerReferenceCounts(matches);
   for (final row in players) {
     final player = _PlayerRow.fromMap(row);
     final normalizedName = player.name.trim().toLowerCase();
     groups.putIfAbsent(normalizedName, () => []).add(player);
   }
 
-  final duplicateIdsByCanonicalId = <String, List<String>>{};
-  for (final group in groups.values) {
+  final renamedPlayers = <_PlayerRow>[];
+  final usedNames = groups.keys.toSet();
+  final sortedGroupEntries = groups.entries.toList()
+    ..sort((a, b) => a.key.compareTo(b.key));
+  for (final entry in sortedGroupEntries) {
+    final group = entry.value;
     if (group.length < 2) {
       continue;
     }
+    usedNames.remove(entry.key);
     final sorted = [...group]
       ..sort((a, b) {
-        final byReferences = (referenceCounts[b.id] ?? 0).compareTo(
-          referenceCounts[a.id] ?? 0,
-        );
-        if (byReferences != 0) {
-          return byReferences;
-        }
         final byCreatedAt = a.createdAt.compareTo(b.createdAt);
         if (byCreatedAt != 0) {
           return byCreatedAt;
         }
         return a.id.compareTo(b.id);
       });
-    duplicateIdsByCanonicalId[sorted.first.id] = sorted
-        .skip(1)
-        .map((player) => player.id)
-        .toList(growable: false);
-  }
-  return duplicateIdsByCanonicalId;
-}
-
-Map<String, int> _playerReferenceCounts(List<Map<String, Object?>> matches) {
-  final counts = <String, int>{};
-  for (final match in matches) {
-    for (final column in const ['t1p1', 't1p2', 't2p1', 't2p2']) {
-      final id = match[column] as String;
-      if (id.trim().isNotEmpty) {
-        counts[id] = (counts[id] ?? 0) + 1;
+    final baseName = sorted.first.name.trim();
+    for (var index = 0; index < sorted.length; index += 1) {
+      final player = sorted[index];
+      final candidateName = index == 0
+          ? _nextAvailableName(
+              baseName: baseName,
+              startSuffix: 1,
+              usedNames: usedNames,
+            )
+          : _nextAvailableName(
+              baseName: baseName,
+              startSuffix: index + 1,
+              usedNames: usedNames,
+            );
+      usedNames.add(candidateName.toLowerCase());
+      if (candidateName != player.name) {
+        renamedPlayers.add(player.copyWith(name: candidateName));
       }
     }
-    for (final id in _scorerIdsFromMatch(match)) {
-      counts[id] = (counts[id] ?? 0) + 1;
-    }
   }
-  return counts;
+  return renamedPlayers;
 }
 
-Future<void> _rewriteMatchPlayerReferences(
-  Database db,
-  List<Map<String, Object?>> matches,
-  Map<String, String> replacementById,
-) async {
-  for (final match in matches) {
-    final updates = <String, Object?>{};
-    for (final column in const ['t1p1', 't1p2', 't2p1', 't2p2']) {
-      final id = match[column] as String;
-      final replacement = replacementById[id];
-      if (replacement != null) {
-        updates[column] = replacement;
-      }
-    }
-
-    final scorerIds = _scorerIdsFromMatch(match);
-    final rewrittenScorerIds = scorerIds
-        .map((id) => replacementById[id] ?? id)
-        .toList(growable: false);
-    if (!_sameStrings(scorerIds, rewrittenScorerIds)) {
-      updates['scorer_ids_json'] = jsonEncode(rewrittenScorerIds);
-    }
-
-    if (updates.isNotEmpty) {
-      await db.update(
-        'matches',
-        updates,
-        where: 'id = ?',
-        whereArgs: [match['id'] as String],
-      );
-    }
+String _nextAvailableName({
+  required String baseName,
+  required int startSuffix,
+  required Set<String> usedNames,
+}) {
+  if (startSuffix == 1 && !usedNames.contains(baseName.toLowerCase())) {
+    return baseName;
   }
-}
-
-List<String> _scorerIdsFromMatch(Map<String, Object?> match) {
-  final rawValue = match['scorer_ids_json'];
-  final rawJson = rawValue is String ? rawValue : '[]';
-  final decoded = jsonDecode(rawJson);
-  if (decoded is! List) {
-    throw FormatException('Invalid scorer_ids_json list', rawJson);
-  }
-  return decoded
-      .map((value) {
-        if (value is! String) {
-          throw FormatException(
-            'Invalid scorer ID in scorer_ids_json',
-            rawJson,
-          );
-        }
-        return value;
-      })
-      .toList(growable: false);
-}
-
-bool _sameStrings(List<String> first, List<String> second) {
-  if (first.length != second.length) {
-    return false;
-  }
-  for (var index = 0; index < first.length; index += 1) {
-    if (first[index] != second[index]) {
-      return false;
+  var suffix = startSuffix < 2 ? 2 : startSuffix;
+  while (true) {
+    final candidateName = '$baseName ($suffix)';
+    if (!usedNames.contains(candidateName.toLowerCase())) {
+      return candidateName;
     }
+    suffix += 1;
   }
-  return true;
 }
 
 class _PlayerRow {
@@ -318,6 +252,14 @@ class _PlayerRow {
   final String id;
   final String name;
   final int createdAt;
+
+  _PlayerRow copyWith({required String name}) {
+    return _PlayerRow(
+      id: id,
+      name: name,
+      createdAt: createdAt,
+    );
+  }
 
   factory _PlayerRow.fromMap(Map<String, Object?> map) {
     return _PlayerRow(

@@ -10,10 +10,9 @@ typedef ShareLauncher = Future<ShareResult> Function(ShareParams params);
 
 class CsvShareService {
   const CsvShareService({
-    required DirectoryProvider temporaryDirectory,
-    required ShareLauncher shareLauncher,
-  })  : _temporaryDirectory = temporaryDirectory,
-        _shareLauncher = shareLauncher;
+    required this.temporaryDirectory,
+    required this.shareLauncher,
+  });
 
   factory CsvShareService.platform() {
     return CsvShareService(
@@ -22,8 +21,8 @@ class CsvShareService {
     );
   }
 
-  final DirectoryProvider _temporaryDirectory;
-  final ShareLauncher _shareLauncher;
+  final DirectoryProvider temporaryDirectory;
+  final ShareLauncher shareLauncher;
 
   Future<File> shareCsv({
     required String csv,
@@ -39,10 +38,10 @@ class CsvShareService {
       throw ArgumentError.value(fileName, 'fileName', 'File name is required.');
     }
 
-    final directory = await _temporaryDirectory();
+    final directory = await temporaryDirectory();
     final file = File(p.join(directory.path, fileName));
     await file.writeAsString(csv);
-    await _shareLauncher(
+    await shareLauncher(
       ShareParams(
         files: [
           XFile(
