@@ -53,6 +53,14 @@ class HistoryCubit extends Cubit<HistoryState> {
     _recompute(filters: const HistoryFilters());
   }
 
+  Future<void> deleteMatch(GameMatch match) async {
+    await _matchRepo.deleteMatch(match.id);
+  }
+
+  Future<void> updateMatch(GameMatch match) async {
+    await _matchRepo.updateMatch(match);
+  }
+
   void _recompute({HistoryFilters? filters}) {
     final activeFilters = filters ?? state.filters;
     final now = _clock();

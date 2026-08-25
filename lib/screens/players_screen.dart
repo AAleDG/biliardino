@@ -6,6 +6,7 @@ import '../cubits/players/players_state.dart';
 import '../models/player.dart';
 import '../theme/app_theme.dart';
 import '../widgets/avatar.dart';
+import 'player_profile_screen.dart';
 
 class PlayersScreen extends StatelessWidget {
   const PlayersScreen({super.key});
@@ -54,6 +55,16 @@ class PlayersScreen extends StatelessWidget {
                                       .read<PlayersCubit>()
                                       .togglePresent(players[i]);
                                 },
+                          onRename: state.isMutating
+                              ? null
+                              : () => _showRenameDialog(context, players[i]),
+                          onOpenProfile: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => PlayerProfileScreen(
+                                playerId: players[i].id,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -69,6 +80,8 @@ String _feedbackText(PlayersFeedback feedback) {
   switch (feedback) {
     case PlayersFeedback.addFailed:
       return 'Impossibile aggiungere il giocatore. Riprova.';
+    case PlayersFeedback.renameFailed:
+      return 'Impossibile rinominare il giocatore. Controlla il nome.';
     case PlayersFeedback.presenceUpdateFailed:
       return 'Impossibile aggiornare la presenza. Riprova.';
   }
@@ -112,6 +125,41 @@ void _showAddDialog(BuildContext rootContext) {
   );
 }
 
+void _showRenameDialog(BuildContext rootContext, Player player) {
+  final cubit = rootContext.read<PlayersCubit>();
+  final controller = TextEditingController(text: player.name);
+  Future<void> submit(BuildContext ctx) async {
+    final renamed = await cubit.renamePlayer(player, controller.text);
+    if (renamed && ctx.mounted) {
+      Navigator.pop(ctx);
+    }
+  }
+
+  showDialog<void>(
+    context: rootContext,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Modifica nome'),
+      content: TextField(
+        controller: controller,
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        decoration: const InputDecoration(labelText: 'Nome'),
+        onSubmitted: (_) => submit(ctx),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Annulla'),
+        ),
+        ElevatedButton(
+          onPressed: () => submit(ctx),
+          child: const Text('Salva'),
+        ),
+      ],
+    ),
+  );
+}
+
 class _Summary extends StatelessWidget {
   const _Summary({required this.presentCount, required this.total});
 
@@ -145,16 +193,23 @@ class _Summary extends StatelessWidget {
 }
 
 class _PlayerRow extends StatelessWidget {
-  const _PlayerRow({required this.player, required this.onToggle});
+  const _PlayerRow({
+    required this.player,
+    required this.onToggle,
+    required this.onRename,
+    required this.onOpenProfile,
+  });
 
   final Player player;
   final VoidCallback? onToggle;
+  final VoidCallback? onRename;
+  final VoidCallback onOpenProfile;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        onTap: onToggle,
+        onTap: onOpenProfile,
         borderRadius: BorderRadius.circular(14),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -192,6 +247,34 @@ class _PlayerRow extends StatelessWidget {
                 value: player.isPresent,
                 onChanged: onToggle == null ? null : (_) => onToggle!(),
               ),
+              PopupMenuButton<_PlayerAction>(
+                tooltip: 'Azioni giocatore',
+                onSelected: (action) {
+                  switch (action) {
+                    case _PlayerAction.rename:
+                      onRename?.call();
+                    case _PlayerAction.profile:
+                      onOpenProfile();
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem<_PlayerAction>(
+                    value: _PlayerAction.profile,
+                    child: ListTile(
+                      leading: Icon(Icons.person_search),
+                      title: Text('Profilo'),
+                    ),
+                  ),
+                  PopupMenuItem<_PlayerAction>(
+                    enabled: onRename != null,
+                    value: _PlayerAction.rename,
+                    child: const ListTile(
+                      leading: Icon(Icons.edit),
+                      title: Text('Modifica nome'),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -199,6 +282,8 @@ class _PlayerRow extends StatelessWidget {
     );
   }
 }
+
+enum _PlayerAction { profile, rename }
 
 class _PresenceBadge extends StatelessWidget {
   const _PresenceBadge({super.key, required this.isPresent});
@@ -209,7 +294,6 @@ class _PresenceBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isPresent ? NttColors.success : NttColors.textFaint;
     return Row(
-      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 7,
@@ -222,13 +306,17 @@ class _PresenceBadge extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 6),
-        Text(
-          isPresent ? 'In ufficio' : 'Assente',
-          style: TextStyle(
-            color: color,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.4,
+        Flexible(
+          child: Text(
+            isPresent ? 'In ufficio' : 'Assente',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.4,
+            ),
           ),
         ),
       ],

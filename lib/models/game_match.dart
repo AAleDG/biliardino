@@ -13,10 +13,12 @@ enum MatchMode {
     if (value == 'rivalry') {
       return MatchMode.oneVsOne;
     }
-    return MatchMode.values.firstWhere(
-      (mode) => mode.dbValue == value,
-      orElse: () => MatchMode.twoVsTwo,
-    );
+    for (final mode in MatchMode.values) {
+      if (mode.dbValue == value) {
+        return mode;
+      }
+    }
+    throw FormatException('Unknown match_mode value: $value');
   }
 }
 
@@ -86,6 +88,35 @@ class GameMatch {
         isRivalry: (m['is_rivalry'] as int?) == 1 ||
             (m['match_mode'] as String?) == 'rivalry',
       );
+
+  GameMatch copyWith({
+    DateTime? playedAt,
+    MatchMode? mode,
+    String? t1p1,
+    String? t1p2,
+    String? t2p1,
+    String? t2p2,
+    int? t1Score,
+    int? t2Score,
+    int? winningTeam,
+    List<String>? scorerIds,
+    bool? isRivalry,
+  }) {
+    return GameMatch(
+      id: id,
+      playedAt: playedAt ?? this.playedAt,
+      mode: mode ?? this.mode,
+      t1p1: t1p1 ?? this.t1p1,
+      t1p2: t1p2 ?? this.t1p2,
+      t2p1: t2p1 ?? this.t2p1,
+      t2p2: t2p2 ?? this.t2p2,
+      t1Score: t1Score ?? this.t1Score,
+      t2Score: t2Score ?? this.t2Score,
+      winningTeam: winningTeam ?? this.winningTeam,
+      scorerIds: scorerIds ?? this.scorerIds,
+      isRivalry: isRivalry ?? this.isRivalry,
+    );
+  }
 
   static bool _isPlayerId(String value) => value.trim().isNotEmpty;
 }

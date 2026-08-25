@@ -60,6 +60,27 @@ class MatchRepository {
     _publish(await _db.getMatches());
   }
 
+  Future<void> updateMatch(GameMatch match) async {
+    _validateMatch(
+      mode: match.mode,
+      team1: match.team1,
+      team2: match.team2,
+      score1: match.t1Score,
+      score2: match.t2Score,
+      scorerIds: match.scorerIds,
+    );
+    await _db.updateMatch(match);
+    _publish(await _db.getMatches());
+  }
+
+  Future<void> deleteMatch(String id) async {
+    if (id.trim().isEmpty) {
+      throw ArgumentError.value(id, 'id', 'Match id cannot be empty.');
+    }
+    await _db.deleteMatch(id);
+    _publish(await _db.getMatches());
+  }
+
   Future<void> dispose() async {
     if (!_controller.isClosed) {
       await _controller.close();
@@ -82,13 +103,15 @@ class MatchRepository {
     required List<String> scorerIds,
   }) {
     if (team1.length != mode.teamSize || team2.length != mode.teamSize) {
-      throw ArgumentError('Each team must contain exactly ${mode.teamSize} players.');
+      throw ArgumentError(
+          'Each team must contain exactly ${mode.teamSize} players.');
     }
     final players = [...team1, ...team2];
     final expectedPlayers = mode.teamSize * 2;
     if (players.any((id) => id.trim().isEmpty) ||
         players.toSet().length != expectedPlayers) {
-      throw ArgumentError('A match requires $expectedPlayers distinct player IDs.');
+      throw ArgumentError(
+          'A match requires $expectedPlayers distinct player IDs.');
     }
     if (score1 < 0 || score2 < 0) {
       throw ArgumentError('Scores cannot be negative.');

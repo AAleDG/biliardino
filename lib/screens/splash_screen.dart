@@ -66,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen>
   void _goHome() {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
+      PageRouteBuilder<void>(
         transitionDuration: const Duration(milliseconds: 450),
         pageBuilder: (_, __, ___) => const HomeScreen(),
         transitionsBuilder: (_, animation, __, child) =>
