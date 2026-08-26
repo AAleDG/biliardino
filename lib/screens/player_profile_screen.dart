@@ -162,6 +162,14 @@ class _Relationships extends StatelessWidget {
   final PlayerProfileStats profile;
   final List<Player> players;
 
+  String relationshipNames(PlayerFrequency relationship) {
+    final names = relationship.playerIds
+        .map((id) => StatsService.playerName(players, id))
+        .toList();
+    names.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    return names.join(', ');
+  }
+
   @override
   Widget build(BuildContext context) {
     final teammate = profile.mostFrequentTeammate;
@@ -179,7 +187,7 @@ class _Relationships extends StatelessWidget {
             label: 'Compagno abituale',
             value: teammate == null
                 ? 'Non disponibile'
-                : StatsService.playerName(players, teammate.playerId),
+                : relationshipNames(teammate),
             matches: teammate?.matches,
           ),
         ),
@@ -190,7 +198,7 @@ class _Relationships extends StatelessWidget {
             label: 'Avversario abituale',
             value: opponent == null
                 ? 'Non disponibile'
-                : StatsService.playerName(players, opponent.playerId),
+                : relationshipNames(opponent),
             matches: opponent?.matches,
           ),
         ),

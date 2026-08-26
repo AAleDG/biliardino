@@ -65,18 +65,22 @@ class StatsService {
       Map<String, DateTime> lastPlayedAt,
     ) {
       if (counts.isEmpty) return null;
-      final entries = counts.entries.toList()
-        ..sort((a, b) {
-          final byCount = b.value.compareTo(a.value);
-          if (byCount != 0) return byCount;
-          final byRecency = lastPlayedAt[b.key]!.compareTo(
-            lastPlayedAt[a.key]!,
-          );
-          return byRecency != 0 ? byRecency : a.key.compareTo(b.key);
-        });
+      final highestCount = counts.values.reduce((a, b) => a > b ? a : b);
+      final mostRecent = counts.entries
+          .where((entry) => entry.value == highestCount)
+          .map((entry) => lastPlayedAt[entry.key]!)
+          .reduce((a, b) => a.isAfter(b) ? a : b);
+      final playerIds = counts.entries
+          .where(
+            (entry) =>
+                entry.value == highestCount &&
+                lastPlayedAt[entry.key] == mostRecent,
+          )
+          .map((entry) => entry.key)
+          .toList(growable: false);
       return PlayerFrequency(
-        playerId: entries.first.key,
-        matches: entries.first.value,
+        playerIds: List.unmodifiable(playerIds),
+        matches: highestCount,
       );
     }
 

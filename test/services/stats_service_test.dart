@@ -15,9 +15,9 @@ void main() {
       final profile = StatsService.computePlayerProfile(matches, 'p1');
 
       expect(profile.recentResults, [true, true, false]);
-      expect(profile.mostFrequentTeammate?.playerId, 'p2');
+      expect(profile.mostFrequentTeammate?.playerIds, ['p2']);
       expect(profile.mostFrequentTeammate?.matches, 2);
-      expect(profile.mostPlayedOpponent?.playerId, 'p4');
+      expect(profile.mostPlayedOpponent?.playerIds, ['p4']);
       expect(profile.mostPlayedOpponent?.matches, 3);
       final againstP3 = profile.headToHead.firstWhere(
         (item) => item.opponentId == 'p3',
@@ -56,8 +56,41 @@ void main() {
 
       final profile = StatsService.computePlayerProfile(matches, 'p1');
 
-      expect(profile.mostFrequentTeammate?.playerId, 'z-newer-teammate');
-      expect(profile.mostPlayedOpponent?.playerId, 'y-newer-opponent');
+      expect(profile.mostFrequentTeammate?.playerIds, ['z-newer-teammate']);
+      expect(profile.mostPlayedOpponent?.playerIds, {
+        'y-newer-opponent',
+        'z-newer-opponent',
+      });
+    });
+
+    test('keeps every exact tie regardless of player ID ordering', () {
+      final firstProfile = StatsService.computePlayerProfile([
+        _match(
+          'first',
+          DateTime(2026, 7, 2),
+          ['p1', 'teammate'],
+          ['z-opponent', 'a-opponent'],
+          1,
+        ),
+      ], 'p1');
+      final reversedProfile = StatsService.computePlayerProfile([
+        _match(
+          'reversed',
+          DateTime(2026, 7, 2),
+          ['p1', 'teammate'],
+          ['a-opponent', 'z-opponent'],
+          1,
+        ),
+      ], 'p1');
+
+      expect(firstProfile.mostPlayedOpponent?.playerIds, {
+        'a-opponent',
+        'z-opponent',
+      });
+      expect(reversedProfile.mostPlayedOpponent?.playerIds, {
+        'a-opponent',
+        'z-opponent',
+      });
     });
   });
 

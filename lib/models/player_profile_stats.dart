@@ -1,13 +1,13 @@
 import 'package:equatable/equatable.dart';
 
 class PlayerFrequency extends Equatable {
-  const PlayerFrequency({required this.playerId, required this.matches});
+  const PlayerFrequency({required this.playerIds, required this.matches});
 
-  final String playerId;
+  final List<String> playerIds;
   final int matches;
 
   @override
-  List<Object?> get props => [playerId, matches];
+  List<Object?> get props => [playerIds, matches];
 }
 
 class HeadToHeadStats extends Equatable {
