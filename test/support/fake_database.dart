@@ -15,6 +15,7 @@ class FakeDatabaseHelper implements DatabaseHelper {
   int insertPlayerCalls = 0;
   int updatePlayerCalls = 0;
   bool hasDuplicatePlayerName = false;
+  final Map<String, String> settings = {};
 
   @override
   Future<List<Player>> getPlayers() async => players;
@@ -48,5 +49,18 @@ class FakeDatabaseHelper implements DatabaseHelper {
   @override
   Future<void> deleteMatch(String id) async {
     deleteMatchCalls++;
+  }
+
+  @override
+  Future<Map<String, String>> getSettings(List<String> keys) async {
+    return {
+      for (final key in keys)
+        if (settings.containsKey(key)) key: settings[key]!,
+    };
+  }
+
+  @override
+  Future<void> setSettings(Map<String, String> values) async {
+    settings.addAll(values);
   }
 }

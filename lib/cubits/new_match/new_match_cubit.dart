@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../models/game_match.dart';
+import '../../models/match_rules.dart';
 import '../../models/player.dart';
 import '../../repositories/match_repository.dart';
+import '../../repositories/match_rules_repository.dart';
 import '../../repositories/player_repository.dart';
 import '../../services/stats_service.dart';
 import 'new_match_state.dart';
@@ -14,12 +16,15 @@ class NewMatchCubit extends Cubit<NewMatchState> {
   NewMatchCubit({
     required PlayerRepository playerRepository,
     required MatchRepository matchRepository,
+    required MatchRulesRepository matchRulesRepository,
   }) : _playerRepo = playerRepository,
        _matchRepo = matchRepository,
+       _rulesRepo = matchRulesRepository,
        super(
          NewMatchState(
            players: playerRepository.players,
            matches: matchRepository.matches,
+           rules: matchRulesRepository.rules,
          ),
        ) {
     _playersSub = _playerRepo.watchPlayers().listen(_onPlayersChanged);
@@ -28,6 +33,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
 
   final PlayerRepository _playerRepo;
   final MatchRepository _matchRepo;
+  final MatchRulesRepository _rulesRepo;
   late final StreamSubscription<List<Player>> _playersSub;
   late final StreamSubscription<List<GameMatch>> _matchesSub;
   List<Player>? _deferredPlayers;
@@ -82,6 +88,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         scorerIds: interruptedMatch ? const [] : null,
         score1: interruptedMatch ? 0 : null,
         score2: interruptedMatch ? 0 : null,
+        clearPendingVictory: interruptedMatch,
         isSaving: isSaving,
         lastFeedback: feedbackKind != null
             ? FeedbackEvent(kind: feedbackKind, signalId: _nextSignal())
@@ -132,6 +139,41 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     );
   }
 
+  Future<void> setRuleMode(MatchRuleMode mode) async {
+    if (state.kickedOff || state.isSaving || state.rules.mode == mode) return;
+    await _setRules(state.rules.copyWith(mode: mode));
+  }
+
+  Future<void> setTargetScore(int targetScore) async {
+    if (state.kickedOff || state.isSaving) return;
+    await _setRules(state.rules.copyWith(targetScore: targetScore));
+  }
+
+  Future<void> setWinByTwo(bool enabled) async {
+    if (state.kickedOff || state.isSaving || state.rules.winByTwo == enabled) {
+      return;
+    }
+    await _setRules(state.rules.copyWith(winByTwo: enabled));
+  }
+
+  Future<void> _setRules(MatchRules rules) async {
+    emit(state.copyWith(rules: rules, clearLastFeedback: true));
+    try {
+      await _rulesRepo.save(rules);
+    } on Object {
+      if (isClosed) return;
+      emit(
+        state.copyWith(
+          rules: _rulesRepo.rules,
+          lastFeedback: FeedbackEvent(
+            kind: NewMatchFeedback.saveFailed,
+            signalId: _nextSignal(),
+          ),
+        ),
+      );
+    }
+  }
+
   void setRivalry(bool enabled) {
     if (state.kickedOff || state.isSaving || !state.teamsValid) return;
     emit(state.copyWith(isRivalry: enabled));
@@ -144,22 +186,48 @@ class NewMatchCubit extends Cubit<NewMatchState> {
       return;
     }
     HapticFeedback.mediumImpact();
-    emit(state.copyWith(kickedOff: true, score1: 0, score2: 0));
+    emit(
+      state.copyWith(
+        kickedOff: true,
+        score1: 0,
+        score2: 0,
+        clearPendingVictory: true,
+      ),
+    );
   }
 
   void addGoal(int team, String scorerId) {
-    if (!state.kickedOff || state.isSaving || (team != 1 && team != 2)) return;
+    if (!state.kickedOff ||
+        state.isSaving ||
+        state.pendingVictory != null ||
+        (team != 1 && team != 2)) {
+      return;
+    }
     final teamPlayers = state.team(team);
     if (!teamPlayers.contains(scorerId)) return;
 
     final scorerName = StatsService.playerName(state.players, scorerId);
     final scorerIds = List<String>.from(state.scorerIds)..add(scorerId);
 
+    final score1 = team == 1 ? state.score1 + 1 : state.score1;
+    final score2 = team == 2 ? state.score2 + 1 : state.score2;
+    final winner = state.rules.winningTeam(score1: score1, score2: score2);
+    final pendingVictory = winner == null
+        ? null
+        : _MatchSnapshot.fromState(
+            state.copyWith(
+              scorerIds: List.unmodifiable(scorerIds),
+              score1: score1,
+              score2: score2,
+            ),
+          ).victory(signalId: _nextSignal());
+
     if (team == 1) {
       emit(
         state.copyWith(
           scorerIds: List.unmodifiable(scorerIds),
-          score1: state.score1 + 1,
+          score1: score1,
+          pendingVictory: pendingVictory,
           lastGoal: GoalEvent(
             team: 1,
             scorerId: scorerId,
@@ -172,7 +240,8 @@ class NewMatchCubit extends Cubit<NewMatchState> {
       emit(
         state.copyWith(
           scorerIds: List.unmodifiable(scorerIds),
-          score2: state.score2 + 1,
+          score2: score2,
+          pendingVictory: pendingVictory,
           lastGoal: GoalEvent(
             team: 2,
             scorerId: scorerId,
@@ -185,7 +254,9 @@ class NewMatchCubit extends Cubit<NewMatchState> {
   }
 
   void removeGoal(int team) {
-    if (!state.kickedOff || state.isSaving) return;
+    if (!state.kickedOff || state.isSaving || state.pendingVictory != null) {
+      return;
+    }
     final teamPlayers = state.team(team).toSet();
     if (teamPlayers.isEmpty) return;
 
@@ -214,7 +285,14 @@ class NewMatchCubit extends Cubit<NewMatchState> {
 
   void resetScore() {
     if (!state.kickedOff || state.isSaving) return;
-    emit(state.copyWith(score1: 0, score2: 0, scorerIds: const []));
+    emit(
+      state.copyWith(
+        score1: 0,
+        score2: 0,
+        scorerIds: const [],
+        clearPendingVictory: true,
+      ),
+    );
   }
 
   void abortMatch() {
@@ -225,12 +303,24 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         scorerIds: const [],
         score1: 0,
         score2: 0,
+        clearPendingVictory: true,
       ),
     );
   }
 
-  Future<void> save() async {
+  void correctScoreBeforeConfirmation() {
+    if (state.isSaving || state.pendingVictory == null) return;
+    emit(state.copyWith(clearPendingVictory: true));
+  }
+
+  Future<void> confirmAndSaveCompletedMatch() async {
+    if (state.pendingVictory == null) return;
+    await save(confirmedCompletion: true);
+  }
+
+  Future<void> save({bool confirmedCompletion = false}) async {
     if (state.isSaving || state.lastVictory != null) return;
+    if (state.pendingVictory != null && !confirmedCompletion) return;
     if (!state.kickedOff || !state.teamsValid) {
       _feedback(NewMatchFeedback.invalidTeams);
       return;
@@ -248,6 +338,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     emit(
       state.copyWith(
         isSaving: true,
+        clearPendingVictory: true,
         clearLastFeedback: true,
         clearLastVictory: true,
       ),
@@ -313,6 +404,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         score1: 0,
         score2: 0,
         kickedOff: false,
+        clearPendingVictory: true,
         clearLastGoal: true,
         clearLastVictory: true,
         clearLastFeedback: true,
@@ -333,6 +425,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         score2: 0,
         kickedOff: false,
         isRivalry: false,
+        clearPendingVictory: true,
         clearLastGoal: true,
         clearLastVictory: true,
         clearLastFeedback: true,
@@ -371,6 +464,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         score2: 0,
         kickedOff: teamsValid,
         isRivalry: teamsValid ? null : false,
+        clearPendingVictory: true,
         clearLastGoal: true,
         clearLastVictory: true,
         lastFeedback: teamsValid

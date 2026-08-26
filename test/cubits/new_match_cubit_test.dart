@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_state.dart';
 import 'package:biliardino/models/game_match.dart';
+import 'package:biliardino/models/match_rules.dart';
 import 'package:biliardino/models/player.dart';
 import 'package:biliardino/repositories/match_repository.dart';
+import 'package:biliardino/repositories/match_rules_repository.dart';
 import 'package:biliardino/repositories/player_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -15,9 +17,14 @@ void main() {
     test('persists one immutable snapshot while save is in progress', () async {
       final players = _PlayerRepositoryFake(_players());
       final matches = _MatchRepositoryFake();
+      final rules = _MatchRulesRepositoryFake();
       final pendingSave = Completer<void>();
       matches.onSave = (_) => pendingSave.future;
-      final cubit = _readyCubit(players: players, matches: matches);
+      final cubit = _readyCubit(
+        players: players,
+        matches: matches,
+        rules: rules,
+      );
 
       final firstSave = cubit.save();
       expect(cubit.state.isSaving, isTrue);
@@ -50,9 +57,14 @@ void main() {
         final initialPlayers = _players();
         final players = _PlayerRepositoryFake(initialPlayers);
         final matches = _MatchRepositoryFake();
+        final rules = _MatchRulesRepositoryFake();
         final pendingSave = Completer<void>();
         matches.onSave = (_) => pendingSave.future;
-        final cubit = _readyCubit(players: players, matches: matches);
+        final cubit = _readyCubit(
+          players: players,
+          matches: matches,
+          rules: rules,
+        );
 
         final save = cubit.save();
         players.emit([
@@ -89,8 +101,13 @@ void main() {
       () async {
         final players = _PlayerRepositoryFake(_players());
         final matches = _MatchRepositoryFake();
+        final rules = _MatchRulesRepositoryFake();
         matches.onSave = (_) => Future<void>.error(StateError('database down'));
-        final cubit = _readyCubit(players: players, matches: matches);
+        final cubit = _readyCubit(
+          players: players,
+          matches: matches,
+          rules: rules,
+        );
 
         await cubit.save();
 
@@ -119,6 +136,7 @@ void main() {
         final cubit = NewMatchCubit(
           playerRepository: players,
           matchRepository: matches,
+          matchRulesRepository: _MatchRulesRepositoryFake(),
         );
 
         cubit
@@ -144,7 +162,11 @@ void main() {
       () async {
         final players = _PlayerRepositoryFake(_players());
         final matches = _MatchRepositoryFake();
-        final cubit = _readyCubit(players: players, matches: matches);
+        final cubit = _readyCubit(
+          players: players,
+          matches: matches,
+          rules: _MatchRulesRepositoryFake(),
+        );
 
         await cubit.save();
         cubit.changeTeamsAfterVictory();
@@ -164,7 +186,11 @@ void main() {
       () async {
         final players = _PlayerRepositoryFake(_players());
         final matches = _MatchRepositoryFake();
-        final cubit = _readyCubit(players: players, matches: matches);
+        final cubit = _readyCubit(
+          players: players,
+          matches: matches,
+          rules: _MatchRulesRepositoryFake(),
+        );
 
         await cubit.save();
         final previousAssignment = Map<String, int>.from(
@@ -190,9 +216,14 @@ void main() {
         final initialPlayers = _players();
         final players = _PlayerRepositoryFake(initialPlayers);
         final matches = _MatchRepositoryFake();
+        final rules = _MatchRulesRepositoryFake();
         final pendingSave = Completer<void>();
         matches.onSave = (_) => pendingSave.future;
-        final cubit = _readyCubit(players: players, matches: matches);
+        final cubit = _readyCubit(
+          players: players,
+          matches: matches,
+          rules: rules,
+        );
 
         final save = cubit.save();
         players.emit([
@@ -225,7 +256,11 @@ void main() {
         final initialPlayers = _players();
         final players = _PlayerRepositoryFake(initialPlayers);
         final matches = _MatchRepositoryFake();
-        final cubit = _readyCubit(players: players, matches: matches);
+        final cubit = _readyCubit(
+          players: players,
+          matches: matches,
+          rules: _MatchRulesRepositoryFake(),
+        );
 
         players.emit([
           initialPlayers.first.copyWith(isPresent: false),
@@ -261,6 +296,7 @@ void main() {
       final cubit = NewMatchCubit(
         playerRepository: players,
         matchRepository: matches,
+        matchRulesRepository: _MatchRulesRepositoryFake(),
       );
 
       cubit.setTeam('p1', 1);
@@ -275,16 +311,125 @@ void main() {
       await cubit.close();
       await players.dispose();
     });
+
+    test('uses free scoring rules by default', () async {
+      final cubit = NewMatchCubit(
+        playerRepository: _PlayerRepositoryFake(_players()),
+        matchRepository: _MatchRepositoryFake(),
+        matchRulesRepository: _MatchRulesRepositoryFake(),
+      );
+
+      expect(cubit.state.rules, MatchRules.defaultRules);
+
+      await cubit.close();
+    });
+
+    test('persists rule changes before kickoff', () async {
+      final rules = _MatchRulesRepositoryFake();
+      final cubit = NewMatchCubit(
+        playerRepository: _PlayerRepositoryFake(_players()),
+        matchRepository: _MatchRepositoryFake(),
+        matchRulesRepository: rules,
+      );
+
+      await cubit.setRuleMode(MatchRuleMode.firstTo);
+      await cubit.setTargetScore(7);
+      await cubit.setWinByTwo(true);
+
+      expect(cubit.state.rules.mode, MatchRuleMode.firstTo);
+      expect(cubit.state.rules.targetScore, 7);
+      expect(cubit.state.rules.winByTwo, isTrue);
+      expect(rules.saved, hasLength(3));
+
+      await cubit.close();
+    });
+
+    test('ignores rule changes after kickoff', () async {
+      final rules = _MatchRulesRepositoryFake();
+      final cubit = _readyCubit(
+        players: _PlayerRepositoryFake(_players()),
+        matches: _MatchRepositoryFake(),
+        rules: rules,
+      );
+
+      await cubit.setRuleMode(MatchRuleMode.firstTo);
+      await cubit.setTargetScore(3);
+
+      expect(cubit.state.rules, MatchRules.defaultRules);
+      expect(rules.saved, isEmpty);
+
+      await cubit.close();
+    });
+
+    test(
+      'requires confirmation before saving a completed first-to match',
+      () async {
+        final matches = _MatchRepositoryFake();
+        final cubit = _readyCubit(
+          players: _PlayerRepositoryFake(_players()),
+          matches: matches,
+          rules: _MatchRulesRepositoryFake(
+            initialRules: const MatchRules(
+              mode: MatchRuleMode.firstTo,
+              targetScore: 2,
+              winByTwo: false,
+            ),
+          ),
+        );
+
+        cubit.addGoal(1, 'p2');
+        expect(cubit.state.pendingVictory?.winningTeam, 1);
+
+        cubit.addGoal(1, 'p1');
+        await cubit.save();
+
+        expect(cubit.state.score1, 2);
+        expect(matches.saved, isEmpty);
+
+        await cubit.confirmAndSaveCompletedMatch();
+
+        expect(matches.saved, hasLength(1));
+        expect(matches.saved.single.score1, 2);
+        expect(cubit.state.lastVictory?.winningTeam, 1);
+
+        await cubit.close();
+      },
+    );
+
+    test('allows score correction before confirmation', () async {
+      final cubit = _readyCubit(
+        players: _PlayerRepositoryFake(_players()),
+        matches: _MatchRepositoryFake(),
+        rules: _MatchRulesRepositoryFake(
+          initialRules: const MatchRules(
+            mode: MatchRuleMode.firstTo,
+            targetScore: 2,
+            winByTwo: false,
+          ),
+        ),
+      );
+
+      cubit.addGoal(1, 'p2');
+      cubit.correctScoreBeforeConfirmation();
+      cubit.removeGoal(1);
+
+      expect(cubit.state.pendingVictory, isNull);
+      expect(cubit.state.score1, 1);
+
+      await cubit.close();
+    });
   });
 }
 
 NewMatchCubit _readyCubit({
   required _PlayerRepositoryFake players,
   required _MatchRepositoryFake matches,
+  required _MatchRulesRepositoryFake rules,
 }) {
   final cubit = NewMatchCubit(
     playerRepository: players,
     matchRepository: matches,
+    matchRulesRepository: rules,
   );
   cubit
     ..setTeam('p1', 1)
@@ -294,6 +439,26 @@ NewMatchCubit _readyCubit({
     ..kickoff()
     ..addGoal(1, 'p1');
   return cubit;
+}
+
+class _MatchRulesRepositoryFake implements MatchRulesRepository {
+  _MatchRulesRepositoryFake({MatchRules initialRules = MatchRules.defaultRules})
+    : _rules = initialRules;
+
+  MatchRules _rules;
+  final List<MatchRules> saved = [];
+
+  @override
+  MatchRules get rules => _rules;
+
+  @override
+  Future<void> load() async {}
+
+  @override
+  Future<void> save(MatchRules rules) async {
+    _rules = rules;
+    saved.add(rules);
+  }
 }
 
 List<Player> _players() {
