@@ -79,6 +79,7 @@ class NewMatchState extends Equatable {
     this.score2 = 0,
     this.kickedOff = false,
     this.isSaving = false,
+    this.isPersistingRules = false,
     this.lastGoal,
     this.pendingVictory,
     this.lastVictory,
@@ -96,6 +97,7 @@ class NewMatchState extends Equatable {
   final int score2;
   final bool kickedOff;
   final bool isSaving;
+  final bool isPersistingRules;
   final GoalEvent? lastGoal;
   final VictoryEvent? pendingVictory;
   final VictoryEvent? lastVictory;
@@ -136,6 +138,7 @@ class NewMatchState extends Equatable {
     int? score2,
     bool? kickedOff,
     bool? isSaving,
+    bool? isPersistingRules,
     GoalEvent? lastGoal,
     VictoryEvent? pendingVictory,
     VictoryEvent? lastVictory,
@@ -157,6 +160,7 @@ class NewMatchState extends Equatable {
       score2: score2 ?? this.score2,
       kickedOff: kickedOff ?? this.kickedOff,
       isSaving: isSaving ?? this.isSaving,
+      isPersistingRules: isPersistingRules ?? this.isPersistingRules,
       lastGoal: clearLastGoal ? null : lastGoal ?? this.lastGoal,
       pendingVictory: clearPendingVictory
           ? null
@@ -181,6 +185,7 @@ class NewMatchState extends Equatable {
     score2,
     kickedOff,
     isSaving,
+    isPersistingRules,
     lastGoal,
     pendingVictory,
     lastVictory,

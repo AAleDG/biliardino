@@ -396,6 +396,42 @@ void main() {
       },
     );
 
+    test(
+      'restores pending victory after a completed match save fails',
+      () async {
+        final matches = _MatchRepositoryFake();
+        matches.onSave = (_) => Future<void>.error(StateError('database down'));
+        final cubit = _readyCubit(
+          players: _PlayerRepositoryFake(_players()),
+          matches: matches,
+          rules: _MatchRulesRepositoryFake(
+            initialRules: const MatchRules(
+              mode: MatchRuleMode.firstTo,
+              targetScore: 2,
+              winByTwo: false,
+            ),
+          ),
+        );
+
+        cubit.addGoal(1, 'p2');
+        await cubit.confirmAndSaveCompletedMatch();
+
+        expect(cubit.state.isSaving, isFalse);
+        expect(cubit.state.pendingVictory?.winningTeam, 1);
+        expect(cubit.state.pendingVictory?.winnerScore, 2);
+        expect(cubit.state.lastFeedback?.kind, NewMatchFeedback.saveFailed);
+
+        matches.onSave = (_) async {};
+        await cubit.confirmAndSaveCompletedMatch();
+
+        expect(matches.saved, hasLength(2));
+        expect(cubit.state.pendingVictory, isNull);
+        expect(cubit.state.lastVictory?.winningTeam, 1);
+
+        await cubit.close();
+      },
+    );
+
     test('allows score correction before confirmation', () async {
       final cubit = _readyCubit(
         players: _PlayerRepositoryFake(_players()),
@@ -415,6 +451,42 @@ void main() {
 
       expect(cubit.state.pendingVictory, isNull);
       expect(cubit.state.score1, 1);
+
+      await cubit.close();
+    });
+
+    test('blocks kickoff while rule persistence is pending', () async {
+      final rules = _MatchRulesRepositoryFake();
+      final pendingRuleSave = Completer<void>();
+      rules.onSave = (_) => pendingRuleSave.future;
+      final cubit = NewMatchCubit(
+        playerRepository: _PlayerRepositoryFake(_players()),
+        matchRepository: _MatchRepositoryFake(),
+        matchRulesRepository: rules,
+      );
+      cubit
+        ..setTeam('p1', 1)
+        ..setTeam('p2', 1)
+        ..setTeam('p3', 2)
+        ..setTeam('p4', 2);
+
+      final ruleSave = cubit.setRuleMode(MatchRuleMode.firstTo);
+      expect(cubit.state.isPersistingRules, isTrue);
+      expect(cubit.state.rules.mode, MatchRuleMode.firstTo);
+
+      await cubit.setTargetScore(7);
+      cubit.kickoff();
+
+      expect(cubit.state.rules.targetScore, 10);
+      expect(cubit.state.kickedOff, isFalse);
+      expect(rules.saved, hasLength(1));
+
+      pendingRuleSave.completeError(StateError('disk full'));
+      await ruleSave;
+
+      expect(cubit.state.isPersistingRules, isFalse);
+      expect(cubit.state.rules, MatchRules.defaultRules);
+      expect(cubit.state.lastFeedback?.kind, NewMatchFeedback.saveFailed);
 
       await cubit.close();
     });
@@ -446,6 +518,7 @@ class _MatchRulesRepositoryFake implements MatchRulesRepository {
     : _rules = initialRules;
 
   MatchRules _rules;
+  Future<void> Function(MatchRules rules)? onSave;
   final List<MatchRules> saved = [];
 
   @override
@@ -456,8 +529,9 @@ class _MatchRulesRepositoryFake implements MatchRulesRepository {
 
   @override
   Future<void> save(MatchRules rules) async {
-    _rules = rules;
     saved.add(rules);
+    await (onSave?.call(rules) ?? Future<void>.value());
+    _rules = rules;
   }
 }
 

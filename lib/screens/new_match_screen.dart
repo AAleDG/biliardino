@@ -186,7 +186,9 @@ class _NewMatchViewState extends State<_NewMatchView> {
                     onWinByTwoChanged: cubit.setWinByTwo,
                     onRivalryChanged: cubit.setRivalry,
                     onToggle: cubit.setTeam,
-                    onKickoff: state.teamsValid ? cubit.kickoff : null,
+                    onKickoff: state.teamsValid && !state.isPersistingRules
+                        ? cubit.kickoff
+                        : null,
                   ),
           );
         },

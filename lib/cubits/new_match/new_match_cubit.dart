@@ -124,7 +124,12 @@ class NewMatchCubit extends Cubit<NewMatchState> {
   }
 
   void setMatchMode(MatchMode mode) {
-    if (state.kickedOff || state.isSaving || state.mode == mode) return;
+    if (state.kickedOff ||
+        state.isSaving ||
+        state.isPersistingRules ||
+        state.mode == mode) {
+      return;
+    }
     emit(
       state.copyWith(
         mode: mode,
@@ -140,47 +145,71 @@ class NewMatchCubit extends Cubit<NewMatchState> {
   }
 
   Future<void> setRuleMode(MatchRuleMode mode) async {
-    if (state.kickedOff || state.isSaving || state.rules.mode == mode) return;
+    if (state.kickedOff ||
+        state.isSaving ||
+        state.isPersistingRules ||
+        state.rules.mode == mode) {
+      return;
+    }
     await _setRules(state.rules.copyWith(mode: mode));
   }
 
   Future<void> setTargetScore(int targetScore) async {
-    if (state.kickedOff || state.isSaving) return;
+    if (state.kickedOff || state.isSaving || state.isPersistingRules) return;
     await _setRules(state.rules.copyWith(targetScore: targetScore));
   }
 
   Future<void> setWinByTwo(bool enabled) async {
-    if (state.kickedOff || state.isSaving || state.rules.winByTwo == enabled) {
+    if (state.kickedOff ||
+        state.isSaving ||
+        state.isPersistingRules ||
+        state.rules.winByTwo == enabled) {
       return;
     }
     await _setRules(state.rules.copyWith(winByTwo: enabled));
   }
 
   Future<void> _setRules(MatchRules rules) async {
-    emit(state.copyWith(rules: rules, clearLastFeedback: true));
+    final previousRules = state.rules;
+    emit(
+      state.copyWith(
+        rules: rules,
+        isPersistingRules: true,
+        clearLastFeedback: true,
+      ),
+    );
     try {
       await _rulesRepo.save(rules);
     } on Object {
       if (isClosed) return;
       emit(
         state.copyWith(
-          rules: _rulesRepo.rules,
+          rules: previousRules,
+          isPersistingRules: false,
           lastFeedback: FeedbackEvent(
             kind: NewMatchFeedback.saveFailed,
             signalId: _nextSignal(),
           ),
         ),
       );
+      return;
     }
+    if (isClosed) return;
+    emit(state.copyWith(isPersistingRules: false));
   }
 
   void setRivalry(bool enabled) {
-    if (state.kickedOff || state.isSaving || !state.teamsValid) return;
+    if (state.kickedOff ||
+        state.isSaving ||
+        state.isPersistingRules ||
+        !state.teamsValid) {
+      return;
+    }
     emit(state.copyWith(isRivalry: enabled));
   }
 
   void kickoff() {
-    if (state.isSaving || state.kickedOff) return;
+    if (state.isSaving || state.isPersistingRules || state.kickedOff) return;
     if (!state.teamsValid) {
       _feedback(NewMatchFeedback.invalidTeams);
       return;
@@ -358,14 +387,20 @@ class NewMatchCubit extends Cubit<NewMatchState> {
       if (isClosed) return;
       final deferredPlayers = _deferredPlayers;
       _deferredPlayers = null;
+      final pendingVictory = confirmedCompletion
+          ? snapshot.victory(signalId: _nextSignal())
+          : null;
       if (deferredPlayers != null) {
         _reconcilePlayers(
           deferredPlayers,
           isSaving: false,
           fallbackFeedback: NewMatchFeedback.saveFailed,
         );
+        if (pendingVictory != null && state.kickedOff) {
+          emit(state.copyWith(pendingVictory: pendingVictory));
+        }
       } else {
-        _feedbackAfterSaveFailure();
+        _feedbackAfterSaveFailure(pendingVictory: pendingVictory);
       }
       return;
     }
@@ -380,10 +415,11 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     );
   }
 
-  void _feedbackAfterSaveFailure() {
+  void _feedbackAfterSaveFailure({VictoryEvent? pendingVictory}) {
     emit(
       state.copyWith(
         isSaving: false,
+        pendingVictory: pendingVictory,
         lastFeedback: FeedbackEvent(
           kind: NewMatchFeedback.saveFailed,
           signalId: _nextSignal(),
