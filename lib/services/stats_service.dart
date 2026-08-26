@@ -37,6 +37,8 @@ class StatsService {
     final teammateCounts = <String, int>{};
     final opponentCounts = <String, int>{};
     final opponentWins = <String, int>{};
+    final teammateLastPlayedAt = <String, DateTime>{};
+    final opponentLastPlayedAt = <String, DateTime>{};
 
     for (final match in personalMatches) {
       final playerTeam = match.team1.contains(playerId)
@@ -47,22 +49,30 @@ class StatsService {
           : match.team1;
       for (final teammateId in playerTeam.where((id) => id != playerId)) {
         teammateCounts[teammateId] = (teammateCounts[teammateId] ?? 0) + 1;
+        teammateLastPlayedAt.putIfAbsent(teammateId, () => match.playedAt);
       }
       for (final opponentId in opponentTeam) {
         opponentCounts[opponentId] = (opponentCounts[opponentId] ?? 0) + 1;
+        opponentLastPlayedAt.putIfAbsent(opponentId, () => match.playedAt);
         if (match.winners.contains(playerId)) {
           opponentWins[opponentId] = (opponentWins[opponentId] ?? 0) + 1;
         }
       }
     }
 
-    PlayerFrequency? mostFrequent(Map<String, int> counts) {
+    PlayerFrequency? mostFrequent(
+      Map<String, int> counts,
+      Map<String, DateTime> lastPlayedAt,
+    ) {
       if (counts.isEmpty) return null;
       final entries = counts.entries.toList()
         ..sort((a, b) {
           final byCount = b.value.compareTo(a.value);
-          // TODO: Confirm the product tie-break policy for equally frequent players.
-          return byCount != 0 ? byCount : a.key.compareTo(b.key);
+          if (byCount != 0) return byCount;
+          final byRecency = lastPlayedAt[b.key]!.compareTo(
+            lastPlayedAt[a.key]!,
+          );
+          return byRecency != 0 ? byRecency : a.key.compareTo(b.key);
         });
       return PlayerFrequency(
         playerId: entries.first.key,
@@ -90,8 +100,8 @@ class StatsService {
             .take(recentLimit)
             .map((match) => match.winners.contains(playerId)),
       ),
-      mostFrequentTeammate: mostFrequent(teammateCounts),
-      mostPlayedOpponent: mostFrequent(opponentCounts),
+      mostFrequentTeammate: mostFrequent(teammateCounts, teammateLastPlayedAt),
+      mostPlayedOpponent: mostFrequent(opponentCounts, opponentLastPlayedAt),
       headToHead: List.unmodifiable(headToHead),
     );
   }

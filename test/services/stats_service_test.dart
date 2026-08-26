@@ -35,6 +35,30 @@ void main() {
       expect(profile.mostPlayedOpponent, isNull);
       expect(profile.headToHead, isEmpty);
     });
+
+    test('breaks relationship frequency ties by most recent match', () {
+      final matches = [
+        _match(
+          'older',
+          DateTime(2026, 7, 1),
+          ['p1', 'a-older-teammate'],
+          ['a-older-opponent', 'b-older-opponent'],
+          1,
+        ),
+        _match(
+          'newer',
+          DateTime(2026, 7, 2),
+          ['p1', 'z-newer-teammate'],
+          ['y-newer-opponent', 'z-newer-opponent'],
+          1,
+        ),
+      ];
+
+      final profile = StatsService.computePlayerProfile(matches, 'p1');
+
+      expect(profile.mostFrequentTeammate?.playerId, 'z-newer-teammate');
+      expect(profile.mostPlayedOpponent?.playerId, 'y-newer-opponent');
+    });
   });
 
   group('StatsService rivalryOverview', () {
