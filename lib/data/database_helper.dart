@@ -13,7 +13,7 @@ class DatabaseHelper {
 
   Future<Database> _open() async => openDatabase(
     join(await getDatabasesPath(), 'biliardino.db'),
-    version: 5,
+    version: 6,
     onCreate: _onCreate,
     onUpgrade: _onUpgrade,
   );
@@ -44,6 +44,7 @@ class DatabaseHelper {
         is_rivalry INTEGER NOT NULL DEFAULT 0
       )
     ''');
+    await _createSettingsTable(db);
     await _createIndexes(db);
   }
 
@@ -72,6 +73,9 @@ class DatabaseHelper {
     }
     if (oldVersion < 5) {
       await migratePlayersToPersistedUniqueNameKeys(db);
+    }
+    if (oldVersion < 6) {
+      await _createSettingsTable(db);
     }
   }
 
@@ -203,6 +207,44 @@ class DatabaseHelper {
       throw StateError('Match delete failed for id=$id. Rows: $deletedRows');
     }
   }
+
+  Future<Map<String, String>> getSettings(List<String> keys) async {
+    final db = await _database;
+    if (keys.isEmpty) {
+      return const {};
+    }
+    final placeholders = List.filled(keys.length, '?').join(', ');
+    final rows = await db.query(
+      'settings',
+      columns: const ['key', 'value'],
+      where: 'key IN ($placeholders)',
+      whereArgs: keys,
+    );
+    return {
+      for (final row in rows) row['key'] as String: row['value'] as String,
+    };
+  }
+
+  Future<void> setSettings(Map<String, String> values) async {
+    final db = await _database;
+    await db.transaction((txn) async {
+      for (final entry in values.entries) {
+        await txn.insert('settings', {
+          'key': entry.key,
+          'value': entry.value,
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+    });
+  }
+}
+
+Future<void> _createSettingsTable(DatabaseExecutor db) {
+  return db.execute('''
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    )
+  ''');
 }
 
 Future<void> _createPlayersNameIndex(DatabaseExecutor db) {

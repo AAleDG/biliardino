@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../models/game_match.dart';
+import '../../models/match_rules.dart';
 import '../../models/player.dart';
 
 enum NewMatchFeedback {
@@ -46,8 +47,14 @@ class VictoryEvent extends Equatable {
   final int signalId;
 
   @override
-  List<Object?> get props =>
-      [winningTeam, winnerIds, winnerNames, winnerScore, loserScore, signalId];
+  List<Object?> get props => [
+    winningTeam,
+    winnerIds,
+    winnerNames,
+    winnerScore,
+    loserScore,
+    signalId,
+  ];
 }
 
 class FeedbackEvent extends Equatable {
@@ -64,6 +71,7 @@ class NewMatchState extends Equatable {
     this.players = const [],
     this.matches = const [],
     this.mode = MatchMode.twoVsTwo,
+    this.rules = MatchRules.defaultRules,
     this.isRivalry = false,
     this.assignment = const {},
     this.scorerIds = const [],
@@ -71,7 +79,9 @@ class NewMatchState extends Equatable {
     this.score2 = 0,
     this.kickedOff = false,
     this.isSaving = false,
+    this.isPersistingRules = false,
     this.lastGoal,
+    this.pendingVictory,
     this.lastVictory,
     this.lastFeedback,
   });
@@ -79,6 +89,7 @@ class NewMatchState extends Equatable {
   final List<Player> players;
   final List<GameMatch> matches;
   final MatchMode mode;
+  final MatchRules rules;
   final bool isRivalry;
   final Map<String, int> assignment;
   final List<String> scorerIds;
@@ -86,7 +97,9 @@ class NewMatchState extends Equatable {
   final int score2;
   final bool kickedOff;
   final bool isSaving;
+  final bool isPersistingRules;
   final GoalEvent? lastGoal;
+  final VictoryEvent? pendingVictory;
   final VictoryEvent? lastVictory;
   final FeedbackEvent? lastFeedback;
 
@@ -117,6 +130,7 @@ class NewMatchState extends Equatable {
     List<Player>? players,
     List<GameMatch>? matches,
     MatchMode? mode,
+    MatchRules? rules,
     bool? isRivalry,
     Map<String, int>? assignment,
     List<String>? scorerIds,
@@ -124,10 +138,13 @@ class NewMatchState extends Equatable {
     int? score2,
     bool? kickedOff,
     bool? isSaving,
+    bool? isPersistingRules,
     GoalEvent? lastGoal,
+    VictoryEvent? pendingVictory,
     VictoryEvent? lastVictory,
     FeedbackEvent? lastFeedback,
     bool clearLastGoal = false,
+    bool clearPendingVictory = false,
     bool clearLastVictory = false,
     bool clearLastFeedback = false,
   }) {
@@ -135,6 +152,7 @@ class NewMatchState extends Equatable {
       players: players ?? this.players,
       matches: matches ?? this.matches,
       mode: mode ?? this.mode,
+      rules: rules ?? this.rules,
       isRivalry: isRivalry ?? this.isRivalry,
       assignment: assignment ?? this.assignment,
       scorerIds: scorerIds ?? this.scorerIds,
@@ -142,27 +160,35 @@ class NewMatchState extends Equatable {
       score2: score2 ?? this.score2,
       kickedOff: kickedOff ?? this.kickedOff,
       isSaving: isSaving ?? this.isSaving,
+      isPersistingRules: isPersistingRules ?? this.isPersistingRules,
       lastGoal: clearLastGoal ? null : lastGoal ?? this.lastGoal,
+      pendingVictory: clearPendingVictory
+          ? null
+          : pendingVictory ?? this.pendingVictory,
       lastVictory: clearLastVictory ? null : lastVictory ?? this.lastVictory,
-      lastFeedback:
-          clearLastFeedback ? null : lastFeedback ?? this.lastFeedback,
+      lastFeedback: clearLastFeedback
+          ? null
+          : lastFeedback ?? this.lastFeedback,
     );
   }
 
   @override
   List<Object?> get props => [
-        players,
-        matches,
-        mode,
-        isRivalry,
-        assignment,
-        scorerIds,
-        score1,
-        score2,
-        kickedOff,
-        isSaving,
-        lastGoal,
-        lastVictory,
-        lastFeedback,
-      ];
+    players,
+    matches,
+    mode,
+    rules,
+    isRivalry,
+    assignment,
+    scorerIds,
+    score1,
+    score2,
+    kickedOff,
+    isSaving,
+    isPersistingRules,
+    lastGoal,
+    pendingVictory,
+    lastVictory,
+    lastFeedback,
+  ];
 }

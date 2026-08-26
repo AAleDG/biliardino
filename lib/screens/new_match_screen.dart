@@ -5,6 +5,7 @@ import '../cubits/home/home_cubit.dart';
 import '../cubits/new_match/new_match_cubit.dart';
 import '../cubits/new_match/new_match_state.dart';
 import '../models/game_match.dart';
+import '../models/match_rules.dart';
 import '../models/player.dart';
 import '../models/rivalry_overview.dart';
 import '../services/stats_service.dart';
@@ -66,6 +67,13 @@ class _NewMatchViewState extends State<_NewMatchView> {
                   ? 'RIVALITA · ${goal.scorerName.toUpperCase()}'
                   : '${goal.scorerName.toUpperCase()} · SQUADRA ${goal.team}',
             );
+          },
+        ),
+        BlocListener<NewMatchCubit, NewMatchState>(
+          listenWhen: (p, n) =>
+              n.pendingVictory != null && n.pendingVictory != p.pendingVictory,
+          listener: (ctx, state) {
+            _confirmCompletedMatch(ctx, state.pendingVictory!);
           },
         ),
         BlocListener<NewMatchCubit, NewMatchState>(
@@ -142,6 +150,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
             body: showScoreboard
                 ? _Scoreboard(
                     mode: state.mode,
+                    rules: state.rules,
                     isRivalry: state.isRivalry,
                     rivalry: state.isRivalry
                         ? StatsService.rivalryOverview(
@@ -155,6 +164,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
                     score1: state.score1,
                     score2: state.score2,
                     isSaving: state.isSaving,
+                    awaitingConfirmation: state.pendingVictory != null,
                     onAddGoal: (team, players) =>
                         _handleAddGoal(context, team, players),
                     onRemoveGoal: cubit.removeGoal,
@@ -164,20 +174,63 @@ class _NewMatchViewState extends State<_NewMatchView> {
                     players: state.players,
                     matches: state.matches,
                     mode: state.mode,
+                    rules: state.rules,
+                    isPersistingRules: state.isPersistingRules,
                     isRivalry: state.isRivalry,
                     present: state.present,
                     team1: state.team1,
                     team2: state.team2,
                     assignment: state.assignment,
                     onModeChanged: cubit.setMatchMode,
+                    onRuleModeChanged: cubit.setRuleMode,
+                    onTargetScoreChanged: cubit.setTargetScore,
+                    onWinByTwoChanged: cubit.setWinByTwo,
                     onRivalryChanged: cubit.setRivalry,
                     onToggle: cubit.setTeam,
-                    onKickoff: state.teamsValid ? cubit.kickoff : null,
+                    onKickoff: state.teamsValid && !state.isPersistingRules
+                        ? cubit.kickoff
+                        : null,
                   ),
           );
         },
       ),
     );
+  }
+}
+
+Future<void> _confirmCompletedMatch(
+  BuildContext context,
+  VictoryEvent victory,
+) async {
+  final cubit = context.read<NewMatchCubit>();
+  final confirmed = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Registrare la vittoria?'),
+      content: Text(
+        'Squadra ${victory.winningTeam} ha raggiunto la condizione di vittoria '
+        '${victory.winnerScore}-${victory.loserScore}.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text('Correggi'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: const Text('Registra'),
+        ),
+      ],
+    ),
+  );
+  if (!context.mounted) {
+    return;
+  }
+  if (confirmed ?? false) {
+    await cubit.confirmAndSaveCompletedMatch();
+  } else {
+    cubit.correctScoreBeforeConfirmation();
   }
 }
 
@@ -377,12 +430,17 @@ class _Setup extends StatelessWidget {
     required this.players,
     required this.matches,
     required this.mode,
+    required this.rules,
+    required this.isPersistingRules,
     required this.isRivalry,
     required this.present,
     required this.team1,
     required this.team2,
     required this.assignment,
     required this.onModeChanged,
+    required this.onRuleModeChanged,
+    required this.onTargetScoreChanged,
+    required this.onWinByTwoChanged,
     required this.onRivalryChanged,
     required this.onToggle,
     required this.onKickoff,
@@ -391,12 +449,17 @@ class _Setup extends StatelessWidget {
   final List<Player> players;
   final List<GameMatch> matches;
   final MatchMode mode;
+  final MatchRules rules;
+  final bool isPersistingRules;
   final bool isRivalry;
   final List<Player> present;
   final List<String> team1;
   final List<String> team2;
   final Map<String, int> assignment;
   final ValueChanged<MatchMode> onModeChanged;
+  final ValueChanged<MatchRuleMode> onRuleModeChanged;
+  final ValueChanged<int> onTargetScoreChanged;
+  final ValueChanged<bool> onWinByTwoChanged;
   final ValueChanged<bool> onRivalryChanged;
   final void Function(String id, int team) onToggle;
   final VoidCallback? onKickoff;
@@ -452,6 +515,16 @@ class _Setup extends StatelessWidget {
               const _SectionLabel('MODALITA PARTITA'),
               const SizedBox(height: 8),
               _MatchModeSelector(selectedMode: mode, onChanged: onModeChanged),
+              const SizedBox(height: 24),
+              const _SectionLabel('REGOLE PUNTEGGIO'),
+              const SizedBox(height: 8),
+              _MatchRulesSelector(
+                rules: rules,
+                isPersistingRules: isPersistingRules,
+                onModeChanged: onRuleModeChanged,
+                onTargetScoreChanged: onTargetScoreChanged,
+                onWinByTwoChanged: onWinByTwoChanged,
+              ),
               const SizedBox(height: 24),
               const _SectionLabel('COMPONI LE SQUADRE'),
               const SizedBox(height: 8),
@@ -586,6 +659,7 @@ class _Setup extends StatelessWidget {
 class _Scoreboard extends StatelessWidget {
   const _Scoreboard({
     required this.mode,
+    required this.rules,
     required this.isRivalry,
     required this.rivalry,
     required this.team1Players,
@@ -593,12 +667,14 @@ class _Scoreboard extends StatelessWidget {
     required this.score1,
     required this.score2,
     required this.isSaving,
+    required this.awaitingConfirmation,
     required this.onAddGoal,
     required this.onRemoveGoal,
     required this.onSave,
   });
 
   final MatchMode mode;
+  final MatchRules rules;
   final bool isRivalry;
   final RivalryOverview? rivalry;
   final List<_MatchPlayer> team1Players;
@@ -606,15 +682,25 @@ class _Scoreboard extends StatelessWidget {
   final int score1;
   final int score2;
   final bool isSaving;
+  final bool awaitingConfirmation;
   final Future<void> Function(int team, List<_MatchPlayer> players) onAddGoal;
   final void Function(int team) onRemoveGoal;
   final Future<void> Function() onSave;
 
   @override
   Widget build(BuildContext context) {
-    final canSave = !isSaving && score1 != score2 && (score1 > 0 || score2 > 0);
+    final canSave =
+        !isSaving &&
+        !awaitingConfirmation &&
+        rules.isFree &&
+        score1 != score2 &&
+        (score1 > 0 || score2 > 0);
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+          child: _RulesScoreboardBanner(rules: rules),
+        ),
         if (isRivalry &&
             rivalry != null &&
             team1Players.isNotEmpty &&
@@ -651,7 +737,7 @@ class _Scoreboard extends StatelessWidget {
                             .map((player) => player.name)
                             .toList(),
                         score: score1,
-                        enabled: !isSaving,
+                        enabled: !isSaving && !awaitingConfirmation,
                         onAddGoal: () => onAddGoal(1, team1Players),
                         onRemoveGoal: () => onRemoveGoal(1),
                       ),
@@ -668,7 +754,7 @@ class _Scoreboard extends StatelessWidget {
                             .map((player) => player.name)
                             .toList(),
                         score: score2,
-                        enabled: !isSaving,
+                        enabled: !isSaving && !awaitingConfirmation,
                         onAddGoal: () => onAddGoal(2, team2Players),
                         onRemoveGoal: () => onRemoveGoal(2),
                       ),
@@ -1119,6 +1205,148 @@ class _MatchModeSelector extends StatelessWidget {
 
         return Row(children: children);
       },
+    );
+  }
+}
+
+class _MatchRulesSelector extends StatelessWidget {
+  const _MatchRulesSelector({
+    required this.rules,
+    required this.isPersistingRules,
+    required this.onModeChanged,
+    required this.onTargetScoreChanged,
+    required this.onWinByTwoChanged,
+  });
+
+  final MatchRules rules;
+  final bool isPersistingRules;
+  final ValueChanged<MatchRuleMode> onModeChanged;
+  final ValueChanged<int> onTargetScoreChanged;
+  final ValueChanged<bool> onWinByTwoChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: NttColors.surfaceMid,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SegmentedButton<MatchRuleMode>(
+            segments: const [
+              ButtonSegment<MatchRuleMode>(
+                value: MatchRuleMode.free,
+                icon: Icon(Icons.all_inclusive),
+                label: Text('Libero'),
+              ),
+              ButtonSegment<MatchRuleMode>(
+                value: MatchRuleMode.firstTo,
+                icon: Icon(Icons.flag_outlined),
+                label: Text('Primo a N'),
+              ),
+            ],
+            selected: {rules.mode},
+            onSelectionChanged: isPersistingRules
+                ? null
+                : (selected) => onModeChanged(selected.single),
+          ),
+          if (rules.mode == MatchRuleMode.firstTo) ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Goal vittoria',
+                    style: TextStyle(
+                      color: NttColors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                IconButton.filledTonal(
+                  tooltip: 'Diminuisci',
+                  onPressed: isPersistingRules ||
+                          rules.targetScore <= MatchRules.minTargetScore
+                      ? null
+                      : () => onTargetScoreChanged(rules.targetScore - 1),
+                  icon: const Icon(Icons.remove),
+                ),
+                SizedBox(
+                  width: 54,
+                  child: Text(
+                    '${rules.targetScore}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: NttColors.textPrimary,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                IconButton.filledTonal(
+                  tooltip: 'Aumenta',
+                  onPressed: isPersistingRules ||
+                          rules.targetScore >= MatchRules.maxTargetScore
+                      ? null
+                      : () => onTargetScoreChanged(rules.targetScore + 1),
+                  icon: const Icon(Icons.add),
+                ),
+              ],
+            ),
+            Material(
+              color: Colors.transparent,
+              child: SwitchListTile.adaptive(
+                value: rules.winByTwo,
+                onChanged: isPersistingRules ? null : onWinByTwoChanged,
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Vinci con due goal di scarto'),
+                dense: true,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _RulesScoreboardBanner extends StatelessWidget {
+  const _RulesScoreboardBanner({required this.rules});
+
+  final MatchRules rules;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = rules.mode == MatchRuleMode.free
+        ? 'PUNTEGGIO LIBERO'
+        : rules.winByTwo
+        ? 'PRIMO A ${rules.targetScore} · +2'
+        : 'PRIMO A ${rules.targetScore}';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: NttColors.surfaceMid,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: NttColors.accent.withValues(alpha: 0.18)),
+      ),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: NttColors.accent,
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.6,
+        ),
+      ),
     );
   }
 }

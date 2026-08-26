@@ -4,8 +4,10 @@ import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/cubits/players/players_cubit.dart';
 import 'package:biliardino/main.dart';
 import 'package:biliardino/models/game_match.dart';
+import 'package:biliardino/models/match_rules.dart';
 import 'package:biliardino/models/player.dart';
 import 'package:biliardino/repositories/match_repository.dart';
+import 'package:biliardino/repositories/match_rules_repository.dart';
 import 'package:biliardino/repositories/player_repository.dart';
 import 'package:biliardino/screens/history_screen.dart';
 import 'package:biliardino/screens/home_screen.dart';
@@ -22,10 +24,13 @@ class _MockPlayerRepository extends Mock implements PlayerRepository {}
 
 class _MockMatchRepository extends Mock implements MatchRepository {}
 
+class _MockMatchRulesRepository extends Mock implements MatchRulesRepository {}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(MatchMode.twoVsTwo);
     registerFallbackValue(<String>[]);
+    registerFallbackValue(MatchRules.defaultRules);
     registerFallbackValue(_fallbackMatch());
     registerFallbackValue('');
   });
@@ -36,6 +41,7 @@ void main() {
       BiliardinoApp(
         playerRepository: repos.playerRepo,
         matchRepository: repos.matchRepo,
+        matchRulesRepository: repos.matchRulesRepo,
       ),
     );
     await tester.pump();
@@ -216,6 +222,85 @@ void main() {
     expect(find.text('2/2 presenti'), findsOneWidget);
     expect(find.text('Pronti a giocare'), findsOneWidget);
     expect(find.textContaining('Servono'), findsNothing);
+  });
+
+  testWidgets('Le regole partono da punteggio libero nel setup', (
+    WidgetTester tester,
+  ) async {
+    final repos = _sampleData();
+    await _pumpHome(tester, home: const NewMatchScreen(), repos: repos);
+    await tester.pumpAndSettle();
+
+    expect(find.text('REGOLE PUNTEGGIO'), findsOneWidget);
+    expect(find.text('Libero'), findsOneWidget);
+    expect(find.text('Primo a N'), findsOneWidget);
+    expect(find.text('Goal vittoria'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('First-to-N richiede conferma prima del salvataggio', (
+    WidgetTester tester,
+  ) async {
+    final repos = _sampleData(
+      rules: const MatchRules(
+        mode: MatchRuleMode.firstTo,
+        targetScore: 2,
+        winByTwo: false,
+      ),
+    );
+    await _pumpHome(tester, home: const NewMatchScreen(), repos: repos);
+    await tester.pumpAndSettle();
+
+    await _assignTeam(tester, 'Alessandro Antonio Delgaudio', 'S1');
+    await _assignTeam(tester, 'Beatrice Lunghissimo Cognome', 'S1');
+    await _assignTeam(tester, 'Cristiano Nome Molto Esteso', 'S2');
+    await _assignTeam(tester, 'Daniela Super Competitiva', 'S2');
+    await tester.tap(find.text('INIZIA PARTITA'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('PRIMO A 2'), findsOneWidget);
+    await tester.tap(find.text('+1 GOAL').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Alessandro Antonio Delgaudio').last);
+    await tester.pumpAndSettle(const Duration(milliseconds: 700));
+
+    expect(find.text('Registrare la vittoria?'), findsNothing);
+
+    await tester.tap(find.text('+1 GOAL').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Beatrice Lunghissimo Cognome').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Registrare la vittoria?'), findsOneWidget);
+    expect(find.text('Registra'), findsOneWidget);
+    verifyNever(
+      () => repos.matchRepo.addMatch(
+        mode: any(named: 'mode'),
+        isRivalry: any(named: 'isRivalry'),
+        team1: any(named: 'team1'),
+        team2: any(named: 'team2'),
+        score1: any(named: 'score1'),
+        score2: any(named: 'score2'),
+        scorerIds: any(named: 'scorerIds'),
+      ),
+    );
+
+    await tester.tap(find.text('Registra'));
+    await tester.pumpAndSettle();
+
+    verify(
+      () => repos.matchRepo.addMatch(
+        mode: MatchMode.twoVsTwo,
+        isRivalry: false,
+        team1: ['p1', 'p2'],
+        team2: ['p3', 'p4'],
+        score1: 2,
+        score2: 0,
+        scorerIds: ['p1', 'p2'],
+      ),
+    ).called(1);
+    expect(find.text('VITTORIA'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets(
@@ -431,19 +516,23 @@ class _Repos {
   _Repos({
     required this.playerRepo,
     required this.matchRepo,
+    required this.matchRulesRepo,
     required this.updatedMatches,
   });
 
   final PlayerRepository playerRepo;
   final MatchRepository matchRepo;
+  final MatchRulesRepository matchRulesRepo;
   final List<GameMatch> updatedMatches;
 
   static _Repos build({
     required List<Player> players,
     required List<GameMatch> matches,
+    MatchRules rules = MatchRules.defaultRules,
   }) {
     final playerRepo = _MockPlayerRepository();
     final matchRepo = _MockMatchRepository();
+    final matchRulesRepo = _MockMatchRulesRepository();
     final updatedMatches = <GameMatch>[];
     when(() => playerRepo.players).thenReturn(players);
     when(
@@ -468,9 +557,13 @@ class _Repos {
       updatedMatches.add(invocation.positionalArguments.single as GameMatch);
     });
     when(() => matchRepo.deleteMatch(any())).thenAnswer((_) async {});
+    when(() => matchRulesRepo.rules).thenReturn(rules);
+    when(() => matchRulesRepo.load()).thenAnswer((_) async {});
+    when(() => matchRulesRepo.save(any())).thenAnswer((_) async {});
     return _Repos(
       playerRepo: playerRepo,
       matchRepo: matchRepo,
+      matchRulesRepo: matchRulesRepo,
       updatedMatches: updatedMatches,
     );
   }
@@ -520,7 +613,15 @@ Future<void> _assignTeam(
   String playerName,
   String chipLabel,
 ) async {
-  await tester.ensureVisible(find.text(playerName));
+  if (find.text(playerName).evaluate().isEmpty) {
+    await tester.scrollUntilVisible(
+      find.text(playerName),
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
+  } else {
+    await tester.ensureVisible(find.text(playerName));
+  }
   await tester.pumpAndSettle();
   final row = find.ancestor(
     of: find.text(playerName),
@@ -540,6 +641,9 @@ Future<void> _pumpHome(
       providers: [
         RepositoryProvider<PlayerRepository>.value(value: repos.playerRepo),
         RepositoryProvider<MatchRepository>.value(value: repos.matchRepo),
+        RepositoryProvider<MatchRulesRepository>.value(
+          value: repos.matchRulesRepo,
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -557,6 +661,7 @@ Future<void> _pumpHome(
             create: (_) => NewMatchCubit(
               playerRepository: repos.playerRepo,
               matchRepository: repos.matchRepo,
+              matchRulesRepository: repos.matchRulesRepo,
             ),
           ),
         ],
@@ -566,7 +671,7 @@ Future<void> _pumpHome(
   );
 }
 
-_Repos _sampleData() {
+_Repos _sampleData({MatchRules rules = MatchRules.defaultRules}) {
   final now = DateTime(2026, 6, 17, 12);
   final players = [
     Player(
@@ -664,7 +769,7 @@ _Repos _sampleData() {
       ],
     ),
   ];
-  return _Repos.build(players: players, matches: matches);
+  return _Repos.build(players: players, matches: matches, rules: rules);
 }
 
 _Repos _sampleDataNoMatchPlayerFirst() {

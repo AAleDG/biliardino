@@ -1,21 +1,28 @@
 import 'package:biliardino/main.dart';
 import 'package:biliardino/models/game_match.dart';
+import 'package:biliardino/models/match_rules.dart';
 import 'package:biliardino/models/player.dart';
 import 'package:biliardino/repositories/match_repository.dart';
+import 'package:biliardino/repositories/match_rules_repository.dart';
 import 'package:biliardino/repositories/player_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('bootstrap shows a recoverable load failure and retries',
-      (tester) async {
+  testWidgets('bootstrap shows a recoverable load failure and retries', (
+    tester,
+  ) async {
     final players = _PlayerRepositoryFake()..loadError = StateError('offline');
     final matches = _MatchRepositoryFake();
+    final rules = _MatchRulesRepositoryFake();
 
-    await tester.pumpWidget(BiliardinoBootstrap(
-      playerRepository: players,
-      matchRepository: matches,
-    ));
+    await tester.pumpWidget(
+      BiliardinoBootstrap(
+        playerRepository: players,
+        matchRepository: matches,
+        matchRulesRepository: rules,
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Impossibile caricare i dati.'), findsOneWidget);
@@ -29,6 +36,7 @@ void main() {
     expect(find.byType(BiliardinoApp), findsOneWidget);
     expect(players.loadCalls, 2);
     expect(matches.loadCalls, 2);
+    expect(rules.loadCalls, 2);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -109,4 +117,19 @@ class _MatchRepositoryFake implements MatchRepository {
 
   @override
   Stream<List<GameMatch>> watchMatches() => Stream.value(const []);
+}
+
+class _MatchRulesRepositoryFake implements MatchRulesRepository {
+  int loadCalls = 0;
+
+  @override
+  MatchRules get rules => MatchRules.defaultRules;
+
+  @override
+  Future<void> load() async {
+    loadCalls++;
+  }
+
+  @override
+  Future<void> save(MatchRules rules) async {}
 }
