@@ -175,6 +175,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
                     matches: state.matches,
                     mode: state.mode,
                     rules: state.rules,
+                    isPersistingRules: state.isPersistingRules,
                     isRivalry: state.isRivalry,
                     present: state.present,
                     team1: state.team1,
@@ -430,6 +431,7 @@ class _Setup extends StatelessWidget {
     required this.matches,
     required this.mode,
     required this.rules,
+    required this.isPersistingRules,
     required this.isRivalry,
     required this.present,
     required this.team1,
@@ -448,6 +450,7 @@ class _Setup extends StatelessWidget {
   final List<GameMatch> matches;
   final MatchMode mode;
   final MatchRules rules;
+  final bool isPersistingRules;
   final bool isRivalry;
   final List<Player> present;
   final List<String> team1;
@@ -517,6 +520,7 @@ class _Setup extends StatelessWidget {
               const SizedBox(height: 8),
               _MatchRulesSelector(
                 rules: rules,
+                isPersistingRules: isPersistingRules,
                 onModeChanged: onRuleModeChanged,
                 onTargetScoreChanged: onTargetScoreChanged,
                 onWinByTwoChanged: onWinByTwoChanged,
@@ -1208,12 +1212,14 @@ class _MatchModeSelector extends StatelessWidget {
 class _MatchRulesSelector extends StatelessWidget {
   const _MatchRulesSelector({
     required this.rules,
+    required this.isPersistingRules,
     required this.onModeChanged,
     required this.onTargetScoreChanged,
     required this.onWinByTwoChanged,
   });
 
   final MatchRules rules;
+  final bool isPersistingRules;
   final ValueChanged<MatchRuleMode> onModeChanged;
   final ValueChanged<int> onTargetScoreChanged;
   final ValueChanged<bool> onWinByTwoChanged;
@@ -1245,7 +1251,9 @@ class _MatchRulesSelector extends StatelessWidget {
               ),
             ],
             selected: {rules.mode},
-            onSelectionChanged: (selected) => onModeChanged(selected.single),
+            onSelectionChanged: isPersistingRules
+                ? null
+                : (selected) => onModeChanged(selected.single),
           ),
           if (rules.mode == MatchRuleMode.firstTo) ...[
             const SizedBox(height: 14),
@@ -1263,7 +1271,8 @@ class _MatchRulesSelector extends StatelessWidget {
                 ),
                 IconButton.filledTonal(
                   tooltip: 'Diminuisci',
-                  onPressed: rules.targetScore <= MatchRules.minTargetScore
+                  onPressed: isPersistingRules ||
+                          rules.targetScore <= MatchRules.minTargetScore
                       ? null
                       : () => onTargetScoreChanged(rules.targetScore - 1),
                   icon: const Icon(Icons.remove),
@@ -1282,7 +1291,8 @@ class _MatchRulesSelector extends StatelessWidget {
                 ),
                 IconButton.filledTonal(
                   tooltip: 'Aumenta',
-                  onPressed: rules.targetScore >= MatchRules.maxTargetScore
+                  onPressed: isPersistingRules ||
+                          rules.targetScore >= MatchRules.maxTargetScore
                       ? null
                       : () => onTargetScoreChanged(rules.targetScore + 1),
                   icon: const Icon(Icons.add),
@@ -1293,7 +1303,7 @@ class _MatchRulesSelector extends StatelessWidget {
               color: Colors.transparent,
               child: SwitchListTile.adaptive(
                 value: rules.winByTwo,
-                onChanged: onWinByTwoChanged,
+                onChanged: isPersistingRules ? null : onWinByTwoChanged,
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Vinci con due goal di scarto'),
                 dense: true,
