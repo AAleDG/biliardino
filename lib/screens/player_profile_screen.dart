@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../models/game_match.dart';
 import '../models/player.dart';
 import '../models/player_stats.dart';
+import '../models/player_profile_stats.dart';
 import '../repositories/match_repository.dart';
 import '../repositories/player_repository.dart';
 import '../services/stats_service.dart';
@@ -67,9 +68,12 @@ class _PlayerProfileScreenState extends State<PlayerProfileScreen> {
       );
     }
 
-    final stats = StatsService.computeLeaderboard(_players, _matches)
-        .firstWhere((item) => item.player.id == player.id);
+    final stats = StatsService.computeLeaderboard(
+      _players,
+      _matches,
+    ).firstWhere((item) => item.player.id == player.id);
     final personalMatches = StatsService.matchesForPlayer(_matches, player.id);
+    final profile = StatsService.computePlayerProfile(_matches, player.id);
 
     return Scaffold(
       appBar: AppBar(title: const Text('PROFILO')),
@@ -79,6 +83,18 @@ class _PlayerProfileScreenState extends State<PlayerProfileScreen> {
           _Header(player: player, stats: stats),
           const SizedBox(height: 16),
           _StatsGrid(stats: stats),
+          const SizedBox(height: 18),
+          const _SectionLabel('FORMA RECENTE'),
+          const SizedBox(height: 8),
+          _RecentForm(results: profile.recentResults),
+          const SizedBox(height: 18),
+          const _SectionLabel('INTESA E RIVALITÀ'),
+          const SizedBox(height: 8),
+          _Relationships(profile: profile, players: _players),
+          const SizedBox(height: 18),
+          const _SectionLabel('TESTA A TESTA'),
+          const SizedBox(height: 8),
+          _HeadToHead(profile: profile, players: _players),
           const SizedBox(height: 18),
           const _SectionLabel('STORICO PERSONALE'),
           const SizedBox(height: 8),
@@ -93,6 +109,180 @@ class _PlayerProfileScreenState extends State<PlayerProfileScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _RecentForm extends StatelessWidget {
+  const _RecentForm({required this.results});
+
+  final List<bool> results;
+
+  @override
+  Widget build(BuildContext context) {
+    if (results.isEmpty) {
+      return const _EmptyCard('La forma comparirà dopo la prima partita.');
+    }
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            for (final won in results) ...[
+              Container(
+                width: 34,
+                height: 34,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: (won ? NttColors.success : NttColors.textMuted)
+                      .withValues(alpha: 0.18),
+                ),
+                child: Text(
+                  won ? 'V' : 'P',
+                  style: TextStyle(
+                    color: won ? NttColors.success : NttColors.textMuted,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Relationships extends StatelessWidget {
+  const _Relationships({required this.profile, required this.players});
+
+  final PlayerProfileStats profile;
+  final List<Player> players;
+
+  @override
+  Widget build(BuildContext context) {
+    final teammate = profile.mostFrequentTeammate;
+    final opponent = profile.mostPlayedOpponent;
+    if (teammate == null && opponent == null) {
+      return const _EmptyCard(
+        'Servono partite in squadra o contro altri giocatori.',
+      );
+    }
+    return Row(
+      children: [
+        Expanded(
+          child: _RelationshipCard(
+            icon: Icons.group,
+            label: 'Compagno abituale',
+            value: teammate == null
+                ? 'Non disponibile'
+                : StatsService.playerName(players, teammate.playerId),
+            matches: teammate?.matches,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _RelationshipCard(
+            icon: Icons.sports_martial_arts,
+            label: 'Avversario abituale',
+            value: opponent == null
+                ? 'Non disponibile'
+                : StatsService.playerName(players, opponent.playerId),
+            matches: opponent?.matches,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _RelationshipCard extends StatelessWidget {
+  const _RelationshipCard({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.matches,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final int? matches;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: NttColors.accent, size: 20),
+            const SizedBox(height: 8),
+            Text(label, style: const TextStyle(color: NttColors.textFaint)),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+            if (matches != null)
+              Text('$matches partite', style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HeadToHead extends StatelessWidget {
+  const _HeadToHead({required this.profile, required this.players});
+
+  final PlayerProfileStats profile;
+  final List<Player> players;
+
+  @override
+  Widget build(BuildContext context) {
+    if (profile.headToHead.isEmpty) {
+      return const _EmptyCard('Nessun confronto diretto disponibile.');
+    }
+    return Card(
+      child: Column(
+        children: profile.headToHead.map((item) {
+          final name = StatsService.playerName(players, item.opponentId);
+          return ListTile(
+            leading: PlayerAvatar(name: name, size: 36),
+            title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
+            subtitle: Text('${item.games} partite'),
+            trailing: Text(
+              '${item.wins}V · ${item.losses}P',
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _EmptyCard extends StatelessWidget {
+  const _EmptyCard(this.message);
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          message,
+          style: const TextStyle(color: NttColors.textMuted),
+        ),
       ),
     );
   }
@@ -183,10 +373,7 @@ class _StatsGrid extends StatelessWidget {
         _Metric(label: 'Vittorie', value: '${stats.wins}'),
         _Metric(label: 'Sconfitte', value: '${stats.losses}'),
         _Metric(label: 'Gol', value: '${stats.goalsScored}'),
-        _Metric(
-          label: 'Win rate',
-          value: '${(stats.winRate * 100).round()}%',
-        ),
+        _Metric(label: 'Win rate', value: '${(stats.winRate * 100).round()}%'),
         _Metric(label: 'Serie', value: '${stats.currentWinStreak}'),
       ],
     );
@@ -252,11 +439,13 @@ class _PersonalMatchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final won = match.winners.contains(playerId);
-    final teamLabel =
-        match.winners.contains(playerId) ? 'Vittoria' : 'Sconfitta';
+    final teamLabel = match.winners.contains(playerId)
+        ? 'Vittoria'
+        : 'Sconfitta';
     final dateLabel = DateFormat('dd/MM/yyyy HH:mm').format(match.playedAt);
-    final opponentIds =
-        match.team1.contains(playerId) ? match.team2 : match.team1;
+    final opponentIds = match.team1.contains(playerId)
+        ? match.team2
+        : match.team1;
     final opponents = opponentIds
         .map((id) => StatsService.playerName(players, id))
         .join(' / ');

@@ -1,6 +1,7 @@
 import '../models/game_match.dart';
 import '../models/player.dart';
 import '../models/player_badge.dart';
+import '../models/player_profile_stats.dart';
 import '../models/player_stats.dart';
 import '../models/rivalry_overview.dart';
 
@@ -22,9 +23,77 @@ class StatsService {
     List<GameMatch> matches,
     String playerId,
   ) {
-    return sortedByMostRecent(matches)
-        .where((m) => m.allPlayers.contains(playerId))
-        .toList();
+    return sortedByMostRecent(
+      matches,
+    ).where((m) => m.allPlayers.contains(playerId)).toList();
+  }
+
+  static PlayerProfileStats computePlayerProfile(
+    List<GameMatch> matches,
+    String playerId, {
+    int recentLimit = 5,
+  }) {
+    final personalMatches = matchesForPlayer(matches, playerId);
+    final teammateCounts = <String, int>{};
+    final opponentCounts = <String, int>{};
+    final opponentWins = <String, int>{};
+
+    for (final match in personalMatches) {
+      final playerTeam = match.team1.contains(playerId)
+          ? match.team1
+          : match.team2;
+      final opponentTeam = match.team1.contains(playerId)
+          ? match.team2
+          : match.team1;
+      for (final teammateId in playerTeam.where((id) => id != playerId)) {
+        teammateCounts[teammateId] = (teammateCounts[teammateId] ?? 0) + 1;
+      }
+      for (final opponentId in opponentTeam) {
+        opponentCounts[opponentId] = (opponentCounts[opponentId] ?? 0) + 1;
+        if (match.winners.contains(playerId)) {
+          opponentWins[opponentId] = (opponentWins[opponentId] ?? 0) + 1;
+        }
+      }
+    }
+
+    PlayerFrequency? mostFrequent(Map<String, int> counts) {
+      if (counts.isEmpty) return null;
+      final entries = counts.entries.toList()
+        ..sort((a, b) {
+          final byCount = b.value.compareTo(a.value);
+          // TODO: Confirm the product tie-break policy for equally frequent players.
+          return byCount != 0 ? byCount : a.key.compareTo(b.key);
+        });
+      return PlayerFrequency(
+        playerId: entries.first.key,
+        matches: entries.first.value,
+      );
+    }
+
+    final headToHead =
+        opponentCounts.entries.map((entry) {
+          final wins = opponentWins[entry.key] ?? 0;
+          return HeadToHeadStats(
+            opponentId: entry.key,
+            games: entry.value,
+            wins: wins,
+            losses: entry.value - wins,
+          );
+        }).toList()..sort((a, b) {
+          final byGames = b.games.compareTo(a.games);
+          return byGames != 0 ? byGames : a.opponentId.compareTo(b.opponentId);
+        });
+
+    return PlayerProfileStats(
+      recentResults: List.unmodifiable(
+        personalMatches
+            .take(recentLimit)
+            .map((match) => match.winners.contains(playerId)),
+      ),
+      mostFrequentTeammate: mostFrequent(teammateCounts),
+      mostPlayedOpponent: mostFrequent(opponentCounts),
+      headToHead: List.unmodifiable(headToHead),
+    );
   }
 
   static RivalryOverview rivalryOverview(
@@ -44,11 +113,13 @@ class StatsService {
       if (!match.isRivalry) {
         continue;
       }
-      final aligned = match.team1.toSet().containsAll(team1Set) &&
+      final aligned =
+          match.team1.toSet().containsAll(team1Set) &&
           match.team2.toSet().containsAll(team2Set) &&
           match.team1.length == team1Ids.length &&
           match.team2.length == team2Ids.length;
-      final swapped = match.team1.toSet().containsAll(team2Set) &&
+      final swapped =
+          match.team1.toSet().containsAll(team2Set) &&
           match.team2.toSet().containsAll(team1Set) &&
           match.team1.length == team2Ids.length &&
           match.team2.length == team1Ids.length;
@@ -145,59 +216,80 @@ class StatsService {
     }).toList();
 
     final topPoints = list.fold<int>(
-        0, (max, stats) => stats.points > max ? stats.points : max);
+      0,
+      (max, stats) => stats.points > max ? stats.points : max,
+    );
     final topGoals = list.fold<int>(
-        0, (max, stats) => stats.goalsScored > max ? stats.goalsScored : max);
+      0,
+      (max, stats) => stats.goalsScored > max ? stats.goalsScored : max,
+    );
     final topGames = list.fold<int>(
-        0, (max, stats) => stats.games > max ? stats.games : max);
-    final topRivalryWins = rivalryWins.values
-        .fold<int>(0, (max, value) => value > max ? value : max);
+      0,
+      (max, stats) => stats.games > max ? stats.games : max,
+    );
+    final topRivalryWins = rivalryWins.values.fold<int>(
+      0,
+      (max, value) => value > max ? value : max,
+    );
 
     list = list.map((stats) {
       final badges = <PlayerBadge>[];
       if (stats.games > 0 && stats.points == topPoints && topPoints > 0) {
-        badges.add(const PlayerBadge(
-          code: 'leader',
-          label: 'Capoclassifica',
-          description: 'Ha il punteggio piu alto del ranking.',
-        ));
+        badges.add(
+          const PlayerBadge(
+            code: 'leader',
+            label: 'Capoclassifica',
+            description: 'Ha il punteggio piu alto del ranking.',
+          ),
+        );
       }
       if (stats.goalsScored == topGoals && topGoals > 0) {
-        badges.add(const PlayerBadge(
-          code: 'bomber',
-          label: 'Bomber',
-          description: 'Miglior marcatore attuale.',
-        ));
+        badges.add(
+          const PlayerBadge(
+            code: 'bomber',
+            label: 'Bomber',
+            description: 'Miglior marcatore attuale.',
+          ),
+        );
       }
       if (stats.games == topGames && topGames >= 3) {
-        badges.add(const PlayerBadge(
-          code: 'grinder',
-          label: 'Presenza Fissa',
-          description: 'E il giocatore piu presente nelle partite registrate.',
-        ));
+        badges.add(
+          const PlayerBadge(
+            code: 'grinder',
+            label: 'Presenza Fissa',
+            description:
+                'E il giocatore piu presente nelle partite registrate.',
+          ),
+        );
       }
       if (stats.games >= 4 && stats.winRate >= 0.75) {
-        badges.add(const PlayerBadge(
-          code: 'dominant',
-          label: 'Implacabile',
-          description: 'Tiene un win rate alto su un campione credibile.',
-        ));
+        badges.add(
+          const PlayerBadge(
+            code: 'dominant',
+            label: 'Implacabile',
+            description: 'Tiene un win rate alto su un campione credibile.',
+          ),
+        );
       }
       if (stats.currentWinStreak >= 3) {
-        badges.add(PlayerBadge(
-          code: 'streak',
-          label: 'Hot Streak',
-          description:
-              'Ha una striscia aperta di ${stats.currentWinStreak} vittorie.',
-        ));
+        badges.add(
+          PlayerBadge(
+            code: 'streak',
+            label: 'Hot Streak',
+            description:
+                'Ha una striscia aperta di ${stats.currentWinStreak} vittorie.',
+          ),
+        );
       }
       if ((rivalryWins[stats.player.id] ?? 0) == topRivalryWins &&
           topRivalryWins >= 2) {
-        badges.add(const PlayerBadge(
-          code: 'rivalry',
-          label: 'Re delle Rivalita',
-          description: 'Ha vinto piu duelli diretti in modalita Rivalita.',
-        ));
+        badges.add(
+          const PlayerBadge(
+            code: 'rivalry',
+            label: 'Re delle Rivalita',
+            description: 'Ha vinto piu duelli diretti in modalita Rivalita.',
+          ),
+        );
       }
       return stats.copyWith(badges: List.unmodifiable(badges));
     }).toList();
