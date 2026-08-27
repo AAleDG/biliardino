@@ -4,6 +4,96 @@ import 'package:biliardino/services/stats_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('StatsService computePlayerProfile', () {
+    test('computes recent form, relationships and head-to-head', () {
+      final matches = [
+        _match('new', DateTime(2026, 7, 3), ['p1', 'p2'], ['p3', 'p4'], 1),
+        _match('mid', DateTime(2026, 7, 2), ['p3', 'p1'], ['p2', 'p4'], 1),
+        _match('old', DateTime(2026, 7, 1), ['p1', 'p2'], ['p3', 'p4'], 2),
+      ];
+
+      final profile = StatsService.computePlayerProfile(matches, 'p1');
+
+      expect(profile.recentResults, [true, true, false]);
+      expect(profile.mostFrequentTeammate?.playerIds, ['p2']);
+      expect(profile.mostFrequentTeammate?.matches, 2);
+      expect(profile.mostPlayedOpponent?.playerIds, ['p4']);
+      expect(profile.mostPlayedOpponent?.matches, 3);
+      final againstP3 = profile.headToHead.firstWhere(
+        (item) => item.opponentId == 'p3',
+      );
+      expect(againstP3.games, 2);
+      expect(againstP3.wins, 1);
+      expect(againstP3.losses, 1);
+    });
+
+    test('handles a player with no matches', () {
+      final profile = StatsService.computePlayerProfile(const [], 'p1');
+
+      expect(profile.recentResults, isEmpty);
+      expect(profile.mostFrequentTeammate, isNull);
+      expect(profile.mostPlayedOpponent, isNull);
+      expect(profile.headToHead, isEmpty);
+    });
+
+    test('breaks relationship frequency ties by most recent match', () {
+      final matches = [
+        _match(
+          'older',
+          DateTime(2026, 7, 1),
+          ['p1', 'a-older-teammate'],
+          ['a-older-opponent', 'b-older-opponent'],
+          1,
+        ),
+        _match(
+          'newer',
+          DateTime(2026, 7, 2),
+          ['p1', 'z-newer-teammate'],
+          ['y-newer-opponent', 'z-newer-opponent'],
+          1,
+        ),
+      ];
+
+      final profile = StatsService.computePlayerProfile(matches, 'p1');
+
+      expect(profile.mostFrequentTeammate?.playerIds, ['z-newer-teammate']);
+      expect(profile.mostPlayedOpponent?.playerIds, {
+        'y-newer-opponent',
+        'z-newer-opponent',
+      });
+    });
+
+    test('keeps every exact tie regardless of player ID ordering', () {
+      final firstProfile = StatsService.computePlayerProfile([
+        _match(
+          'first',
+          DateTime(2026, 7, 2),
+          ['p1', 'teammate'],
+          ['z-opponent', 'a-opponent'],
+          1,
+        ),
+      ], 'p1');
+      final reversedProfile = StatsService.computePlayerProfile([
+        _match(
+          'reversed',
+          DateTime(2026, 7, 2),
+          ['p1', 'teammate'],
+          ['a-opponent', 'z-opponent'],
+          1,
+        ),
+      ], 'p1');
+
+      expect(firstProfile.mostPlayedOpponent?.playerIds, {
+        'a-opponent',
+        'z-opponent',
+      });
+      expect(reversedProfile.mostPlayedOpponent?.playerIds, {
+        'a-opponent',
+        'z-opponent',
+      });
+    });
+  });
+
   group('StatsService rivalryOverview', () {
     test('isolates rivalry history for the selected pair', () {
       final matches = [
@@ -42,7 +132,7 @@ void main() {
             'p1',
             'p2',
             'p1',
-            'p2'
+            'p2',
           ],
         ),
         GameMatch(
@@ -150,4 +240,26 @@ void main() {
       );
     });
   });
+}
+
+GameMatch _match(
+  String id,
+  DateTime playedAt,
+  List<String> team1,
+  List<String> team2,
+  int winningTeam,
+) {
+  return GameMatch(
+    id: id,
+    playedAt: playedAt,
+    mode: MatchMode.twoVsTwo,
+    t1p1: team1[0],
+    t1p2: team1[1],
+    t2p1: team2[0],
+    t2p2: team2[1],
+    t1Score: winningTeam == 1 ? 2 : 1,
+    t2Score: winningTeam == 2 ? 2 : 1,
+    winningTeam: winningTeam,
+    scorerIds: const [],
+  );
 }

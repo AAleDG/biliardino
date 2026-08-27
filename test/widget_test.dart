@@ -14,6 +14,7 @@ import 'package:biliardino/screens/home_screen.dart';
 import 'package:biliardino/screens/leaderboard_screen.dart';
 import 'package:biliardino/screens/new_match_screen.dart';
 import 'package:biliardino/screens/players_screen.dart';
+import 'package:biliardino/screens/player_profile_screen.dart';
 import 'package:biliardino/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -222,6 +223,83 @@ void main() {
     expect(find.text('2/2 presenti'), findsOneWidget);
     expect(find.text('Pronti a giocare'), findsOneWidget);
     expect(find.textContaining('Servono'), findsNothing);
+  });
+
+  testWidgets('Il profilo mostra statistiche avanzate e storico filtrato', (
+    WidgetTester tester,
+  ) async {
+    final repos = _sampleData();
+    await _pumpHome(
+      tester,
+      home: const PlayerProfileScreen(playerId: 'p1'),
+      repos: repos,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.scrollUntilVisible(
+      find.text('FORMA RECENTE'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('FORMA RECENTE'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('TESTA A TESTA'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('STORICO PERSONALE'), findsOneWidget);
+    expect(find.text('2 partite'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Il profilo mostra tutti i nomi delle relazioni a pari merito', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repos = _tiedRelationshipData();
+    await _pumpHome(
+      tester,
+      home: const PlayerProfileScreen(playerId: 'p1'),
+      repos: repos,
+    );
+    await tester.pumpAndSettle();
+
+    const tiedNames = 'Cristiano Nome Molto Esteso, Daniela Super Competitiva';
+    await tester.scrollUntilVisible(
+      find.text('INTESA E RIVALITÀ'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    final relationshipNames = tester.widget<Text>(find.text(tiedNames));
+    expect(relationshipNames.maxLines, isNull);
+    expect(relationshipNames.overflow, isNull);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Il nome nella classifica apre il profilo giocatore', (
+    WidgetTester tester,
+  ) async {
+    final repos = _sampleData();
+    await _pumpHome(tester, home: const LeaderboardScreen(), repos: repos);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Alessandro Antonio Delgaudio').first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('PROFILO'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('STORICO PERSONALE'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('STORICO PERSONALE'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('Le regole partono da punteggio libero nel setup', (
@@ -770,6 +848,14 @@ _Repos _sampleData({MatchRules rules = MatchRules.defaultRules}) {
     ),
   ];
   return _Repos.build(players: players, matches: matches, rules: rules);
+}
+
+_Repos _tiedRelationshipData() {
+  final sample = _sampleData();
+  return _Repos.build(
+    players: sample.playerRepo.players,
+    matches: [sample.matchRepo.matches.first],
+  );
 }
 
 _Repos _sampleDataNoMatchPlayerFirst() {

@@ -11,6 +11,15 @@ import '../services/csv_share_service.dart';
 import '../services/leaderboard_csv_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/avatar.dart';
+import 'player_profile_screen.dart';
+
+void _openPlayerProfile(BuildContext context, String playerId) {
+  Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => PlayerProfileScreen(playerId: playerId),
+    ),
+  );
+}
 
 class _Hud {
   _Hud._();
@@ -389,61 +398,65 @@ class _PodiumColumn extends StatelessWidget {
               opacity: headAnim.value,
               child: Transform.translate(
                 offset: Offset(0, 20 * (1 - headAnim.value)),
-                child: Column(
-                  children: [
-                    if (isWinner)
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 4),
-                        child: Icon(
-                          Icons.emoji_events_outlined,
-                          color: _Hud.warm,
-                          size: 22,
-                          shadows: [Shadow(color: _Hud.warm, blurRadius: 14)],
+                child: InkWell(
+                  onTap: () => _openPlayerProfile(context, s.player.id),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Column(
+                    children: [
+                      if (isWinner)
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 4),
+                          child: Icon(
+                            Icons.emoji_events_outlined,
+                            color: _Hud.warm,
+                            size: 22,
+                            shadows: [Shadow(color: _Hud.warm, blurRadius: 14)],
+                          ),
                         ),
+                      _HudAvatar(
+                        name: s.player.name,
+                        rank: rank,
+                        winner: isWinner,
                       ),
-                    _HudAvatar(
-                      name: s.player.name,
-                      rank: rank,
-                      winner: isWinner,
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      child: Text(
-                        s.player.name,
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: _Hud.text,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      metricLabel(s),
-                      style: TextStyle(
-                        color: accent,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    if (s.badges.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 6,
-                        runSpacing: 6,
-                        children: s.badges
-                            .take(2)
-                            .map(_PodiumBadgeChip.new)
-                            .toList(),
+                      SizedBox(
+                        width: double.infinity,
+                        child: Text(
+                          s.player.name,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: _Hud.text,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
+                      const SizedBox(height: 2),
+                      Text(
+                        metricLabel(s),
+                        style: TextStyle(
+                          color: accent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      if (s.badges.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: s.badges
+                              .take(2)
+                              .map(_PodiumBadgeChip.new)
+                              .toList(),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -640,83 +653,87 @@ class _LeaderRow extends StatelessWidget {
           ),
         );
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _Hud.cyan.withValues(alpha: 0.22)),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [_Hud.cyan.withValues(alpha: 0.07), Colors.transparent],
+      child: InkWell(
+        onTap: () => _openPlayerProfile(context, stats.player.id),
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: _Hud.cyan.withValues(alpha: 0.22)),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [_Hud.cyan.withValues(alpha: 0.07), Colors.transparent],
+            ),
           ),
-        ),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 18,
-              child: Text(
-                '$rank',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: _Hud.text.withValues(alpha: 0.82),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+          child: Row(
+            children: [
+              SizedBox(
+                width: 18,
+                child: Text(
+                  '$rank',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: _Hud.text.withValues(alpha: 0.82),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            PlayerAvatar(name: stats.player.name, size: 36),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    stats.player.name,
-                    style: const TextStyle(
-                      color: _Hud.text,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
+              const SizedBox(width: 12),
+              PlayerAvatar(name: stats.player.name, size: 36),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      stats.player.name,
+                      style: const TextStyle(
+                        color: _Hud.text,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    detailLabel(stats),
-                    style: TextStyle(
-                      color: _Hud.text.withValues(alpha: 0.78),
-                      fontSize: 12,
+                    Text(
+                      detailLabel(stats),
+                      style: TextStyle(
+                        color: _Hud.text.withValues(alpha: 0.78),
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                  if (stats.badges.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: stats.badges
-                          .take(3)
-                          .map(_RowBadgeChip.new)
-                          .toList(),
-                    ),
+                    if (stats.badges.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: stats.badges
+                            .take(3)
+                            .map(_RowBadgeChip.new)
+                            .toList(),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
-            ),
-            Builder(
-              builder: (_) {
-                final accent = hudColorForName(stats.player.name);
-                return Text(
-                  metricLabel(stats),
-                  style: TextStyle(
-                    color: accent,
-                    fontSize: 19,
-                    fontWeight: FontWeight.w600,
-                    shadows: [Shadow(color: accent, blurRadius: 10)],
-                  ),
-                );
-              },
-            ),
-          ],
+              Builder(
+                builder: (_) {
+                  final accent = hudColorForName(stats.player.name);
+                  return Text(
+                    metricLabel(stats),
+                    style: TextStyle(
+                      color: accent,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w600,
+                      shadows: [Shadow(color: accent, blurRadius: 10)],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
