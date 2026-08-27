@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_state.dart';
@@ -312,6 +313,165 @@ void main() {
       await players.dispose();
     });
 
+    test(
+      'random generation is deterministic and replaces its proposal',
+      () async {
+        NewMatchCubit buildCubit() => NewMatchCubit(
+          playerRepository: _PlayerRepositoryFake(_players()),
+          matchRepository: _MatchRepositoryFake(),
+          matchRulesRepository: _MatchRulesRepositoryFake(),
+          random: Random(42),
+        );
+
+        final first = buildCubit();
+        final second = buildCubit();
+
+        first.generateRandomTeams();
+        second.generateRandomTeams();
+        final initial = Map<String, int>.from(first.state.assignment);
+
+        expect(first.state.assignment, second.state.assignment);
+        expect(first.state.assignment, hasLength(4));
+        expect(first.state.team1, hasLength(2));
+        expect(first.state.team2, hasLength(2));
+        expect(first.state.teamsValid, isTrue);
+
+        first.generateRandomTeams();
+        expect(first.state.assignment, isNot(initial));
+        expect(first.state.teamsValid, isTrue);
+
+        await first.close();
+        await second.close();
+      },
+    );
+
+    test(
+      'random generation supports 1v1 and selects only present players',
+      () async {
+        final players = _PlayerRepositoryFake([
+          ..._players(),
+          Player(
+            id: 'p5',
+            name: 'Absent',
+            createdAt: DateTime(2026),
+            isPresent: false,
+          ),
+          Player(
+            id: 'p6',
+            name: 'Reserve',
+            createdAt: DateTime(2026),
+            isPresent: true,
+          ),
+        ]);
+        final cubit = NewMatchCubit(
+          playerRepository: players,
+          matchRepository: _MatchRepositoryFake(),
+          matchRulesRepository: _MatchRulesRepositoryFake(),
+          random: Random(7),
+        );
+
+        cubit
+          ..setMatchMode(MatchMode.oneVsOne)
+          ..generateRandomTeams();
+
+        expect(cubit.state.assignment, hasLength(2));
+        expect(cubit.state.assignment, isNot(contains('p5')));
+        expect(cubit.state.team1, hasLength(1));
+        expect(cubit.state.team2, hasLength(1));
+        expect(cubit.state.teamsValid, isTrue);
+
+        await cubit.close();
+        await players.dispose();
+      },
+    );
+
+    test(
+      'balanced generation minimizes leaderboard point difference',
+      () async {
+        final matches = _MatchRepositoryFake(
+          initialMatches: [
+            ..._winsFor('p1', 3),
+            ..._winsFor('p2', 2),
+            ..._winsFor('p3', 1),
+          ],
+        );
+        final cubit = NewMatchCubit(
+          playerRepository: _PlayerRepositoryFake(_players()),
+          matchRepository: matches,
+          matchRulesRepository: _MatchRulesRepositoryFake(),
+          random: Random(3),
+        );
+
+        cubit.generateBalancedTeams();
+
+        final team1 = cubit.state.team1.toSet();
+        final team2 = cubit.state.team2.toSet();
+        expect(
+          (team1.containsAll(['p1', 'p4']) &&
+                  team2.containsAll(['p2', 'p3'])) ||
+              (team2.containsAll(['p1', 'p4']) &&
+                  team1.containsAll(['p2', 'p3'])),
+          isTrue,
+        );
+        expect(cubit.state.teamsValid, isTrue);
+
+        await cubit.close();
+      },
+    );
+
+    test(
+      'balanced generation resolves ties and produces a new proposal',
+      () async {
+        final cubit = NewMatchCubit(
+          playerRepository: _PlayerRepositoryFake(_players()),
+          matchRepository: _MatchRepositoryFake(),
+          matchRulesRepository: _MatchRulesRepositoryFake(),
+          random: Random(11),
+        );
+
+        cubit.generateBalancedTeams();
+        final initial = Map<String, int>.from(cubit.state.assignment);
+        cubit.generateBalancedTeams();
+
+        expect(cubit.state.assignment, isNot(initial));
+        expect(cubit.state.teamsValid, isTrue);
+
+        await cubit.close();
+      },
+    );
+
+    test(
+      'generation is ignored when unavailable or match state is locked',
+      () async {
+        final tooFewPlayers = _PlayerRepositoryFake(
+          _players().take(3).toList(),
+        );
+        final insufficient = NewMatchCubit(
+          playerRepository: tooFewPlayers,
+          matchRepository: _MatchRepositoryFake(),
+          matchRulesRepository: _MatchRulesRepositoryFake(),
+          random: Random(1),
+        );
+        insufficient.generateRandomTeams();
+        expect(insufficient.state.assignment, isEmpty);
+
+        final active = _readyCubit(
+          players: _PlayerRepositoryFake(_players()),
+          matches: _MatchRepositoryFake(),
+          rules: _MatchRulesRepositoryFake(),
+        );
+        final activeAssignment = Map<String, int>.from(active.state.assignment);
+        active
+          ..generateRandomTeams()
+          ..generateBalancedTeams();
+        expect(active.state.assignment, activeAssignment);
+
+        await insufficient.close();
+        await active.close();
+        await tooFewPlayers.dispose();
+      },
+    );
+
     test('uses free scoring rules by default', () async {
       final cubit = NewMatchCubit(
         playerRepository: _PlayerRepositoryFake(_players()),
@@ -568,11 +728,15 @@ class _SavedMatch {
 }
 
 class _MatchRepositoryFake implements MatchRepository {
+  _MatchRepositoryFake({List<GameMatch> initialMatches = const []})
+    : _matches = List.unmodifiable(initialMatches);
+
   Future<void> Function(_SavedMatch match)? onSave;
   final List<_SavedMatch> saved = [];
+  final List<GameMatch> _matches;
 
   @override
-  List<GameMatch> get matches => const [];
+  List<GameMatch> get matches => _matches;
 
   @override
   Future<void> addMatch({
@@ -610,7 +774,26 @@ class _MatchRepositoryFake implements MatchRepository {
   Future<void> deleteMatch(String id) async {}
 
   @override
-  Stream<List<GameMatch>> watchMatches() => const Stream.empty();
+  Stream<List<GameMatch>> watchMatches() => Stream.value(_matches);
+}
+
+List<GameMatch> _winsFor(String playerId, int wins) {
+  return List.generate(
+    wins,
+    (index) => GameMatch(
+      id: '$playerId-$index',
+      playedAt: DateTime(2026, 1, index + 1),
+      mode: MatchMode.oneVsOne,
+      t1p1: playerId,
+      t1p2: '',
+      t2p1: 'opponent-$playerId-$index',
+      t2p2: '',
+      t1Score: 1,
+      t2Score: 0,
+      winningTeam: 1,
+      scorerIds: [playerId],
+    ),
+  );
 }
 
 class _PlayerRepositoryFake implements PlayerRepository {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,9 +18,11 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     required PlayerRepository playerRepository,
     required MatchRepository matchRepository,
     required MatchRulesRepository matchRulesRepository,
+    Random? random,
   }) : _playerRepo = playerRepository,
        _matchRepo = matchRepository,
        _rulesRepo = matchRulesRepository,
+       _random = random ?? Random(),
        super(
          NewMatchState(
            players: playerRepository.players,
@@ -34,6 +37,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
   final PlayerRepository _playerRepo;
   final MatchRepository _matchRepo;
   final MatchRulesRepository _rulesRepo;
+  final Random _random;
   late final StreamSubscription<List<Player>> _playersSub;
   late final StreamSubscription<List<GameMatch>> _matchesSub;
   List<Player>? _deferredPlayers;
@@ -121,6 +125,108 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     emit(
       state.copyWith(assignment: Map.unmodifiable(current), isRivalry: false),
     );
+  }
+
+  void generateRandomTeams() {
+    _generateTeams(balanced: false);
+  }
+
+  void generateBalancedTeams() {
+    _generateTeams(balanced: true);
+  }
+
+  void _generateTeams({required bool balanced}) {
+    if (state.kickedOff || state.isSaving || state.isPersistingRules) return;
+    if (state.present.length < state.requiredPlayers) return;
+
+    final eligibleIds = state.present.map((player) => player.id).toList();
+    _shuffle(eligibleIds);
+    final selectedIds = eligibleIds.take(state.requiredPlayers).toList();
+    var candidates = _teamAssignments(selectedIds, state.mode.teamSize);
+
+    if (balanced) {
+      final pointsByPlayer = {
+        for (final stats in StatsService.computeLeaderboard(
+          state.players,
+          state.matches,
+        ))
+          stats.player.id: stats.points,
+      };
+      var smallestDifference = 1 << 62;
+      final balancedCandidates = <Map<String, int>>[];
+      for (final candidate in candidates) {
+        var team1Points = 0;
+        var team2Points = 0;
+        for (final entry in candidate.entries) {
+          final points = pointsByPlayer[entry.key] ?? 0;
+          if (entry.value == 1) {
+            team1Points += points;
+          } else {
+            team2Points += points;
+          }
+        }
+        final difference = (team1Points - team2Points).abs();
+        if (difference < smallestDifference) {
+          smallestDifference = difference;
+          balancedCandidates
+            ..clear()
+            ..add(candidate);
+        } else if (difference == smallestDifference) {
+          balancedCandidates.add(candidate);
+        }
+      }
+      candidates = balancedCandidates;
+    }
+
+    final alternatives = candidates
+        .where((candidate) => !_sameAssignment(candidate, state.assignment))
+        .toList();
+    final proposals = alternatives.isNotEmpty ? alternatives : candidates;
+    final assignment = proposals[_random.nextInt(proposals.length)];
+    emit(
+      state.copyWith(
+        assignment: Map.unmodifiable(assignment),
+        isRivalry: false,
+      ),
+    );
+  }
+
+  void _shuffle(List<String> values) {
+    for (var index = values.length - 1; index > 0; index--) {
+      final swapIndex = _random.nextInt(index + 1);
+      final value = values[index];
+      values[index] = values[swapIndex];
+      values[swapIndex] = value;
+    }
+  }
+
+  static List<Map<String, int>> _teamAssignments(
+    List<String> playerIds,
+    int teamSize,
+  ) {
+    final assignments = <Map<String, int>>[];
+
+    void chooseTeam1(int start, List<String> team1) {
+      if (team1.length == teamSize) {
+        final team1Ids = team1.toSet();
+        assignments.add({
+          for (final id in playerIds) id: team1Ids.contains(id) ? 1 : 2,
+        });
+        return;
+      }
+      final remaining = teamSize - team1.length;
+      for (var index = start; index <= playerIds.length - remaining; index++) {
+        chooseTeam1(index + 1, [...team1, playerIds[index]]);
+      }
+    }
+
+    chooseTeam1(0, const []);
+    return assignments;
+  }
+
+  static bool _sameAssignment(Map<String, int> first, Map<String, int> second) {
+    if (first.length != second.length) return false;
+    return first.entries.every((entry) => second[entry.key] == entry.value);
   }
 
   void setMatchMode(MatchMode mode) {
