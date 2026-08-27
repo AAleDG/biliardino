@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/cubits/leaderboard/leaderboard_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
@@ -95,7 +97,11 @@ void main() {
     expect(find.text('Attiva Rivalita'), findsNothing);
 
     Future<void> assignTeam(String playerName, String chipLabel) async {
-      await tester.ensureVisible(find.text(playerName));
+      await tester.scrollUntilVisible(
+        find.text(playerName),
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       final row = find.ancestor(
         of: find.text(playerName),
@@ -122,6 +128,120 @@ void main() {
       find.textContaining('Lo storico terra separati precedenti'),
       findsOneWidget,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'Le azioni generano squadre modificabili e abilitano il kickoff',
+    (WidgetTester tester) async {
+      final sample = _sampleData();
+      await _pumpHome(tester, home: const NewMatchScreen(), repos: sample);
+      await tester.pumpAndSettle();
+
+      final randomAction = find.byKey(const ValueKey('random-teams-action'));
+      final balancedAction = find.byKey(
+        const ValueKey('balanced-teams-action'),
+      );
+      expect(randomAction, findsOneWidget);
+      expect(balancedAction, findsOneWidget);
+
+      await tester.tap(randomAction);
+      await tester.pump();
+      final cubit = tester
+          .element(find.byType(NewMatchScreen))
+          .read<NewMatchCubit>();
+      expect(cubit.state.teamsValid, isTrue);
+      expect(
+        tester
+            .widget<ElevatedButton>(find.byType(ElevatedButton).last)
+            .onPressed,
+        isNotNull,
+      );
+
+      final firstPlayerId = cubit.state.assignment.keys.first;
+      final firstPlayer = cubit.state.players.firstWhere(
+        (player) => player.id == firstPlayerId,
+      );
+      final selectedTeam = cubit.state.assignment[firstPlayerId];
+      final playerCard = find.byKey(
+        ValueKey('present-player-${firstPlayer.id}'),
+      );
+      await tester.scrollUntilVisible(
+        playerCard,
+        250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: playerCard,
+          matching: find.text(selectedTeam == 1 ? 'S1' : 'S2'),
+        ),
+      );
+      await tester.pump();
+      expect(cubit.state.assignment, isNot(contains(firstPlayerId)));
+      expect(cubit.state.teamsValid, isFalse);
+
+      await tester.ensureVisible(balancedAction);
+      await tester.tap(balancedAction);
+      await tester.pump();
+      expect(cubit.state.teamsValid, isTrue);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets('La generazione segue il cambio tra 2v2 e 1v1', (
+    WidgetTester tester,
+  ) async {
+    final sample = _sampleData();
+    await _pumpHome(tester, home: const NewMatchScreen(), repos: sample);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('1 VS 1').first);
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('random-teams-action')));
+    await tester.pump();
+
+    final cubit = tester
+        .element(find.byType(NewMatchScreen))
+        .read<NewMatchCubit>();
+    expect(cubit.state.mode, MatchMode.oneVsOne);
+    expect(cubit.state.assignment, hasLength(2));
+    expect(cubit.state.teamsValid, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Le azioni sono disabilitate durante il salvataggio regole', (
+    WidgetTester tester,
+  ) async {
+    final sample = _sampleData();
+    final pendingSave = Completer<void>();
+    when(
+      () => sample.matchRulesRepo.save(any()),
+    ).thenAnswer((_) => pendingSave.future);
+    await _pumpHome(tester, home: const NewMatchScreen(), repos: sample);
+    await tester.pumpAndSettle();
+
+    final cubit = tester
+        .element(find.byType(NewMatchScreen))
+        .read<NewMatchCubit>();
+    final persistence = cubit.setRuleMode(MatchRuleMode.firstTo);
+    expect(cubit.state.isPersistingRules, isTrue);
+    await tester.pumpAndSettle();
+
+    OutlinedButton action(Finder finder) => tester.widget(finder);
+    final randomAction = find.byKey(const ValueKey('random-teams-action'));
+    final balancedAction = find.byKey(const ValueKey('balanced-teams-action'));
+    expect(action(randomAction).onPressed, isNull);
+    expect(action(balancedAction).onPressed, isNull);
+
+    pendingSave.complete();
+    await persistence;
+    expect(cubit.state.isPersistingRules, isFalse);
+    await tester.pumpAndSettle();
+
+    expect(action(randomAction).onPressed, isNotNull);
+    expect(action(balancedAction).onPressed, isNotNull);
     expect(tester.takeException(), isNull);
   });
 

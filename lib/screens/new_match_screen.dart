@@ -186,6 +186,8 @@ class _NewMatchViewState extends State<_NewMatchView> {
                     onTargetScoreChanged: cubit.setTargetScore,
                     onWinByTwoChanged: cubit.setWinByTwo,
                     onRivalryChanged: cubit.setRivalry,
+                    onRandomTeams: cubit.generateRandomTeams,
+                    onBalancedTeams: cubit.generateBalancedTeams,
                     onToggle: cubit.setTeam,
                     onKickoff: state.teamsValid && !state.isPersistingRules
                         ? cubit.kickoff
@@ -442,6 +444,8 @@ class _Setup extends StatelessWidget {
     required this.onTargetScoreChanged,
     required this.onWinByTwoChanged,
     required this.onRivalryChanged,
+    required this.onRandomTeams,
+    required this.onBalancedTeams,
     required this.onToggle,
     required this.onKickoff,
   });
@@ -461,6 +465,8 @@ class _Setup extends StatelessWidget {
   final ValueChanged<int> onTargetScoreChanged;
   final ValueChanged<bool> onWinByTwoChanged;
   final ValueChanged<bool> onRivalryChanged;
+  final VoidCallback onRandomTeams;
+  final VoidCallback onBalancedTeams;
   final void Function(String id, int team) onToggle;
   final VoidCallback? onKickoff;
 
@@ -528,6 +534,28 @@ class _Setup extends StatelessWidget {
               const SizedBox(height: 24),
               const _SectionLabel('COMPONI LE SQUADRE'),
               const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('random-teams-action'),
+                      onPressed: isPersistingRules ? null : onRandomTeams,
+                      icon: const Icon(Icons.shuffle, size: 18),
+                      label: const Text('CASUALI'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('balanced-teams-action'),
+                      onPressed: isPersistingRules ? null : onBalancedTeams,
+                      icon: const Icon(Icons.balance, size: 18),
+                      label: const Text('BILANCIATE'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
               IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -590,6 +618,7 @@ class _Setup extends StatelessWidget {
                 final t1Full = team1.length >= mode.teamSize && a != 1;
                 final t2Full = team2.length >= mode.teamSize && a != 2;
                 return Card(
+                  key: ValueKey('present-player-${p.id}'),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,

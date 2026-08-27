@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -17,9 +18,11 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     required PlayerRepository playerRepository,
     required MatchRepository matchRepository,
     required MatchRulesRepository matchRulesRepository,
+    Random? random,
   }) : _playerRepo = playerRepository,
        _matchRepo = matchRepository,
        _rulesRepo = matchRulesRepository,
+       _random = random ?? Random(),
        super(
          NewMatchState(
            players: playerRepository.players,
@@ -34,6 +37,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
   final PlayerRepository _playerRepo;
   final MatchRepository _matchRepo;
   final MatchRulesRepository _rulesRepo;
+  final Random _random;
   late final StreamSubscription<List<Player>> _playersSub;
   late final StreamSubscription<List<GameMatch>> _matchesSub;
   List<Player>? _deferredPlayers;
@@ -121,6 +125,156 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     emit(
       state.copyWith(assignment: Map.unmodifiable(current), isRivalry: false),
     );
+  }
+
+  void generateRandomTeams() {
+    _generateTeams(balanced: false);
+  }
+
+  void generateBalancedTeams() {
+    _generateTeams(balanced: true);
+  }
+
+  void _generateTeams({required bool balanced}) {
+    if (state.kickedOff || state.isSaving || state.isPersistingRules) return;
+    if (state.present.length < state.requiredPlayers) return;
+
+    final eligibleIds = state.present.map((player) => player.id).toList();
+    late Map<String, int> assignment;
+
+    if (balanced) {
+      final pointsByPlayer = {
+        for (final stats in StatsService.computeLeaderboard(
+          state.players,
+          state.matches,
+        ))
+          stats.player.id: stats.points,
+      };
+      assignment = _balancedAssignment(eligibleIds, pointsByPlayer);
+    } else {
+      _shuffle(eligibleIds);
+      final selectedIds = eligibleIds.take(state.requiredPlayers).toList();
+      final candidates = _teamAssignments(selectedIds, state.mode.teamSize);
+      final alternatives = candidates
+          .where((candidate) => !_sameAssignment(candidate, state.assignment))
+          .toList();
+      final proposals = alternatives.isNotEmpty ? alternatives : candidates;
+      assignment = proposals[_random.nextInt(proposals.length)];
+    }
+
+    emit(
+      state.copyWith(
+        assignment: Map.unmodifiable(assignment),
+        isRivalry: false,
+      ),
+    );
+  }
+
+  void _shuffle(List<String> values) {
+    for (var index = values.length - 1; index > 0; index--) {
+      final swapIndex = _random.nextInt(index + 1);
+      final value = values[index];
+      values[index] = values[swapIndex];
+      values[swapIndex] = value;
+    }
+  }
+
+  Map<String, int> _balancedAssignment(
+    List<String> playerIds,
+    Map<String, int> pointsByPlayer,
+  ) {
+    var smallestDifference = 1 << 62;
+    var tiedCandidates = 0;
+    _BalancedCandidate? selected;
+
+    void consider(_BalancedCandidate candidate, int difference) {
+      if (candidate.matchesAssignment(state.assignment)) return;
+      if (difference < smallestDifference) {
+        smallestDifference = difference;
+        tiedCandidates = 1;
+        selected = candidate;
+      } else if (difference == smallestDifference) {
+        tiedCandidates += 1;
+        if (_random.nextInt(tiedCandidates) == 0) selected = candidate;
+      }
+    }
+
+    if (state.mode == MatchMode.oneVsOne) {
+      for (var first = 0; first < playerIds.length - 1; first++) {
+        for (var second = first + 1; second < playerIds.length; second++) {
+          final firstId = playerIds[first];
+          final secondId = playerIds[second];
+          final difference =
+              ((pointsByPlayer[firstId] ?? 0) - (pointsByPlayer[secondId] ?? 0))
+                  .abs();
+          consider(_BalancedCandidate.oneVsOne(firstId, secondId), difference);
+          consider(_BalancedCandidate.oneVsOne(secondId, firstId), difference);
+        }
+      }
+    } else {
+      final pairs = <_PlayerPair>[];
+      for (var first = 0; first < playerIds.length - 1; first++) {
+        for (var second = first + 1; second < playerIds.length; second++) {
+          final firstId = playerIds[first];
+          final secondId = playerIds[second];
+          pairs.add(
+            _PlayerPair(
+              firstId,
+              secondId,
+              (pointsByPlayer[firstId] ?? 0) + (pointsByPlayer[secondId] ?? 0),
+            ),
+          );
+        }
+      }
+      pairs.sort((first, second) => first.points.compareTo(second.points));
+
+      for (var firstIndex = 0; firstIndex < pairs.length - 1; firstIndex++) {
+        final first = pairs[firstIndex];
+        for (
+          var secondIndex = firstIndex + 1;
+          secondIndex < pairs.length;
+          secondIndex++
+        ) {
+          final second = pairs[secondIndex];
+          if (!first.isDisjointFrom(second)) continue;
+          final difference = second.points - first.points;
+          consider(_BalancedCandidate.twoVsTwo(first, second), difference);
+          consider(_BalancedCandidate.twoVsTwo(second, first), difference);
+          break;
+        }
+      }
+    }
+
+    return selected!.toAssignment();
+  }
+
+  static List<Map<String, int>> _teamAssignments(
+    List<String> playerIds,
+    int teamSize,
+  ) {
+    final assignments = <Map<String, int>>[];
+
+    void chooseTeam1(int start, List<String> team1) {
+      if (team1.length == teamSize) {
+        final team1Ids = team1.toSet();
+        assignments.add({
+          for (final id in playerIds) id: team1Ids.contains(id) ? 1 : 2,
+        });
+        return;
+      }
+      final remaining = teamSize - team1.length;
+      for (var index = start; index <= playerIds.length - remaining; index++) {
+        chooseTeam1(index + 1, [...team1, playerIds[index]]);
+      }
+    }
+
+    chooseTeam1(0, const []);
+    return assignments;
+  }
+
+  static bool _sameAssignment(Map<String, int> first, Map<String, int> second) {
+    if (first.length != second.length) return false;
+    return first.entries.every((entry) => second[entry.key] == entry.value);
   }
 
   void setMatchMode(MatchMode mode) {
@@ -520,6 +674,51 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     await _matchesSub.cancel();
     return super.close();
   }
+}
+
+class _PlayerPair {
+  const _PlayerPair(this.firstId, this.secondId, this.points);
+
+  final String firstId;
+  final String secondId;
+  final int points;
+
+  bool isDisjointFrom(_PlayerPair other) =>
+      firstId != other.firstId &&
+      firstId != other.secondId &&
+      secondId != other.firstId &&
+      secondId != other.secondId;
+}
+
+class _BalancedCandidate {
+  const _BalancedCandidate.oneVsOne(this.team1First, this.team2First)
+    : team1Second = null,
+      team2Second = null;
+
+  _BalancedCandidate.twoVsTwo(_PlayerPair team1, _PlayerPair team2)
+    : team1First = team1.firstId,
+      team1Second = team1.secondId,
+      team2First = team2.firstId,
+      team2Second = team2.secondId;
+
+  final String team1First;
+  final String? team1Second;
+  final String team2First;
+  final String? team2Second;
+
+  bool matchesAssignment(Map<String, int> assignment) =>
+      assignment.length == (team1Second == null ? 2 : 4) &&
+      assignment[team1First] == 1 &&
+      assignment[team2First] == 2 &&
+      (team1Second == null || assignment[team1Second] == 1) &&
+      (team2Second == null || assignment[team2Second] == 2);
+
+  Map<String, int> toAssignment() => {
+    team1First: 1,
+    if (team1Second case final id?) id: 1,
+    team2First: 2,
+    if (team2Second case final id?) id: 2,
+  };
 }
 
 class _MatchSnapshot {
