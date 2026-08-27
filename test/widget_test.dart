@@ -708,6 +708,73 @@ void main() {
     expect(repos.updatedMatches.single.scorerIds, ['p2']);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('Toccare una card apre i dettagli della partita', (
+    WidgetTester tester,
+  ) async {
+    final repos = _sampleData();
+    await _pumpHome(tester, home: const HistoryScreen(), repos: repos);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('history-match-m1')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dettagli partita'), findsOneWidget);
+    expect(find.text('17/06/2026 · 12:00'), findsOneWidget);
+    expect(find.text('2v2'), findsWidgets);
+    expect(
+      find.text(
+          'Alessandro Antonio Delgaudio / Beatrice Lunghissimo Cognome  10'),
+      findsOneWidget,
+    );
+    expect(find.byKey(const ValueKey('match-details-edit')), findsOneWidget);
+    expect(find.byKey(const ValueKey('match-details-delete')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Eliminare dai dettagli richiede conferma', (
+    WidgetTester tester,
+  ) async {
+    final repos = _sampleData();
+    await _pumpHome(tester, home: const HistoryScreen(), repos: repos);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('history-match-m1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('match-details-delete')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Eliminare partita?'), findsOneWidget);
+    verifyNever(() => repos.matchRepo.deleteMatch(any()));
+
+    await tester.tap(find.text('Elimina').last);
+    await tester.pumpAndSettle();
+
+    verify(() => repos.matchRepo.deleteMatch('m1')).called(1);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Un errore di eliminazione mantiene la partita e informa', (
+    WidgetTester tester,
+  ) async {
+    final repos = _sampleData();
+    when(() => repos.matchRepo.deleteMatch('m1')).thenThrow(
+      StateError('database unavailable'),
+    );
+    await _pumpHome(tester, home: const HistoryScreen(), repos: repos);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('history-match-m1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('match-details-delete')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Elimina').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Impossibile eliminare la partita.'), findsOneWidget);
+    expect(find.byKey(const ValueKey('history-match-m1')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _Repos {

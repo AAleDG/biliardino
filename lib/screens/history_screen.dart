@@ -93,6 +93,7 @@ class _HistoryViewState extends State<_HistoryView>
                           players: state.players,
                           anim: _ctrl,
                           delay: math.min(i, 8) * 0.08,
+                          onOpen: (match) => _openMatchDetails(context, match),
                           onEdit: (match) =>
                               _openEditMatchDialog(context, match),
                           onDelete: (match) =>
@@ -105,6 +106,32 @@ class _HistoryViewState extends State<_HistoryView>
         );
       },
     );
+  }
+}
+
+Future<void> _openMatchDetails(
+  BuildContext rootContext,
+  GameMatch match,
+) async {
+  final state = rootContext.read<HistoryCubit>().state;
+  final action = await showModalBottomSheet<_MatchAction>(
+    context: rootContext,
+    useSafeArea: true,
+    isScrollControlled: true,
+    backgroundColor: NttColors.surfaceMid,
+    builder: (context) => _MatchDetailsSheet(
+      match: match,
+      players: state.players,
+    ),
+  );
+  if (action == null || !rootContext.mounted) {
+    return;
+  }
+  switch (action) {
+    case _MatchAction.edit:
+      await _openEditMatchDialog(rootContext, match);
+    case _MatchAction.delete:
+      await _confirmDeleteMatch(rootContext, match);
   }
 }
 
@@ -1133,6 +1160,7 @@ class _MatchDaySection extends StatelessWidget {
     required this.players,
     required this.anim,
     required this.delay,
+    required this.onOpen,
     required this.onEdit,
     required this.onDelete,
   });
@@ -1141,6 +1169,7 @@ class _MatchDaySection extends StatelessWidget {
   final List<Player> players;
   final Animation<double> anim;
   final double delay;
+  final ValueChanged<GameMatch> onOpen;
   final ValueChanged<GameMatch> onEdit;
   final ValueChanged<GameMatch> onDelete;
 
@@ -1178,6 +1207,7 @@ class _MatchDaySection extends StatelessWidget {
               (match) => _MatchCard(
                 match: match,
                 players: players,
+                onOpen: () => onOpen(match),
                 onEdit: () => onEdit(match),
                 onDelete: () => onDelete(match),
               ),
@@ -1212,12 +1242,14 @@ class _MatchCard extends StatelessWidget {
   const _MatchCard({
     required this.match,
     required this.players,
+    required this.onOpen,
     required this.onEdit,
     required this.onDelete,
   });
 
   final GameMatch match;
   final List<Player> players;
+  final VoidCallback onOpen;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -1225,122 +1257,207 @@ class _MatchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final timeLabel = DateFormat('HH:mm').format(match.playedAt);
     final baseModeLabel = match.mode == MatchMode.oneVsOne ? '1v1' : '2v2';
-    final modeLabel = match.isRivalry
-        ? 'Rivalita · $baseModeLabel'
-        : baseModeLabel;
-    final t1Names = match.team1
-        .map((id) => StatsService.playerName(players, id))
-        .toList();
-    final t2Names = match.team2
-        .map((id) => StatsService.playerName(players, id))
-        .toList();
+    final modeLabel =
+        match.isRivalry ? 'Rivalita · $baseModeLabel' : baseModeLabel;
+    final t1Names =
+        match.team1.map((id) => StatsService.playerName(players, id)).toList();
+    final t2Names =
+        match.team2.map((id) => StatsService.playerName(players, id)).toList();
     final winColor = match.winningTeam == 1 ? NttColors.team1 : NttColors.team2;
     final modeColor = match.isRivalry
         ? NttColors.team2
         : (match.mode == MatchMode.oneVsOne
-              ? NttColors.warning
-              : NttColors.accentSoft);
+            ? NttColors.warning
+            : NttColors.accentSoft);
 
     return Card(
+      key: ValueKey('history-match-${match.id}'),
       clipBehavior: Clip.antiAlias,
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            child: Container(width: 3, color: winColor),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.schedule,
-                      size: 13,
-                      color: NttColors.textFaint,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      timeLabel,
-                      style: const TextStyle(
-                        color: NttColors.textFaint,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                    const Spacer(),
-                    PopupMenuButton<_MatchAction>(
-                      tooltip: 'Azioni partita',
-                      onSelected: (action) {
-                        switch (action) {
-                          case _MatchAction.edit:
-                            onEdit();
-                          case _MatchAction.delete:
-                            onDelete();
-                        }
-                      },
-                      itemBuilder: (context) => const [
-                        PopupMenuItem<_MatchAction>(
-                          value: _MatchAction.edit,
-                          child: ListTile(
-                            leading: Icon(Icons.edit),
-                            title: Text('Correggi'),
-                          ),
-                        ),
-                        PopupMenuItem<_MatchAction>(
-                          value: _MatchAction.delete,
-                          child: ListTile(
-                            leading: Icon(Icons.delete_outline),
-                            title: Text('Elimina'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: NttColors.surfaceHigh,
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08),
-                        ),
-                      ),
-                      child: Text(
-                        modeLabel,
-                        style: TextStyle(
-                          color: modeColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _TeamResultLine(
-                  color: NttColors.team1,
-                  names: t1Names,
-                  score: match.t1Score,
-                  isWinner: match.winningTeam == 1,
-                ),
-                const SizedBox(height: 6),
-                _TeamResultLine(
-                  color: NttColors.team2,
-                  names: t2Names,
-                  score: match.t2Score,
-                  isWinner: match.winningTeam == 2,
-                ),
-              ],
+      child: InkWell(
+        onTap: onOpen,
+        child: Stack(
+          children: [
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: Container(width: 3, color: winColor),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.schedule,
+                        size: 13,
+                        color: NttColors.textFaint,
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        timeLabel,
+                        style: const TextStyle(
+                          color: NttColors.textFaint,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                      const Spacer(),
+                      PopupMenuButton<_MatchAction>(
+                        tooltip: 'Azioni partita',
+                        onSelected: (action) {
+                          switch (action) {
+                            case _MatchAction.edit:
+                              onEdit();
+                            case _MatchAction.delete:
+                              onDelete();
+                          }
+                        },
+                        itemBuilder: (context) => const [
+                          PopupMenuItem<_MatchAction>(
+                            value: _MatchAction.edit,
+                            child: ListTile(
+                              leading: Icon(Icons.edit),
+                              title: Text('Correggi'),
+                            ),
+                          ),
+                          PopupMenuItem<_MatchAction>(
+                            value: _MatchAction.delete,
+                            child: ListTile(
+                              leading: Icon(Icons.delete_outline),
+                              title: Text('Elimina'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: NttColors.surfaceHigh,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
+                        ),
+                        child: Text(
+                          modeLabel,
+                          style: TextStyle(
+                            color: modeColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _TeamResultLine(
+                    color: NttColors.team1,
+                    names: t1Names,
+                    score: match.t1Score,
+                    isWinner: match.winningTeam == 1,
+                  ),
+                  const SizedBox(height: 6),
+                  _TeamResultLine(
+                    color: NttColors.team2,
+                    names: t2Names,
+                    score: match.t2Score,
+                    isWinner: match.winningTeam == 2,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+enum _MatchAction { edit, delete }
+
+class _MatchDetailsSheet extends StatelessWidget {
+  const _MatchDetailsSheet({required this.match, required this.players});
+
+  final GameMatch match;
+  final List<Player> players;
+
+  @override
+  Widget build(BuildContext context) {
+    final date = DateFormat('dd/MM/yyyy').format(match.playedAt);
+    final time = DateFormat('HH:mm').format(match.playedAt);
+    final team1 = match.team1
+        .map((id) => StatsService.playerName(players, id))
+        .join(' / ');
+    final team2 = match.team2
+        .map((id) => StatsService.playerName(players, id))
+        .join(' / ');
+    final mode = match.mode == MatchMode.oneVsOne ? '1v1' : '2v2';
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: NttColors.textFaint,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Dettagli partita',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 18),
+          _MatchDetailRow(label: 'Data e ora', value: '$date · $time'),
+          _MatchDetailRow(
+            label: 'Formato',
+            value: match.isRivalry ? 'Rivalita · $mode' : mode,
+          ),
+          _MatchDetailRow(
+            label: 'Squadra 1',
+            value: '$team1  ${match.t1Score}',
+          ),
+          _MatchDetailRow(
+            label: 'Squadra 2',
+            value: '$team2  ${match.t2Score}',
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  key: const ValueKey('match-details-delete'),
+                  onPressed: () =>
+                      Navigator.of(context).pop(_MatchAction.delete),
+                  icon: const Icon(Icons.delete_outline),
+                  label: const Text('Elimina'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  key: const ValueKey('match-details-edit'),
+                  onPressed: () => Navigator.of(context).pop(_MatchAction.edit),
+                  icon: const Icon(Icons.edit),
+                  label: const Text('Correggi'),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1348,7 +1465,37 @@ class _MatchCard extends StatelessWidget {
   }
 }
 
-enum _MatchAction { edit, delete }
+class _MatchDetailRow extends StatelessWidget {
+  const _MatchDetailRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 96,
+            child: Text(
+              label,
+              style: const TextStyle(color: NttColors.textMuted),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 class _TeamResultLine extends StatelessWidget {
   const _TeamResultLine({
