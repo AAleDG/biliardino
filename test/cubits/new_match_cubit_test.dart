@@ -420,6 +420,36 @@ void main() {
     );
 
     test(
+      'balanced generation finds the global optimum across eligible players',
+      () async {
+        final players = _PlayerRepositoryFake(_players().take(3).toList());
+        final matches = _MatchRepositoryFake(
+          initialMatches: [
+            ..._winsFor('p1', 3),
+            ..._winsFor('p2', 2),
+            ..._winsFor('p3', 2),
+          ],
+        );
+        final cubit = NewMatchCubit(
+          playerRepository: players,
+          matchRepository: matches,
+          matchRulesRepository: _MatchRulesRepositoryFake(),
+          random: Random(1),
+        );
+
+        cubit
+          ..setMatchMode(MatchMode.oneVsOne)
+          ..generateBalancedTeams();
+
+        expect(cubit.state.assignment.keys.toSet(), {'p2', 'p3'});
+        expect(cubit.state.teamsValid, isTrue);
+
+        await cubit.close();
+        await players.dispose();
+      },
+    );
+
+    test(
       'balanced generation resolves ties and produces a new proposal',
       () async {
         final cubit = NewMatchCubit(

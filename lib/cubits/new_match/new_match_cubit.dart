@@ -140,11 +140,13 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     if (state.present.length < state.requiredPlayers) return;
 
     final eligibleIds = state.present.map((player) => player.id).toList();
-    _shuffle(eligibleIds);
-    final selectedIds = eligibleIds.take(state.requiredPlayers).toList();
-    var candidates = _teamAssignments(selectedIds, state.mode.teamSize);
+    late List<Map<String, int>> candidates;
 
     if (balanced) {
+      candidates = _playerCombinations(
+        eligibleIds,
+        state.requiredPlayers,
+      ).expand((ids) => _teamAssignments(ids, state.mode.teamSize)).toList();
       final pointsByPlayer = {
         for (final stats in StatsService.computeLeaderboard(
           state.players,
@@ -176,6 +178,10 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         }
       }
       candidates = balancedCandidates;
+    } else {
+      _shuffle(eligibleIds);
+      final selectedIds = eligibleIds.take(state.requiredPlayers).toList();
+      candidates = _teamAssignments(selectedIds, state.mode.teamSize);
     }
 
     final alternatives = candidates
@@ -222,6 +228,27 @@ class NewMatchCubit extends Cubit<NewMatchState> {
 
     chooseTeam1(0, const []);
     return assignments;
+  }
+
+  static List<List<String>> _playerCombinations(
+    List<String> playerIds,
+    int requiredPlayers,
+  ) {
+    final combinations = <List<String>>[];
+
+    void choosePlayers(int start, List<String> selected) {
+      if (selected.length == requiredPlayers) {
+        combinations.add(List.unmodifiable(selected));
+        return;
+      }
+      final remaining = requiredPlayers - selected.length;
+      for (var index = start; index <= playerIds.length - remaining; index++) {
+        choosePlayers(index + 1, [...selected, playerIds[index]]);
+      }
+    }
+
+    choosePlayers(0, const []);
+    return combinations;
   }
 
   static bool _sameAssignment(Map<String, int> first, Map<String, int> second) {

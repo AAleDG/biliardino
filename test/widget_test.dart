@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/cubits/leaderboard/leaderboard_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
@@ -206,6 +208,40 @@ void main() {
     expect(cubit.state.mode, MatchMode.oneVsOne);
     expect(cubit.state.assignment, hasLength(2));
     expect(cubit.state.teamsValid, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Le azioni sono disabilitate durante il salvataggio regole', (
+    WidgetTester tester,
+  ) async {
+    final sample = _sampleData();
+    final pendingSave = Completer<void>();
+    when(
+      () => sample.matchRulesRepo.save(any()),
+    ).thenAnswer((_) => pendingSave.future);
+    await _pumpHome(tester, home: const NewMatchScreen(), repos: sample);
+    await tester.pumpAndSettle();
+
+    final cubit = tester
+        .element(find.byType(NewMatchScreen))
+        .read<NewMatchCubit>();
+    final persistence = cubit.setRuleMode(MatchRuleMode.firstTo);
+    expect(cubit.state.isPersistingRules, isTrue);
+    await tester.pumpAndSettle();
+
+    OutlinedButton action(Finder finder) => tester.widget(finder);
+    final randomAction = find.byKey(const ValueKey('random-teams-action'));
+    final balancedAction = find.byKey(const ValueKey('balanced-teams-action'));
+    expect(action(randomAction).onPressed, isNull);
+    expect(action(balancedAction).onPressed, isNull);
+
+    pendingSave.complete();
+    await persistence;
+    expect(cubit.state.isPersistingRules, isFalse);
+    await tester.pumpAndSettle();
+
+    expect(action(randomAction).onPressed, isNotNull);
+    expect(action(balancedAction).onPressed, isNotNull);
     expect(tester.takeException(), isNull);
   });
 

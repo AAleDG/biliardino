@@ -539,7 +539,7 @@ class _Setup extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       key: const ValueKey('random-teams-action'),
-                      onPressed: onRandomTeams,
+                      onPressed: isPersistingRules ? null : onRandomTeams,
                       icon: const Icon(Icons.shuffle, size: 18),
                       label: const Text('CASUALI'),
                     ),
@@ -548,7 +548,7 @@ class _Setup extends StatelessWidget {
                   Expanded(
                     child: OutlinedButton.icon(
                       key: const ValueKey('balanced-teams-action'),
-                      onPressed: onBalancedTeams,
+                      onPressed: isPersistingRules ? null : onBalancedTeams,
                       icon: const Icon(Icons.balance, size: 18),
                       label: const Text('BILANCIATE'),
                     ),
