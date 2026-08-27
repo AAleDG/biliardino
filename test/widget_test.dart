@@ -252,6 +252,36 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Il profilo mostra tutti i nomi delle relazioni a pari merito', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repos = _tiedRelationshipData();
+    await _pumpHome(
+      tester,
+      home: const PlayerProfileScreen(playerId: 'p1'),
+      repos: repos,
+    );
+    await tester.pumpAndSettle();
+
+    const tiedNames = 'Cristiano Nome Molto Esteso, Daniela Super Competitiva';
+    await tester.scrollUntilVisible(
+      find.text('INTESA E RIVALITÀ'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    final relationshipNames = tester.widget<Text>(find.text(tiedNames));
+    expect(relationshipNames.maxLines, isNull);
+    expect(relationshipNames.overflow, isNull);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Il nome nella classifica apre il profilo giocatore', (
     WidgetTester tester,
   ) async {
@@ -818,6 +848,14 @@ _Repos _sampleData({MatchRules rules = MatchRules.defaultRules}) {
     ),
   ];
   return _Repos.build(players: players, matches: matches, rules: rules);
+}
+
+_Repos _tiedRelationshipData() {
+  final sample = _sampleData();
+  return _Repos.build(
+    players: sample.playerRepo.players,
+    matches: [sample.matchRepo.matches.first],
+  );
 }
 
 _Repos _sampleDataNoMatchPlayerFirst() {

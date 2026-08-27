@@ -234,8 +234,6 @@ class _RelationshipCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               value,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.w800),
             ),
             if (matches != null)
