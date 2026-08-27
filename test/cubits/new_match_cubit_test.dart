@@ -471,6 +471,41 @@ void main() {
     );
 
     test(
+      'balanced generation stays responsive with 100 equally ranked players',
+      () async {
+        final players = _PlayerRepositoryFake(
+          List.generate(
+            100,
+            (index) => Player(
+              id: 'large-$index',
+              name: 'Large Player $index',
+              createdAt: DateTime(2026),
+              isPresent: true,
+            ),
+          ),
+        );
+        final cubit = NewMatchCubit(
+          playerRepository: players,
+          matchRepository: _MatchRepositoryFake(),
+          matchRulesRepository: _MatchRulesRepositoryFake(),
+          random: Random(17),
+        );
+        final stopwatch = Stopwatch()..start();
+
+        cubit.generateBalancedTeams();
+        stopwatch.stop();
+
+        expect(cubit.state.assignment, hasLength(4));
+        expect(cubit.state.teamsValid, isTrue);
+        expect(stopwatch.elapsed, lessThan(const Duration(seconds: 2)));
+
+        await cubit.close();
+        await players.dispose();
+      },
+      timeout: const Timeout(Duration(seconds: 5)),
+    );
+
+    test(
       'generation is ignored when unavailable or match state is locked',
       () async {
         final tooFewPlayers = _PlayerRepositoryFake(
