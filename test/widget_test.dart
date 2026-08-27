@@ -732,6 +732,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('I dettagli restano accessibili in landscape con testo grande', (
+    WidgetTester tester,
+  ) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    final repos = _sampleData();
+    await _pumpHome(tester, home: const HistoryScreen(), repos: repos);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('history-match-m1')));
+    await tester.pumpAndSettle();
+
+    tester.view.physicalSize = const Size(568, 320);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('match-details-edit')),
+      150,
+      scrollable: find.byType(Scrollable).last,
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('match-details-edit')), findsOneWidget);
+    expect(find.byKey(const ValueKey('match-details-delete')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Eliminare dai dettagli richiede conferma', (
     WidgetTester tester,
   ) async {
