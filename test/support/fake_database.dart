@@ -69,4 +69,17 @@ class FakeDatabaseHelper implements DatabaseHelper {
   Future<void> setSettings(Map<String, String> values) async {
     settings.addAll(values);
   }
+
+  @override
+  Future<void> replacePlayersAndMatches({
+    required List<Player> players,
+    required List<GameMatch> matches,
+  }) async {
+    this.players
+      ..clear()
+      ..addAll(players);
+    this.matches
+      ..clear()
+      ..addAll(matches);
+  }
 }
