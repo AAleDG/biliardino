@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:biliardino/data/database_helper.dart';
 import 'package:biliardino/models/player.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as path;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -18,6 +20,147 @@ void main() {
 
   tearDown(() async {
     await database.close();
+  });
+
+  test('transactionally migrates a populated v1 database to v7', () async {
+    final databasePath = path.join(
+      Directory.systemTemp.path,
+      'biliardino-migration-${DateTime.now().microsecondsSinceEpoch}.db',
+    );
+    addTearDown(() => databaseFactoryFfi.deleteDatabase(databasePath));
+
+    final version1 = await databaseFactoryFfi.openDatabase(
+      databasePath,
+      options: OpenDatabaseOptions(
+        version: 1,
+        onCreate: (db, version) async {
+          await _createV1Schema(db);
+          for (final entry in const {
+            'p1': ('Ada', 1, 1),
+            'p2': ('Grace', 2, 0),
+            'p3': ('Linus', 3, 1),
+            'p4': ('Margaret', 4, 0),
+          }.entries) {
+            await db.insert('players', {
+              'id': entry.key,
+              'name': entry.value.$1,
+              'created_at': entry.value.$2,
+              'is_present': entry.value.$3,
+            });
+          }
+          await db.insert('matches', {
+            'id': 'legacy-match',
+            'played_at': 10,
+            't1p1': 'p1',
+            't1p2': 'p2',
+            't2p1': 'p3',
+            't2p2': 'p4',
+            't1_score': 5,
+            't2_score': 3,
+            'winning_team': 1,
+          });
+        },
+      ),
+    );
+    await version1.close();
+
+    final migrated = await databaseFactoryFfi.openDatabase(
+      databasePath,
+      options: OpenDatabaseOptions(
+        version: DatabaseHelper.databaseVersion,
+        onUpgrade: (db, oldVersion, newVersion) =>
+            DatabaseHelper.migrateDatabase(db, oldVersion, newVersion),
+      ),
+    );
+    addTearDown(migrated.close);
+
+    final players = await migrated.query('players', orderBy: 'id');
+    final matches = await migrated.query('matches');
+    final indexes = await migrated.rawQuery('PRAGMA index_list(matches)');
+    final settings = await migrated.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'settings'",
+    );
+
+    expect(players.map((row) => row['id']), ['p1', 'p2', 'p3', 'p4']);
+    expect(players.map((row) => row['is_present']), [1, 0, 1, 0]);
+    expect(matches.single['id'], 'legacy-match');
+    expect(matches.single['match_mode'], '2v2');
+    expect(matches.single['scorer_ids_json'], '[]');
+    expect(settings, hasLength(1));
+    expect(
+      indexes.map((row) => row['name']),
+      contains('idx_matches_played_at'),
+    );
+
+    await expectLater(
+      migrated.insert('matches', {
+        ...matches.single,
+        'id': 'invalid-score',
+        't1_score': -1,
+      }),
+      throwsA(isA<DatabaseException>()),
+    );
+    await expectLater(
+      migrated.insert('matches', {
+        ...matches.single,
+        'id': 'invalid-winner',
+        'winning_team': 2,
+      }),
+      throwsA(isA<DatabaseException>()),
+    );
+    await expectLater(
+      migrated.insert('matches', {
+        ...matches.single,
+        'id': 'missing-player',
+        't2p2': 'unknown',
+      }),
+      throwsA(isA<DatabaseException>()),
+    );
+  });
+
+  test('rolls back the complete upgrade when v1 data is malformed', () async {
+    await _createV1Schema(database);
+    for (final id in const ['p1', 'p2', 'p3', 'p4']) {
+      await database.insert('players', {
+        'id': id,
+        'name': id,
+        'created_at': 1,
+        'is_present': 1,
+      });
+    }
+    await database.insert('matches', {
+      'id': 'invalid',
+      'played_at': 10,
+      't1p1': 'p1',
+      't1p2': 'p2',
+      't2p1': 'p3',
+      't2p2': 'missing',
+      't1_score': 2,
+      't2_score': 1,
+      'winning_team': 1,
+    });
+
+    await expectLater(
+      database.transaction(
+        (txn) => DatabaseHelper.migrateDatabase(
+          txn,
+          1,
+          DatabaseHelper.databaseVersion,
+        ),
+      ),
+      throwsA(isA<StateError>()),
+    );
+
+    final matchColumns = await database.rawQuery('PRAGMA table_info(matches)');
+    final settings = await database.rawQuery(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'settings'",
+    );
+    expect(
+      matchColumns.map((row) => row['name']),
+      isNot(contains('match_mode')),
+    );
+    expect(settings, isEmpty);
+    expect(await database.query('matches'), hasLength(1));
   });
 
   test('migrates v3 players to v5 without changing match identities', () async {
@@ -262,6 +405,30 @@ Future<void> _createPlayersTable(
       $nameKeyColumn
       created_at INTEGER NOT NULL,
       is_present INTEGER NOT NULL
+    )
+  ''');
+}
+
+Future<void> _createV1Schema(Database database) async {
+  await database.execute('''
+    CREATE TABLE players (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      is_present INTEGER NOT NULL
+    )
+  ''');
+  await database.execute('''
+    CREATE TABLE matches (
+      id TEXT PRIMARY KEY,
+      played_at INTEGER NOT NULL,
+      t1p1 TEXT NOT NULL,
+      t1p2 TEXT NOT NULL,
+      t2p1 TEXT NOT NULL,
+      t2p2 TEXT NOT NULL,
+      t1_score INTEGER NOT NULL,
+      t2_score INTEGER NOT NULL,
+      winning_team INTEGER NOT NULL
     )
   ''');
 }
