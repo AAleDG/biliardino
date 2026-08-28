@@ -35,6 +35,14 @@ void main() {
     registerFallbackValue(<String>[]);
     registerFallbackValue(MatchRules.defaultRules);
     registerFallbackValue(_fallbackMatch());
+    registerFallbackValue(
+      Player(
+        id: 'fallback-player',
+        name: 'Fallback',
+        createdAt: DateTime(2026),
+        isPresent: false,
+      ),
+    );
     registerFallbackValue('');
   });
 
@@ -343,6 +351,57 @@ void main() {
     expect(find.text('2/2 presenti'), findsOneWidget);
     expect(find.text('Pronti a giocare'), findsOneWidget);
     expect(find.textContaining('Servono'), findsNothing);
+  });
+
+  testWidgets('Archiviazione richiede conferma', (tester) async {
+    final player = Player(
+      id: 'p1',
+      name: 'Mario',
+      createdAt: DateTime(2026),
+      isPresent: true,
+    );
+    final repos = _Repos.build(players: [player], matches: const []);
+    await _pumpHome(tester, home: const PlayersScreen(), repos: repos);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('player-actions-p1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Archivia'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Archivia giocatore'), findsOneWidget);
+    verifyNever(() => repos.playerRepo.archivePlayer(any()));
+
+    await tester.tap(find.byKey(const ValueKey('confirm-archive-player')));
+    await tester.pumpAndSettle();
+
+    verify(() => repos.playerRepo.archivePlayer(player)).called(1);
+    expect(find.text('Archivia giocatore'), findsNothing);
+  });
+
+  testWidgets('Giocatore archiviato resta visibile e può essere riattivato', (
+    tester,
+  ) async {
+    final player = Player(
+      id: 'p1',
+      name: 'Mario',
+      createdAt: DateTime(2026),
+      isPresent: false,
+      isArchived: true,
+    );
+    final repos = _Repos.build(players: [player], matches: const []);
+    await _pumpHome(tester, home: const PlayersScreen(), repos: repos);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mario'), findsOneWidget);
+    expect(find.text('Archiviato'), findsOneWidget);
+    expect(find.byType(Switch), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('player-actions-p1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Riattiva'));
+    await tester.pumpAndSettle();
+
+    verify(() => repos.playerRepo.reactivatePlayer(player)).called(1);
   });
 
   testWidgets('Il profilo mostra statistiche avanzate e storico filtrato', (
@@ -724,7 +783,8 @@ void main() {
     expect(find.text('2v2'), findsWidgets);
     expect(
       find.text(
-          'Alessandro Antonio Delgaudio / Beatrice Lunghissimo Cognome  10'),
+        'Alessandro Antonio Delgaudio / Beatrice Lunghissimo Cognome  10',
+      ),
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('match-details-edit')), findsOneWidget);
@@ -790,9 +850,9 @@ void main() {
     WidgetTester tester,
   ) async {
     final repos = _sampleData();
-    when(() => repos.matchRepo.deleteMatch('m1')).thenThrow(
-      StateError('database unavailable'),
-    );
+    when(
+      () => repos.matchRepo.deleteMatch('m1'),
+    ).thenThrow(StateError('database unavailable'));
     await _pumpHome(tester, home: const HistoryScreen(), repos: repos);
     await tester.pumpAndSettle();
 
@@ -835,6 +895,9 @@ class _Repos {
     when(
       () => playerRepo.watchPlayers(),
     ).thenAnswer((_) => Stream.value(players));
+    when(() => playerRepo.archivePlayer(any())).thenAnswer((_) async {});
+    when(() => playerRepo.reactivatePlayer(any())).thenAnswer((_) async {});
+    when(() => playerRepo.renamePlayer(any(), any())).thenAnswer((_) async {});
     when(() => matchRepo.matches).thenReturn(matches);
     when(
       () => matchRepo.watchMatches(),

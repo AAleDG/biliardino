@@ -3,35 +3,40 @@ class Player {
   final String name;
   final DateTime createdAt;
   final bool isPresent;
+  final bool isArchived;
 
   Player({
     required this.id,
     required this.name,
     required this.createdAt,
     required this.isPresent,
+    this.isArchived = false,
   });
 
   Map<String, dynamic> toMap() => {
-    'id': id,
-    'name': name,
-    'name_key': normalizedNameKey(name),
-    'created_at': createdAt.millisecondsSinceEpoch,
-    'is_present': isPresent ? 1 : 0,
-  };
+        'id': id,
+        'name': name,
+        'name_key': normalizedNameKey(name),
+        'created_at': createdAt.millisecondsSinceEpoch,
+        'is_present': isPresent ? 1 : 0,
+        'is_archived': isArchived ? 1 : 0,
+      };
 
   factory Player.fromMap(Map<String, dynamic> m) => Player(
-    id: m['id'] as String,
-    name: m['name'] as String,
-    createdAt: DateTime.fromMillisecondsSinceEpoch(m['created_at'] as int),
-    isPresent: (m['is_present'] as int) == 1,
-  );
+        id: m['id'] as String,
+        name: m['name'] as String,
+        createdAt: DateTime.fromMillisecondsSinceEpoch(m['created_at'] as int),
+        isPresent: (m['is_present'] as int) == 1,
+        isArchived: (m['is_archived'] as int? ?? 0) == 1,
+      );
 
-  Player copyWith({String? name, bool? isPresent}) => Player(
-    id: id,
-    name: name ?? this.name,
-    createdAt: createdAt,
-    isPresent: isPresent ?? this.isPresent,
-  );
+  Player copyWith({String? name, bool? isPresent, bool? isArchived}) => Player(
+        id: id,
+        name: name ?? this.name,
+        createdAt: createdAt,
+        isPresent: isPresent ?? this.isPresent,
+        isArchived: isArchived ?? this.isArchived,
+      );
 
   static String normalizedNameKey(String name) {
     return name.replaceAll(_nameWhitespacePattern, ' ').trim().toLowerCase();

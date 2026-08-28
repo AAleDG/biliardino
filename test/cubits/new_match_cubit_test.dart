@@ -317,11 +317,11 @@ void main() {
       'random generation is deterministic and replaces its proposal',
       () async {
         NewMatchCubit buildCubit() => NewMatchCubit(
-          playerRepository: _PlayerRepositoryFake(_players()),
-          matchRepository: _MatchRepositoryFake(),
-          matchRulesRepository: _MatchRulesRepositoryFake(),
-          random: Random(42),
-        );
+              playerRepository: _PlayerRepositoryFake(_players()),
+              matchRepository: _MatchRepositoryFake(),
+              matchRulesRepository: _MatchRulesRepositoryFake(),
+              random: Random(42),
+            );
 
         final first = buildCubit();
         final second = buildCubit();
@@ -740,7 +740,7 @@ NewMatchCubit _readyCubit({
 
 class _MatchRulesRepositoryFake implements MatchRulesRepository {
   _MatchRulesRepositoryFake({MatchRules initialRules = MatchRules.defaultRules})
-    : _rules = initialRules;
+      : _rules = initialRules;
 
   MatchRules _rules;
   Future<void> Function(MatchRules rules)? onSave;
@@ -794,7 +794,7 @@ class _SavedMatch {
 
 class _MatchRepositoryFake implements MatchRepository {
   _MatchRepositoryFake({List<GameMatch> initialMatches = const []})
-    : _matches = List.unmodifiable(initialMatches);
+      : _matches = List.unmodifiable(initialMatches);
 
   Future<void> Function(_SavedMatch match)? onSave;
   final List<_SavedMatch> saved = [];
@@ -863,7 +863,7 @@ List<GameMatch> _winsFor(String playerId, int wins) {
 
 class _PlayerRepositoryFake implements PlayerRepository {
   _PlayerRepositoryFake(List<Player> players)
-    : _players = List.unmodifiable(players);
+      : _players = List.unmodifiable(players);
 
   final StreamController<List<Player>> _controller =
       StreamController<List<Player>>.broadcast();
@@ -888,6 +888,12 @@ class _PlayerRepositoryFake implements PlayerRepository {
 
   @override
   Future<void> renamePlayer(Player player, String name) async {}
+
+  @override
+  Future<void> archivePlayer(Player player) async {}
+
+  @override
+  Future<void> reactivatePlayer(Player player) async {}
 
   @override
   Future<void> dispose() => _controller.close();
