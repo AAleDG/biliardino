@@ -84,6 +84,11 @@ void main() {
     expect(players.map((row) => row['id']), ['p1', 'p2', 'p3', 'p4']);
     expect(players.map((row) => row['is_present']), [1, 0, 1, 0]);
     expect(players.map((row) => row['is_archived']), [0, 0, 0, 0]);
+    final playerColumns = await migrated.rawQuery('PRAGMA table_info(players)');
+    expect(
+      playerColumns.singleWhere((row) => row['name'] == 'name_key')['notnull'],
+      1,
+    );
     expect(matches.single['id'], 'legacy-match');
     expect(matches.single['match_mode'], '2v2');
     expect(matches.single['scorer_ids_json'], '[]');
@@ -116,6 +121,82 @@ void main() {
         't2p2': 'unknown',
       }),
       throwsA(isA<DatabaseException>()),
+    );
+    for (final invalidScore in const ['abc', 1.5]) {
+      await expectLater(
+        migrated.insert('matches', {
+          ...matches.single,
+          'id': 'invalid-score-$invalidScore',
+          't1_score': invalidScore,
+        }),
+        throwsA(isA<DatabaseException>()),
+      );
+    }
+    await expectLater(
+      migrated.insert('matches', {
+        ...matches.single,
+        'id': 'invalid-1v1-secondary',
+        'match_mode': '1v1',
+        't1p2': 'p2',
+        't2p2': '',
+      }),
+      throwsA(isA<DatabaseException>()),
+    );
+    await expectLater(
+      migrated.insert('matches', {
+        ...matches.single,
+        'id': 'invalid-1v1-scorer',
+        'match_mode': '1v1',
+        't1p2': '',
+        't2p2': '',
+        't1_score': 1,
+        't2_score': 0,
+        'scorer_ids_json': jsonEncode(['p2']),
+      }),
+      throwsA(isA<DatabaseException>()),
+    );
+  });
+
+  test('repairs nullable name_key while migrating v6 to v7', () async {
+    await _createPlayersTable(database, withNameKey: false);
+    await database.execute('ALTER TABLE players ADD COLUMN name_key TEXT');
+    for (final entry in const {
+      'p1': 'Ada',
+      'p2': 'Grace',
+      'p3': 'Linus',
+      'p4': 'Margaret',
+    }.entries) {
+      await _insertPlayer(
+        database,
+        id: entry.key,
+        name: entry.value,
+        createdAt: 1,
+        withNameKey: true,
+      );
+    }
+    await _createMatchesTable(database);
+    await _insertMatch(
+      database,
+      id: 'm1',
+      t1p1: 'p1',
+      t1p2: 'p2',
+      t2p1: 'p3',
+      t2p2: 'p4',
+      scorerIds: const [],
+    );
+
+    await DatabaseHelper.migrateDatabase(database, 6, 7);
+
+    final columns = await database.rawQuery('PRAGMA table_info(players)');
+    expect(
+      columns.singleWhere((row) => row['name'] == 'name_key')['notnull'],
+      1,
+    );
+    expect(
+      (await database.query(
+        'players',
+      )).firstWhere((row) => row['id'] == 'p1')['name_key'],
+      'ada',
     );
   });
 
