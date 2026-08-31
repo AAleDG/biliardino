@@ -137,20 +137,31 @@ class DatabaseHelper {
       table: 'players',
       column: 'name_key',
     );
-    if (!hasNameKey) {
-      await db.execute("ALTER TABLE players ADD COLUMN name_key TEXT");
-    }
-
     final players = await db.query('players');
+    await db.execute('DROP INDEX IF EXISTS idx_players_name_key');
+    await db.execute('''
+      CREATE TABLE players_new (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        name_key TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        is_present INTEGER NOT NULL
+      )
+    ''');
     for (final row in players) {
       final player = _PlayerRow.fromMap(row);
-      await db.update(
-        'players',
-        {'name_key': Player.normalizedNameKey(player.name)},
-        where: 'id = ?',
-        whereArgs: [player.id],
-      );
+      await db.insert('players_new', {
+        'id': player.id,
+        'name': player.name,
+        'name_key': hasNameKey && row['name_key'] is String
+            ? row['name_key']
+            : Player.normalizedNameKey(player.name),
+        'created_at': row['created_at'],
+        'is_present': row['is_present'],
+      });
     }
+    await db.execute('DROP TABLE players');
+    await db.execute('ALTER TABLE players_new RENAME TO players');
   }
 
   static Future<void> migratePlayersToPersistedUniqueNameKeys(
@@ -292,6 +303,9 @@ Future<void> _validateIntegrity(DatabaseExecutor db) async {
     final requiredPlayerColumns = mode == '1v1'
         ? const ['t1p1', 't2p1']
         : const ['t1p1', 't1p2', 't2p1', 't2p2'];
+    if (mode == '1v1' && (match['t1p2'] != '' || match['t2p2'] != '')) {
+      throw StateError('Invalid secondary players in match id=$matchId.');
+    }
     final referencedPlayers = requiredPlayerColumns
         .map((column) => match[column])
         .whereType<String>()
@@ -316,8 +330,8 @@ Future<void> _validateIntegrity(DatabaseExecutor db) async {
       throw StateError('Invalid scorer history in match id=$matchId.');
     }
     if (decodedScorers.isNotEmpty) {
-      final team1 = {match['t1p1'], match['t1p2']};
-      final team2 = {match['t2p1'], match['t2p2']};
+      final team1 = {match['t1p1'], if (mode == '2v2') match['t1p2']};
+      final team2 = {match['t2p1'], if (mode == '2v2') match['t2p2']};
       final team1Goals = decodedScorers.where(team1.contains).length;
       final team2Goals = decodedScorers.where(team2.contains).length;
       if (team1Goals != score1 || team2Goals != score2) {
@@ -335,13 +349,17 @@ Future<void> _createMatchIntegrityTriggers(DatabaseExecutor db) async {
       BEFORE $operation ON matches
       BEGIN
         SELECT CASE
-          WHEN NEW.t1_score < 0 OR NEW.t2_score < 0 OR NEW.t1_score = NEW.t2_score
+          WHEN typeof(NEW.t1_score) != 'integer'
+            OR typeof(NEW.t2_score) != 'integer'
+            OR NEW.t1_score < 0 OR NEW.t2_score < 0 OR NEW.t1_score = NEW.t2_score
           THEN RAISE(ABORT, 'invalid match scores')
           WHEN NEW.winning_team NOT IN (1, 2)
             OR NEW.winning_team != CASE WHEN NEW.t1_score > NEW.t2_score THEN 1 ELSE 2 END
           THEN RAISE(ABORT, 'invalid match winner')
           WHEN NEW.match_mode NOT IN ('1v1', '2v2')
           THEN RAISE(ABORT, 'invalid match mode')
+          WHEN NEW.match_mode = '1v1' AND (NEW.t1p2 != '' OR NEW.t2p2 != '')
+          THEN RAISE(ABORT, 'invalid 1v1 secondary player reference')
           WHEN NOT EXISTS (SELECT 1 FROM players WHERE id = NEW.t1p1)
             OR NOT EXISTS (SELECT 1 FROM players WHERE id = NEW.t2p1)
             OR (NEW.match_mode = '2v2' AND NOT EXISTS (SELECT 1 FROM players WHERE id = NEW.t1p2))
@@ -360,14 +378,18 @@ Future<void> _createMatchIntegrityTriggers(DatabaseExecutor db) async {
           WHEN EXISTS (
             SELECT 1 FROM json_each(NEW.scorer_ids_json)
             WHERE type != 'text'
-              OR value NOT IN (NEW.t1p1, NEW.t1p2, NEW.t2p1, NEW.t2p2)
+              OR value NOT IN (NEW.t1p1, NEW.t2p1,
+                CASE WHEN NEW.match_mode = '2v2' THEN NEW.t1p2 ELSE '' END,
+                CASE WHEN NEW.match_mode = '2v2' THEN NEW.t2p2 ELSE '' END)
           )
           THEN RAISE(ABORT, 'invalid scorer player reference')
           WHEN json_array_length(NEW.scorer_ids_json) > 0 AND (
             (SELECT COUNT(*) FROM json_each(NEW.scorer_ids_json)
-              WHERE value IN (NEW.t1p1, NEW.t1p2)) != NEW.t1_score
+              WHERE value IN (NEW.t1p1,
+                CASE WHEN NEW.match_mode = '2v2' THEN NEW.t1p2 ELSE '' END)) != NEW.t1_score
             OR (SELECT COUNT(*) FROM json_each(NEW.scorer_ids_json)
-              WHERE value IN (NEW.t2p1, NEW.t2p2)) != NEW.t2_score
+              WHERE value IN (NEW.t2p1,
+                CASE WHEN NEW.match_mode = '2v2' THEN NEW.t2p2 ELSE '' END)) != NEW.t2_score
           )
           THEN RAISE(ABORT, 'scorer history does not match scores')
         END;
