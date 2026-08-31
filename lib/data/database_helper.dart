@@ -11,7 +11,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
   Database? _db;
 
-  static const databaseVersion = 8;
+  static const databaseVersion = 9;
 
   Future<Database> get _database async => _db ??= await _open();
 
@@ -52,6 +52,7 @@ class DatabaseHelper {
     await _createSettingsTable(db);
     await _createIndexes(db);
     await _createMatchIntegrityTriggers(db);
+    await _createPlayerIntegrityTriggers(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -101,6 +102,12 @@ class DatabaseHelper {
     }
     if (oldVersion < 8) {
       await migratePlayersToArchivedState(db);
+    }
+    if (oldVersion < 9) {
+      await db.execute(
+        'UPDATE players SET is_present = 0 WHERE is_archived = 1',
+      );
+      await _createPlayerIntegrityTriggers(db);
     }
   }
 
@@ -417,6 +424,21 @@ Future<void> _createMatchIntegrityTriggers(DatabaseExecutor db) async {
       END
     ''');
   }
+}
+
+Future<void> _createPlayerIntegrityTriggers(DatabaseExecutor db) async {
+  await db.execute('''
+    CREATE TRIGGER IF NOT EXISTS validate_players_insert
+    BEFORE INSERT ON players
+    WHEN NEW.is_archived = 1 AND NEW.is_present = 1
+    BEGIN SELECT RAISE(ABORT, 'archived players cannot be present'); END
+  ''');
+  await db.execute('''
+    CREATE TRIGGER IF NOT EXISTS validate_players_update
+    BEFORE UPDATE ON players
+    WHEN NEW.is_archived = 1 AND NEW.is_present = 1
+    BEGIN SELECT RAISE(ABORT, 'archived players cannot be present'); END
+  ''');
 }
 
 Future<void> _createSettingsTable(DatabaseExecutor db) {

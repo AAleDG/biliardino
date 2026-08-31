@@ -1,0 +1,11 @@
+import 'package:biliardino/models/player.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('uses canonical accent equivalence and case folding for name keys', () {
+    expect(Player.normalizedNameKey('José'), 'jose');
+    expect(Player.normalizedNameKey('Jose\u0301'), 'jose');
+    expect(Player.normalizedNameKey('Straße'), 'strasse');
+    expect(Player.normalizedNameKey('STRASSE'), 'strasse');
+  });
+}

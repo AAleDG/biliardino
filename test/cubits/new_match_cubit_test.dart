@@ -15,6 +15,39 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('NewMatchCubit', () {
+    test('excludes archived players even when presence is stale', () async {
+      final initial = _players();
+      final players = _PlayerRepositoryFake([
+        ...initial,
+        Player(
+          id: 'archived',
+          name: 'Archived',
+          createdAt: DateTime(2024),
+          isPresent: true,
+          isArchived: true,
+        ),
+      ]);
+      final cubit = _readyCubit(
+        players: players,
+        matches: _MatchRepositoryFake(),
+        rules: _MatchRulesRepositoryFake(),
+      );
+      cubit.setTeam('archived', 1);
+      players.emit([
+        ...initial,
+        Player(
+          id: 'archived',
+          name: 'Archived',
+          createdAt: DateTime(2024),
+          isPresent: true,
+          isArchived: true,
+        ),
+      ]);
+      await Future<void>.delayed(Duration.zero);
+      expect(cubit.state.assignment, isNot(contains('archived')));
+      await cubit.close();
+      await players.dispose();
+    });
     test('persists one immutable snapshot while save is in progress', () async {
       final players = _PlayerRepositoryFake(_players());
       final matches = _MatchRepositoryFake();
@@ -317,11 +350,11 @@ void main() {
       'random generation is deterministic and replaces its proposal',
       () async {
         NewMatchCubit buildCubit() => NewMatchCubit(
-              playerRepository: _PlayerRepositoryFake(_players()),
-              matchRepository: _MatchRepositoryFake(),
-              matchRulesRepository: _MatchRulesRepositoryFake(),
-              random: Random(42),
-            );
+          playerRepository: _PlayerRepositoryFake(_players()),
+          matchRepository: _MatchRepositoryFake(),
+          matchRulesRepository: _MatchRulesRepositoryFake(),
+          random: Random(42),
+        );
 
         final first = buildCubit();
         final second = buildCubit();
@@ -740,7 +773,7 @@ NewMatchCubit _readyCubit({
 
 class _MatchRulesRepositoryFake implements MatchRulesRepository {
   _MatchRulesRepositoryFake({MatchRules initialRules = MatchRules.defaultRules})
-      : _rules = initialRules;
+    : _rules = initialRules;
 
   MatchRules _rules;
   Future<void> Function(MatchRules rules)? onSave;
@@ -794,7 +827,7 @@ class _SavedMatch {
 
 class _MatchRepositoryFake implements MatchRepository {
   _MatchRepositoryFake({List<GameMatch> initialMatches = const []})
-      : _matches = List.unmodifiable(initialMatches);
+    : _matches = List.unmodifiable(initialMatches);
 
   Future<void> Function(_SavedMatch match)? onSave;
   final List<_SavedMatch> saved = [];
@@ -863,7 +896,7 @@ List<GameMatch> _winsFor(String playerId, int wins) {
 
 class _PlayerRepositoryFake implements PlayerRepository {
   _PlayerRepositoryFake(List<Player> players)
-      : _players = List.unmodifiable(players);
+    : _players = List.unmodifiable(players);
 
   final StreamController<List<Player>> _controller =
       StreamController<List<Player>>.broadcast();

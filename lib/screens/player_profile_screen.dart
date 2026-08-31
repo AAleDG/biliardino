@@ -232,10 +232,7 @@ class _RelationshipCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(label, style: const TextStyle(color: NttColors.textFaint)),
             const SizedBox(height: 4),
-            Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
+            Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
             if (matches != null)
               Text('$matches partite', style: const TextStyle(fontSize: 12)),
           ],
@@ -334,9 +331,15 @@ class _Header extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    player.isPresent ? 'In ufficio' : 'Assente',
+                    player.isArchived
+                        ? 'Archiviato'
+                        : player.isPresent
+                        ? 'In ufficio'
+                        : 'Assente',
                     style: TextStyle(
-                      color: player.isPresent
+                      color: player.isArchived
+                          ? NttColors.textFaint
+                          : player.isPresent
                           ? NttColors.success
                           : NttColors.textMuted,
                       fontWeight: FontWeight.w700,
