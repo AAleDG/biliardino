@@ -7,5 +7,6 @@ void main() {
     expect(Player.normalizedNameKey('Jose\u0301'), 'jose');
     expect(Player.normalizedNameKey('Straße'), 'strasse');
     expect(Player.normalizedNameKey('STRASSE'), 'strasse');
+    expect(Player.normalizedNameKey('Č'), Player.normalizedNameKey('C\u030C'));
   });
 }

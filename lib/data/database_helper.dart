@@ -16,11 +16,11 @@ class DatabaseHelper {
   Future<Database> get _database async => _db ??= await _open();
 
   Future<Database> _open() async => openDatabase(
-    join(await getDatabasesPath(), 'biliardino.db'),
-    version: databaseVersion,
-    onCreate: _onCreate,
-    onUpgrade: _onUpgrade,
-  );
+        join(await getDatabasesPath(), 'biliardino.db'),
+        version: databaseVersion,
+        onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
+      );
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
@@ -104,11 +104,29 @@ class DatabaseHelper {
       await migratePlayersToArchivedState(db);
     }
     if (oldVersion < 9) {
+      await migratePlayersToCurrentNameKeys(db);
       await db.execute(
         'UPDATE players SET is_present = 0 WHERE is_archived = 1',
       );
       await _createPlayerIntegrityTriggers(db);
     }
+  }
+
+  static Future<void> migratePlayersToCurrentNameKeys(
+    DatabaseExecutor db,
+  ) async {
+    await db.execute('DROP INDEX IF EXISTS idx_players_name_key');
+    final rows = await db.query('players');
+    for (final row in rows) {
+      await db.update(
+        'players',
+        {'name_key': Player.normalizedNameKey(row['name'] as String)},
+        where: 'id = ?',
+        whereArgs: [row['id']],
+      );
+    }
+    await migratePlayersToUniqueNames(db);
+    await _createPlayersNameIndex(db);
   }
 
   static Future<bool> _playersNameKeyIsNotNull(DatabaseExecutor db) async {
@@ -242,10 +260,10 @@ class DatabaseHelper {
   }
 
   Future<void> insertMatch(GameMatch m) async => (await _database).insert(
-    'matches',
-    m.toMap(),
-    conflictAlgorithm: ConflictAlgorithm.abort,
-  );
+        'matches',
+        m.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.abort,
+      );
 
   Future<void> updateMatch(GameMatch m) async {
     final updatedRows = await (await _database).update(
@@ -293,10 +311,13 @@ class DatabaseHelper {
     final db = await _database;
     await db.transaction((txn) async {
       for (final entry in values.entries) {
-        await txn.insert('settings', {
-          'key': entry.key,
-          'value': entry.value,
-        }, conflictAlgorithm: ConflictAlgorithm.replace);
+        await txn.insert(
+            'settings',
+            {
+              'key': entry.key,
+              'value': entry.value,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace);
       }
     });
   }
@@ -304,10 +325,8 @@ class DatabaseHelper {
 
 Future<void> _validateIntegrity(DatabaseExecutor db) async {
   final playerRows = await db.query('players', columns: const ['id']);
-  final playerIds = playerRows
-      .map((row) => row['id'])
-      .whereType<String>()
-      .toSet();
+  final playerIds =
+      playerRows.map((row) => row['id']).whereType<String>().toSet();
   final matches = await db.query('matches');
 
   for (final match in matches) {
@@ -488,8 +507,7 @@ List<_PlayerRow> _uniquePlayerNames(List<Map<String, Object?>> players) {
       continue;
     }
     usedNames.remove(entry.key);
-    final sorted = [...group]
-      ..sort((a, b) {
+    final sorted = [...group]..sort((a, b) {
         final byCreatedAt = a.createdAt.compareTo(b.createdAt);
         if (byCreatedAt != 0) {
           return byCreatedAt;

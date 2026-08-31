@@ -492,6 +492,21 @@ void main() {
     expect(players.single['is_present'], 1);
     expect(players.single['is_archived'], 0);
   });
+
+  test('v9 name-key migration recomputes keys and resolves new collisions', () async {
+    await _createPlayersTable(database, withNameKey: true);
+    await _insertPlayer(database, id: 'c1', name: 'Č', createdAt: 1, withNameKey: true);
+    await _insertPlayer(database, id: 'c2', name: 'C\u030C', createdAt: 2, withNameKey: true);
+    await database.update('players', {'name_key': 'legacy-c1'}, where: 'id = ?', whereArgs: ['c1']);
+    await database.update('players', {'name_key': 'legacy-c2'}, where: 'id = ?', whereArgs: ['c2']);
+    await database.execute(
+      'CREATE UNIQUE INDEX idx_players_name_key ON players(name_key)',
+    );
+    await DatabaseHelper.migratePlayersToCurrentNameKeys(database);
+
+    final players = await database.query('players', orderBy: 'id');
+    expect(players.map((row) => row['name_key']), ['c', 'c (2)']);
+  });
 }
 
 Future<void> _createPlayersTable(
