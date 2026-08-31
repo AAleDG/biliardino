@@ -91,10 +91,19 @@ class DatabaseHelper {
       await _createSettingsTable(db);
     }
     if (oldVersion < 7) {
+      if (!await _playersNameKeyIsNotNull(db)) {
+        await migratePlayersToPersistedUniqueNameKeys(db);
+      }
       await _validateIntegrity(db);
       await _createIndexes(db);
       await _createMatchIntegrityTriggers(db);
     }
+  }
+
+  static Future<bool> _playersNameKeyIsNotNull(DatabaseExecutor db) async {
+    final columns = await db.rawQuery('PRAGMA table_info(players)');
+    final nameKey = columns.where((row) => row['name'] == 'name_key');
+    return nameKey.length == 1 && nameKey.single['notnull'] == 1;
   }
 
   static Future<void> _createIndexes(DatabaseExecutor db) async {

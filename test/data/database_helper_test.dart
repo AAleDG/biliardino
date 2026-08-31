@@ -188,6 +188,45 @@ void main() {
     );
   });
 
+  test('repairs nullable name_key while migrating v6 to v7', () async {
+    await _createPlayersTable(database, withNameKey: false);
+    await database.execute('ALTER TABLE players ADD COLUMN name_key TEXT');
+    for (final entry in const {
+      'p1': 'Ada',
+      'p2': 'Grace',
+      'p3': 'Linus',
+      'p4': 'Margaret',
+    }.entries) {
+      await _insertPlayer(
+        database,
+        id: entry.key,
+        name: entry.value,
+        createdAt: 1,
+        withNameKey: true,
+      );
+    }
+    await _createMatchesTable(database);
+    await _insertMatch(
+      database,
+      id: 'm1',
+      t1p1: 'p1',
+      t1p2: 'p2',
+      t2p1: 'p3',
+      t2p2: 'p4',
+      scorerIds: const [],
+    );
+
+    await DatabaseHelper.migrateDatabase(database, 6, 7);
+
+    final columns = await database.rawQuery('PRAGMA table_info(players)');
+    final nameKey = columns.singleWhere((row) => row['name'] == 'name_key');
+    expect(nameKey['notnull'], 1);
+    final ada = (await database.query(
+      'players',
+    )).singleWhere((row) => row['id'] == 'p1');
+    expect(ada['name_key'], 'ada');
+  });
+
   test('rolls back the complete upgrade when v1 data is malformed', () async {
     await _createV1Schema(database);
     for (final id in const ['p1', 'p2', 'p3', 'p4']) {
