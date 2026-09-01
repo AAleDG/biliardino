@@ -24,7 +24,7 @@ class PlayersScreen extends StatelessWidget {
           );
       },
       builder: (context, state) {
-        final players = state.players;
+        final players = [...state.active, ...state.archived];
         final presentCount = state.present.length;
 
         return Scaffold(
@@ -40,7 +40,7 @@ class PlayersScreen extends StatelessWidget {
                   children: [
                     _Summary(
                       presentCount: presentCount,
-                      total: players.length,
+                      total: state.active.length,
                     ),
                     Expanded(
                       child: ListView.builder(
@@ -48,7 +48,7 @@ class PlayersScreen extends StatelessWidget {
                         itemCount: players.length,
                         itemBuilder: (_, i) => _PlayerRow(
                           player: players[i],
-                          onToggle: state.isMutating
+                          onToggle: state.isMutating || players[i].isArchived
                               ? null
                               : () async {
                                   await context
@@ -58,6 +58,15 @@ class PlayersScreen extends StatelessWidget {
                           onRename: state.isMutating
                               ? null
                               : () => _showRenameDialog(context, players[i]),
+                          onArchive: state.isMutating || players[i].isArchived
+                              ? null
+                              : () => _showArchiveDialog(context, players[i]),
+                          onReactivate:
+                              state.isMutating || !players[i].isArchived
+                                  ? null
+                                  : () => context
+                                      .read<PlayersCubit>()
+                                      .reactivatePlayer(players[i]),
                           onOpenProfile: () => Navigator.of(context).push(
                             MaterialPageRoute<void>(
                               builder: (_) => PlayerProfileScreen(
@@ -84,7 +93,38 @@ String _feedbackText(PlayersFeedback feedback) {
       return 'Impossibile rinominare il giocatore. Controlla il nome.';
     case PlayersFeedback.presenceUpdateFailed:
       return 'Impossibile aggiornare la presenza. Riprova.';
+    case PlayersFeedback.archiveFailed:
+      return 'Impossibile archiviare il giocatore. Riprova.';
+    case PlayersFeedback.reactivateFailed:
+      return 'Impossibile riattivare il giocatore. Riprova.';
   }
+}
+
+void _showArchiveDialog(BuildContext rootContext, Player player) {
+  final cubit = rootContext.read<PlayersCubit>();
+  showDialog<void>(
+    context: rootContext,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Archivia giocatore'),
+      content: Text(
+        'Archiviare ${player.name}? Rimarrà visibile nelle partite e nelle statistiche passate.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Annulla'),
+        ),
+        ElevatedButton(
+          key: const ValueKey('confirm-archive-player'),
+          onPressed: () async {
+            final archived = await cubit.archivePlayer(player);
+            if (archived && ctx.mounted) Navigator.pop(ctx);
+          },
+          child: const Text('Archivia'),
+        ),
+      ],
+    ),
+  );
 }
 
 void _showAddDialog(BuildContext rootContext) {
@@ -197,12 +237,16 @@ class _PlayerRow extends StatelessWidget {
     required this.player,
     required this.onToggle,
     required this.onRename,
+    required this.onArchive,
+    required this.onReactivate,
     required this.onOpenProfile,
   });
 
   final Player player;
   final VoidCallback? onToggle;
   final VoidCallback? onRename;
+  final VoidCallback? onArchive;
+  final VoidCallback? onReactivate;
   final VoidCallback onOpenProfile;
 
   @override
@@ -236,18 +280,22 @@ class _PlayerRow extends StatelessWidget {
                       transitionBuilder: (child, anim) =>
                           FadeTransition(opacity: anim, child: child),
                       child: _PresenceBadge(
-                        key: ValueKey(player.isPresent),
+                        key: ValueKey(
+                            '${player.isPresent}-${player.isArchived}'),
                         isPresent: player.isPresent,
+                        isArchived: player.isArchived,
                       ),
                     ),
                   ],
                 ),
               ),
-              Switch(
-                value: player.isPresent,
-                onChanged: onToggle == null ? null : (_) => onToggle!(),
-              ),
+              if (!player.isArchived)
+                Switch(
+                  value: player.isPresent,
+                  onChanged: onToggle == null ? null : (_) => onToggle!(),
+                ),
               PopupMenuButton<_PlayerAction>(
+                key: ValueKey('player-actions-${player.id}'),
                 tooltip: 'Azioni giocatore',
                 onSelected: (action) {
                   switch (action) {
@@ -255,6 +303,10 @@ class _PlayerRow extends StatelessWidget {
                       onRename?.call();
                     case _PlayerAction.profile:
                       onOpenProfile();
+                    case _PlayerAction.archive:
+                      onArchive?.call();
+                    case _PlayerAction.reactivate:
+                      onReactivate?.call();
                   }
                 },
                 itemBuilder: (context) => [
@@ -273,6 +325,24 @@ class _PlayerRow extends StatelessWidget {
                       title: Text('Modifica nome'),
                     ),
                   ),
+                  if (player.isArchived)
+                    PopupMenuItem<_PlayerAction>(
+                      enabled: onReactivate != null,
+                      value: _PlayerAction.reactivate,
+                      child: const ListTile(
+                        leading: Icon(Icons.unarchive),
+                        title: Text('Riattiva'),
+                      ),
+                    )
+                  else
+                    PopupMenuItem<_PlayerAction>(
+                      enabled: onArchive != null,
+                      value: _PlayerAction.archive,
+                      child: const ListTile(
+                        leading: Icon(Icons.archive_outlined),
+                        title: Text('Archivia'),
+                      ),
+                    ),
                 ],
               ),
             ],
@@ -283,16 +353,22 @@ class _PlayerRow extends StatelessWidget {
   }
 }
 
-enum _PlayerAction { profile, rename }
+enum _PlayerAction { profile, rename, archive, reactivate }
 
 class _PresenceBadge extends StatelessWidget {
-  const _PresenceBadge({super.key, required this.isPresent});
+  const _PresenceBadge({
+    super.key,
+    required this.isPresent,
+    required this.isArchived,
+  });
 
   final bool isPresent;
+  final bool isArchived;
 
   @override
   Widget build(BuildContext context) {
-    final color = isPresent ? NttColors.success : NttColors.textFaint;
+    final color =
+        isPresent && !isArchived ? NttColors.success : NttColors.textFaint;
     return Row(
       children: [
         Container(
@@ -301,14 +377,19 @@ class _PresenceBadge extends StatelessWidget {
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
-            boxShadow:
-                isPresent ? [BoxShadow(color: color, blurRadius: 6)] : null,
+            boxShadow: isPresent && !isArchived
+                ? [BoxShadow(color: color, blurRadius: 6)]
+                : null,
           ),
         ),
         const SizedBox(width: 6),
         Flexible(
           child: Text(
-            isPresent ? 'In ufficio' : 'Assente',
+            isArchived
+                ? 'Archiviato'
+                : isPresent
+                    ? 'In ufficio'
+                    : 'Assente',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(

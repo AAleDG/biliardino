@@ -59,7 +59,24 @@ class PlayerRepository {
   }
 
   Future<void> togglePresent(Player p) async {
+    if (p.isArchived) {
+      throw StateError('Archived players cannot change presence.');
+    }
     await _db.updatePlayer(p.copyWith(isPresent: !p.isPresent));
+    await _reload();
+  }
+
+  Future<void> archivePlayer(Player player) async {
+    if (player.isArchived) return;
+    await _db.updatePlayer(
+      player.copyWith(isArchived: true, isPresent: false),
+    );
+    await _reload();
+  }
+
+  Future<void> reactivatePlayer(Player player) async {
+    if (!player.isArchived) return;
+    await _db.updatePlayer(player.copyWith(isArchived: false));
     await _reload();
   }
 

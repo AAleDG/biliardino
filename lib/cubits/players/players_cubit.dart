@@ -40,6 +40,20 @@ class PlayersCubit extends Cubit<PlayersState> {
     );
   }
 
+  Future<bool> archivePlayer(Player player) {
+    return _mutate(
+      () => _repo.archivePlayer(player),
+      failureFeedback: PlayersFeedback.archiveFailed,
+    );
+  }
+
+  Future<bool> reactivatePlayer(Player player) {
+    return _mutate(
+      () => _repo.reactivatePlayer(player),
+      failureFeedback: PlayersFeedback.reactivateFailed,
+    );
+  }
+
   Future<bool> _mutate(
     Future<void> Function() operation, {
     required PlayersFeedback failureFeedback,

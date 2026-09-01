@@ -4,8 +4,8 @@ import 'package:biliardino/models/player.dart';
 
 class FakeDatabaseHelper implements DatabaseHelper {
   FakeDatabaseHelper({List<Player>? players, List<GameMatch>? matches})
-    : players = List<Player>.from(players ?? const []),
-      matches = List<GameMatch>.from(matches ?? const []);
+      : players = List<Player>.from(players ?? const []),
+        matches = List<GameMatch>.from(matches ?? const []);
 
   final List<Player> players;
   final List<GameMatch> matches;
@@ -32,6 +32,7 @@ class FakeDatabaseHelper implements DatabaseHelper {
   @override
   Future<void> insertPlayer(Player player) async {
     insertPlayerCalls++;
+    players.add(player);
   }
 
   @override
@@ -40,6 +41,8 @@ class FakeDatabaseHelper implements DatabaseHelper {
   @override
   Future<void> updatePlayer(Player player) async {
     updatePlayerCalls++;
+    final index = players.indexWhere((candidate) => candidate.id == player.id);
+    if (index >= 0) players[index] = player;
   }
 
   @override

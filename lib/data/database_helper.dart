@@ -11,16 +11,16 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
   Database? _db;
 
-  static const databaseVersion = 7;
+  static const databaseVersion = 9;
 
   Future<Database> get _database async => _db ??= await _open();
 
   Future<Database> _open() async => openDatabase(
-    join(await getDatabasesPath(), 'biliardino.db'),
-    version: databaseVersion,
-    onCreate: _onCreate,
-    onUpgrade: _onUpgrade,
-  );
+        join(await getDatabasesPath(), 'biliardino.db'),
+        version: databaseVersion,
+        onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
+      );
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
@@ -29,7 +29,8 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         name_key TEXT NOT NULL,
         created_at INTEGER NOT NULL,
-        is_present INTEGER NOT NULL
+        is_present INTEGER NOT NULL,
+        is_archived INTEGER NOT NULL DEFAULT 0
       )
     ''');
     await db.execute('''
@@ -51,6 +52,7 @@ class DatabaseHelper {
     await _createSettingsTable(db);
     await _createIndexes(db);
     await _createMatchIntegrityTriggers(db);
+    await _createPlayerIntegrityTriggers(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -91,9 +93,74 @@ class DatabaseHelper {
       await _createSettingsTable(db);
     }
     if (oldVersion < 7) {
+      if (!await _playersNameKeyIsNotNull(db)) {
+        await migratePlayersToPersistedUniqueNameKeys(db);
+      }
       await _validateIntegrity(db);
       await _createIndexes(db);
       await _createMatchIntegrityTriggers(db);
+    }
+    if (oldVersion < 8) {
+      await migratePlayersToArchivedState(db);
+    }
+    if (oldVersion < 9) {
+      await migratePlayersToCurrentNameKeys(db);
+      await db.execute(
+        'UPDATE players SET is_present = 0 WHERE is_archived = 1',
+      );
+      await _createPlayerIntegrityTriggers(db);
+    }
+  }
+
+  static Future<void> migratePlayersToCurrentNameKeys(
+    DatabaseExecutor db,
+  ) async {
+    await db.execute('DROP INDEX IF EXISTS idx_players_name_key');
+    final rows = await db.query('players');
+    for (final row in rows) {
+      await db.update(
+        'players',
+        {'name_key': Player.normalizedNameKey(row['name'] as String)},
+        where: 'id = ?',
+        whereArgs: [row['id']],
+      );
+    }
+    await migratePlayersToUniqueNames(db);
+    await _createPlayersNameIndex(db);
+  }
+
+  static Future<bool> _playersNameKeyIsNotNull(DatabaseExecutor db) async {
+    final columns = await db.rawQuery('PRAGMA table_info(players)');
+    final nameKey = columns.where((row) => row['name'] == 'name_key');
+    return nameKey.length == 1 && nameKey.single['notnull'] == 1;
+  }
+
+  Future<void> replacePlayersAndMatches({
+    required List<Player> players,
+    required List<GameMatch> matches,
+  }) async {
+    final db = await _database;
+    await db.transaction(
+      (txn) => replacePlayersAndMatchesIn(
+        txn,
+        players: players,
+        matches: matches,
+      ),
+    );
+  }
+
+  static Future<void> replacePlayersAndMatchesIn(
+    DatabaseExecutor db, {
+    required List<Player> players,
+    required List<GameMatch> matches,
+  }) async {
+    await db.delete('matches');
+    await db.delete('players');
+    for (final player in players) {
+      await db.insert('players', player.toMap());
+    }
+    for (final match in matches) {
+      await db.insert('matches', match.toMap());
     }
   }
 
@@ -137,20 +204,31 @@ class DatabaseHelper {
       table: 'players',
       column: 'name_key',
     );
-    if (!hasNameKey) {
-      await db.execute("ALTER TABLE players ADD COLUMN name_key TEXT");
-    }
-
     final players = await db.query('players');
+    await db.execute('DROP INDEX IF EXISTS idx_players_name_key');
+    await db.execute('''
+      CREATE TABLE players_new (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        name_key TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        is_present INTEGER NOT NULL
+      )
+    ''');
     for (final row in players) {
       final player = _PlayerRow.fromMap(row);
-      await db.update(
-        'players',
-        {'name_key': Player.normalizedNameKey(player.name)},
-        where: 'id = ?',
-        whereArgs: [player.id],
-      );
+      await db.insert('players_new', {
+        'id': player.id,
+        'name': player.name,
+        'name_key': hasNameKey && row['name_key'] is String
+            ? row['name_key']
+            : Player.normalizedNameKey(player.name),
+        'created_at': row['created_at'],
+        'is_present': row['is_present'],
+      });
     }
+    await db.execute('DROP TABLE players');
+    await db.execute('ALTER TABLE players_new RENAME TO players');
   }
 
   static Future<void> migratePlayersToPersistedUniqueNameKeys(
@@ -160,6 +238,14 @@ class DatabaseHelper {
     await migratePlayersToUniqueNames(db);
     await _dropLegacyPlayersNameIndex(db);
     await _createIndexes(db);
+  }
+
+  static Future<void> migratePlayersToArchivedState(DatabaseExecutor db) async {
+    if (!await _hasColumn(db, table: 'players', column: 'is_archived')) {
+      await db.execute(
+        'ALTER TABLE players ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0',
+      );
+    }
   }
 
   Future<List<Player>> getPlayers() async {
@@ -203,10 +289,10 @@ class DatabaseHelper {
   }
 
   Future<void> insertMatch(GameMatch m) async => (await _database).insert(
-    'matches',
-    m.toMap(),
-    conflictAlgorithm: ConflictAlgorithm.abort,
-  );
+        'matches',
+        m.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.abort,
+      );
 
   Future<void> updateMatch(GameMatch m) async {
     final updatedRows = await (await _database).update(
@@ -254,47 +340,22 @@ class DatabaseHelper {
     final db = await _database;
     await db.transaction((txn) async {
       for (final entry in values.entries) {
-        await txn.insert('settings', {
-          'key': entry.key,
-          'value': entry.value,
-        }, conflictAlgorithm: ConflictAlgorithm.replace);
+        await txn.insert(
+            'settings',
+            {
+              'key': entry.key,
+              'value': entry.value,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace);
       }
     });
-  }
-
-  Future<void> replacePlayersAndMatches({
-    required List<Player> players,
-    required List<GameMatch> matches,
-  }) async {
-    final db = await _database;
-    await db.transaction(
-      (txn) =>
-          replacePlayersAndMatchesIn(txn, players: players, matches: matches),
-    );
-  }
-
-  static Future<void> replacePlayersAndMatchesIn(
-    DatabaseExecutor db, {
-    required List<Player> players,
-    required List<GameMatch> matches,
-  }) async {
-    await db.delete('matches');
-    await db.delete('players');
-    for (final player in players) {
-      await db.insert('players', player.toMap());
-    }
-    for (final match in matches) {
-      await db.insert('matches', match.toMap());
-    }
   }
 }
 
 Future<void> _validateIntegrity(DatabaseExecutor db) async {
   final playerRows = await db.query('players', columns: const ['id']);
-  final playerIds = playerRows
-      .map((row) => row['id'])
-      .whereType<String>()
-      .toSet();
+  final playerIds =
+      playerRows.map((row) => row['id']).whereType<String>().toSet();
   final matches = await db.query('matches');
 
   for (final match in matches) {
@@ -318,6 +379,9 @@ Future<void> _validateIntegrity(DatabaseExecutor db) async {
     final requiredPlayerColumns = mode == '1v1'
         ? const ['t1p1', 't2p1']
         : const ['t1p1', 't1p2', 't2p1', 't2p2'];
+    if (mode == '1v1' && (match['t1p2'] != '' || match['t2p2'] != '')) {
+      throw StateError('Invalid secondary players in match id=$matchId.');
+    }
     final referencedPlayers = requiredPlayerColumns
         .map((column) => match[column])
         .whereType<String>()
@@ -342,8 +406,8 @@ Future<void> _validateIntegrity(DatabaseExecutor db) async {
       throw StateError('Invalid scorer history in match id=$matchId.');
     }
     if (decodedScorers.isNotEmpty) {
-      final team1 = {match['t1p1'], match['t1p2']};
-      final team2 = {match['t2p1'], match['t2p2']};
+      final team1 = {match['t1p1'], if (mode == '2v2') match['t1p2']};
+      final team2 = {match['t2p1'], if (mode == '2v2') match['t2p2']};
       final team1Goals = decodedScorers.where(team1.contains).length;
       final team2Goals = decodedScorers.where(team2.contains).length;
       if (team1Goals != score1 || team2Goals != score2) {
@@ -361,13 +425,17 @@ Future<void> _createMatchIntegrityTriggers(DatabaseExecutor db) async {
       BEFORE $operation ON matches
       BEGIN
         SELECT CASE
-          WHEN NEW.t1_score < 0 OR NEW.t2_score < 0 OR NEW.t1_score = NEW.t2_score
+          WHEN typeof(NEW.t1_score) != 'integer'
+            OR typeof(NEW.t2_score) != 'integer'
+            OR NEW.t1_score < 0 OR NEW.t2_score < 0 OR NEW.t1_score = NEW.t2_score
           THEN RAISE(ABORT, 'invalid match scores')
           WHEN NEW.winning_team NOT IN (1, 2)
             OR NEW.winning_team != CASE WHEN NEW.t1_score > NEW.t2_score THEN 1 ELSE 2 END
           THEN RAISE(ABORT, 'invalid match winner')
           WHEN NEW.match_mode NOT IN ('1v1', '2v2')
           THEN RAISE(ABORT, 'invalid match mode')
+          WHEN NEW.match_mode = '1v1' AND (NEW.t1p2 != '' OR NEW.t2p2 != '')
+          THEN RAISE(ABORT, 'invalid 1v1 secondary player reference')
           WHEN NOT EXISTS (SELECT 1 FROM players WHERE id = NEW.t1p1)
             OR NOT EXISTS (SELECT 1 FROM players WHERE id = NEW.t2p1)
             OR (NEW.match_mode = '2v2' AND NOT EXISTS (SELECT 1 FROM players WHERE id = NEW.t1p2))
@@ -386,20 +454,39 @@ Future<void> _createMatchIntegrityTriggers(DatabaseExecutor db) async {
           WHEN EXISTS (
             SELECT 1 FROM json_each(NEW.scorer_ids_json)
             WHERE type != 'text'
-              OR value NOT IN (NEW.t1p1, NEW.t1p2, NEW.t2p1, NEW.t2p2)
+              OR value NOT IN (NEW.t1p1, NEW.t2p1,
+                CASE WHEN NEW.match_mode = '2v2' THEN NEW.t1p2 ELSE '' END,
+                CASE WHEN NEW.match_mode = '2v2' THEN NEW.t2p2 ELSE '' END)
           )
           THEN RAISE(ABORT, 'invalid scorer player reference')
           WHEN json_array_length(NEW.scorer_ids_json) > 0 AND (
             (SELECT COUNT(*) FROM json_each(NEW.scorer_ids_json)
-              WHERE value IN (NEW.t1p1, NEW.t1p2)) != NEW.t1_score
+              WHERE value IN (NEW.t1p1,
+                CASE WHEN NEW.match_mode = '2v2' THEN NEW.t1p2 ELSE '' END)) != NEW.t1_score
             OR (SELECT COUNT(*) FROM json_each(NEW.scorer_ids_json)
-              WHERE value IN (NEW.t2p1, NEW.t2p2)) != NEW.t2_score
+              WHERE value IN (NEW.t2p1,
+                CASE WHEN NEW.match_mode = '2v2' THEN NEW.t2p2 ELSE '' END)) != NEW.t2_score
           )
           THEN RAISE(ABORT, 'scorer history does not match scores')
         END;
       END
     ''');
   }
+}
+
+Future<void> _createPlayerIntegrityTriggers(DatabaseExecutor db) async {
+  await db.execute('''
+    CREATE TRIGGER IF NOT EXISTS validate_players_insert
+    BEFORE INSERT ON players
+    WHEN NEW.is_archived = 1 AND NEW.is_present = 1
+    BEGIN SELECT RAISE(ABORT, 'archived players cannot be present'); END
+  ''');
+  await db.execute('''
+    CREATE TRIGGER IF NOT EXISTS validate_players_update
+    BEFORE UPDATE ON players
+    WHEN NEW.is_archived = 1 AND NEW.is_present = 1
+    BEGIN SELECT RAISE(ABORT, 'archived players cannot be present'); END
+  ''');
 }
 
 Future<void> _createSettingsTable(DatabaseExecutor db) {
@@ -449,8 +536,7 @@ List<_PlayerRow> _uniquePlayerNames(List<Map<String, Object?>> players) {
       continue;
     }
     usedNames.remove(entry.key);
-    final sorted = [...group]
-      ..sort((a, b) {
+    final sorted = [...group]..sort((a, b) {
         final byCreatedAt = a.createdAt.compareTo(b.createdAt);
         if (byCreatedAt != 0) {
           return byCreatedAt;

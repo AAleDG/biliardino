@@ -72,6 +72,12 @@ class _PlayerRepositoryFake implements PlayerRepository {
   Future<void> renamePlayer(Player player, String name) async {}
 
   @override
+  Future<void> archivePlayer(Player player) async {}
+
+  @override
+  Future<void> reactivatePlayer(Player player) async {}
+
+  @override
   Future<void> togglePresent(Player p) async {}
 
   @override

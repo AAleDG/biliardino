@@ -15,6 +15,39 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('NewMatchCubit', () {
+    test('excludes archived players even when presence is stale', () async {
+      final initial = _players();
+      final players = _PlayerRepositoryFake([
+        ...initial,
+        Player(
+          id: 'archived',
+          name: 'Archived',
+          createdAt: DateTime(2024),
+          isPresent: true,
+          isArchived: true,
+        ),
+      ]);
+      final cubit = _readyCubit(
+        players: players,
+        matches: _MatchRepositoryFake(),
+        rules: _MatchRulesRepositoryFake(),
+      );
+      cubit.setTeam('archived', 1);
+      players.emit([
+        ...initial,
+        Player(
+          id: 'archived',
+          name: 'Archived',
+          createdAt: DateTime(2024),
+          isPresent: true,
+          isArchived: true,
+        ),
+      ]);
+      await Future<void>.delayed(Duration.zero);
+      expect(cubit.state.assignment, isNot(contains('archived')));
+      await cubit.close();
+      await players.dispose();
+    });
     test('persists one immutable snapshot while save is in progress', () async {
       final players = _PlayerRepositoryFake(_players());
       final matches = _MatchRepositoryFake();
@@ -888,6 +921,12 @@ class _PlayerRepositoryFake implements PlayerRepository {
 
   @override
   Future<void> renamePlayer(Player player, String name) async {}
+
+  @override
+  Future<void> archivePlayer(Player player) async {}
+
+  @override
+  Future<void> reactivatePlayer(Player player) async {}
 
   @override
   Future<void> dispose() => _controller.close();
