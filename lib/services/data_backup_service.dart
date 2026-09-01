@@ -170,7 +170,8 @@ class DataBackupService {
       }
       final team1Goals = match.scorerIds.where(match.team1.contains).length;
       final team2Goals = match.scorerIds.where(match.team2.contains).length;
-      if (team1Goals != match.t1Score || team2Goals != match.t2Score) {
+      if (match.scorerIds.isNotEmpty &&
+          (team1Goals != match.t1Score || team2Goals != match.t2Score)) {
         throw FormatException(
           'Match ${match.id} scorer history does not match its score.',
         );
@@ -258,5 +259,11 @@ class MatchHistoryCsvService {
     return '${rows.map((row) => row.map(_escape).join(',')).join('\r\n')}\r\n';
   }
 
-  static String _escape(String value) => '"${value.replaceAll('"', '""')}"';
+  static String _escape(String value) {
+    const formulaPrefixes = {'=', '+', '-', '@'};
+    final safeValue = value.isNotEmpty && formulaPrefixes.contains(value[0])
+        ? "'$value"
+        : value;
+    return '"${safeValue.replaceAll('"', '""')}"';
+  }
 }

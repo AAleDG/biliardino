@@ -116,6 +116,30 @@ void main() {
     expect(csv, contains('"Alice, ""Ace"""'));
     expect(csv.endsWith('\r\n'), isTrue);
   });
+
+  test('accepts empty scorer history from migrated legacy matches', () {
+    final legacyMatch = match.copyWith(scorerIds: const []);
+    expect(
+      () => DataBackupService(FakeDatabaseHelper()).parse(
+        jsonEncode({
+          'version': 1,
+          'players': [_currentPlayer(player1), _currentPlayer(player2)],
+          'matches': [_currentMatch(legacyMatch)],
+        }),
+      ),
+      returnsNormally,
+    );
+  });
+
+  test('neutralizes formula-like player names in match history CSV', () {
+    final dangerousPlayers = [
+      player1.copyWith(name: '=SUM(A1:A2)'),
+      player2.copyWith(name: '+imported'),
+    ];
+    final csv = MatchHistoryCsvService.build(dangerousPlayers, [match]);
+    expect(csv, contains("\"'=SUM(A1:A2)\""));
+    expect(csv, contains("\"'+imported\""));
+  });
 }
 
 Map<String, Object?> _currentPlayer(Player player) => {
