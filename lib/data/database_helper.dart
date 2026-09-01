@@ -11,16 +11,16 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
   Database? _db;
 
-  static const databaseVersion = 7;
+  static const databaseVersion = 9;
 
   Future<Database> get _database async => _db ??= await _open();
 
   Future<Database> _open() async => openDatabase(
-    join(await getDatabasesPath(), 'biliardino.db'),
-    version: databaseVersion,
-    onCreate: _onCreate,
-    onUpgrade: _onUpgrade,
-  );
+        join(await getDatabasesPath(), 'biliardino.db'),
+        version: databaseVersion,
+        onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
+      );
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
@@ -29,7 +29,8 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         name_key TEXT NOT NULL,
         created_at INTEGER NOT NULL,
-        is_present INTEGER NOT NULL
+        is_present INTEGER NOT NULL,
+        is_archived INTEGER NOT NULL DEFAULT 0
       )
     ''');
     await db.execute('''
@@ -51,6 +52,7 @@ class DatabaseHelper {
     await _createSettingsTable(db);
     await _createIndexes(db);
     await _createMatchIntegrityTriggers(db);
+    await _createPlayerIntegrityTriggers(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -98,6 +100,33 @@ class DatabaseHelper {
       await _createIndexes(db);
       await _createMatchIntegrityTriggers(db);
     }
+    if (oldVersion < 8) {
+      await migratePlayersToArchivedState(db);
+    }
+    if (oldVersion < 9) {
+      await migratePlayersToCurrentNameKeys(db);
+      await db.execute(
+        'UPDATE players SET is_present = 0 WHERE is_archived = 1',
+      );
+      await _createPlayerIntegrityTriggers(db);
+    }
+  }
+
+  static Future<void> migratePlayersToCurrentNameKeys(
+    DatabaseExecutor db,
+  ) async {
+    await db.execute('DROP INDEX IF EXISTS idx_players_name_key');
+    final rows = await db.query('players');
+    for (final row in rows) {
+      await db.update(
+        'players',
+        {'name_key': Player.normalizedNameKey(row['name'] as String)},
+        where: 'id = ?',
+        whereArgs: [row['id']],
+      );
+    }
+    await migratePlayersToUniqueNames(db);
+    await _createPlayersNameIndex(db);
   }
 
   static Future<bool> _playersNameKeyIsNotNull(DatabaseExecutor db) async {
@@ -182,6 +211,14 @@ class DatabaseHelper {
     await _createIndexes(db);
   }
 
+  static Future<void> migratePlayersToArchivedState(DatabaseExecutor db) async {
+    if (!await _hasColumn(db, table: 'players', column: 'is_archived')) {
+      await db.execute(
+        'ALTER TABLE players ADD COLUMN is_archived INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+  }
+
   Future<List<Player>> getPlayers() async {
     final db = await _database;
     final rows = await db.query('players', orderBy: 'name COLLATE NOCASE');
@@ -223,10 +260,10 @@ class DatabaseHelper {
   }
 
   Future<void> insertMatch(GameMatch m) async => (await _database).insert(
-    'matches',
-    m.toMap(),
-    conflictAlgorithm: ConflictAlgorithm.abort,
-  );
+        'matches',
+        m.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.abort,
+      );
 
   Future<void> updateMatch(GameMatch m) async {
     final updatedRows = await (await _database).update(
@@ -274,10 +311,13 @@ class DatabaseHelper {
     final db = await _database;
     await db.transaction((txn) async {
       for (final entry in values.entries) {
-        await txn.insert('settings', {
-          'key': entry.key,
-          'value': entry.value,
-        }, conflictAlgorithm: ConflictAlgorithm.replace);
+        await txn.insert(
+            'settings',
+            {
+              'key': entry.key,
+              'value': entry.value,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace);
       }
     });
   }
@@ -285,10 +325,8 @@ class DatabaseHelper {
 
 Future<void> _validateIntegrity(DatabaseExecutor db) async {
   final playerRows = await db.query('players', columns: const ['id']);
-  final playerIds = playerRows
-      .map((row) => row['id'])
-      .whereType<String>()
-      .toSet();
+  final playerIds =
+      playerRows.map((row) => row['id']).whereType<String>().toSet();
   final matches = await db.query('matches');
 
   for (final match in matches) {
@@ -407,6 +445,21 @@ Future<void> _createMatchIntegrityTriggers(DatabaseExecutor db) async {
   }
 }
 
+Future<void> _createPlayerIntegrityTriggers(DatabaseExecutor db) async {
+  await db.execute('''
+    CREATE TRIGGER IF NOT EXISTS validate_players_insert
+    BEFORE INSERT ON players
+    WHEN NEW.is_archived = 1 AND NEW.is_present = 1
+    BEGIN SELECT RAISE(ABORT, 'archived players cannot be present'); END
+  ''');
+  await db.execute('''
+    CREATE TRIGGER IF NOT EXISTS validate_players_update
+    BEFORE UPDATE ON players
+    WHEN NEW.is_archived = 1 AND NEW.is_present = 1
+    BEGIN SELECT RAISE(ABORT, 'archived players cannot be present'); END
+  ''');
+}
+
 Future<void> _createSettingsTable(DatabaseExecutor db) {
   return db.execute('''
     CREATE TABLE IF NOT EXISTS settings (
@@ -454,8 +507,7 @@ List<_PlayerRow> _uniquePlayerNames(List<Map<String, Object?>> players) {
       continue;
     }
     usedNames.remove(entry.key);
-    final sorted = [...group]
-      ..sort((a, b) {
+    final sorted = [...group]..sort((a, b) {
         final byCreatedAt = a.createdAt.compareTo(b.createdAt);
         if (byCreatedAt != 0) {
           return byCreatedAt;

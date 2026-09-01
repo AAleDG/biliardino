@@ -48,13 +48,13 @@ class VictoryEvent extends Equatable {
 
   @override
   List<Object?> get props => [
-    winningTeam,
-    winnerIds,
-    winnerNames,
-    winnerScore,
-    loserScore,
-    signalId,
-  ];
+        winningTeam,
+        winnerIds,
+        winnerNames,
+        winnerScore,
+        loserScore,
+        signalId,
+      ];
 }
 
 class FeedbackEvent extends Equatable {
@@ -104,7 +104,7 @@ class NewMatchState extends Equatable {
   final FeedbackEvent? lastFeedback;
 
   List<Player> get present =>
-      List.unmodifiable(players.where((p) => p.isPresent));
+      List.unmodifiable(players.where((p) => !p.isArchived && p.isPresent));
 
   List<String> team(int t) =>
       assignment.entries.where((e) => e.value == t).map((e) => e.key).toList();
@@ -162,33 +162,31 @@ class NewMatchState extends Equatable {
       isSaving: isSaving ?? this.isSaving,
       isPersistingRules: isPersistingRules ?? this.isPersistingRules,
       lastGoal: clearLastGoal ? null : lastGoal ?? this.lastGoal,
-      pendingVictory: clearPendingVictory
-          ? null
-          : pendingVictory ?? this.pendingVictory,
+      pendingVictory:
+          clearPendingVictory ? null : pendingVictory ?? this.pendingVictory,
       lastVictory: clearLastVictory ? null : lastVictory ?? this.lastVictory,
-      lastFeedback: clearLastFeedback
-          ? null
-          : lastFeedback ?? this.lastFeedback,
+      lastFeedback:
+          clearLastFeedback ? null : lastFeedback ?? this.lastFeedback,
     );
   }
 
   @override
   List<Object?> get props => [
-    players,
-    matches,
-    mode,
-    rules,
-    isRivalry,
-    assignment,
-    scorerIds,
-    score1,
-    score2,
-    kickedOff,
-    isSaving,
-    isPersistingRules,
-    lastGoal,
-    pendingVictory,
-    lastVictory,
-    lastFeedback,
-  ];
+        players,
+        matches,
+        mode,
+        rules,
+        isRivalry,
+        assignment,
+        scorerIds,
+        score1,
+        score2,
+        kickedOff,
+        isSaving,
+        isPersistingRules,
+        lastGoal,
+        pendingVictory,
+        lastVictory,
+        lastFeedback,
+      ];
 }

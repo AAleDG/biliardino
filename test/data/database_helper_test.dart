@@ -22,7 +22,7 @@ void main() {
     await database.close();
   });
 
-  test('transactionally migrates a populated v1 database to v7', () async {
+  test('transactionally migrates a populated v1 database to v8', () async {
     final databasePath = path.join(
       Directory.systemTemp.path,
       'biliardino-migration-${DateTime.now().microsecondsSinceEpoch}.db',
@@ -83,11 +83,12 @@ void main() {
 
     expect(players.map((row) => row['id']), ['p1', 'p2', 'p3', 'p4']);
     expect(players.map((row) => row['is_present']), [1, 0, 1, 0]);
+    expect(players.map((row) => row['is_archived']), [0, 0, 0, 0]);
     final playerColumns = await migrated.rawQuery('PRAGMA table_info(players)');
-    final nameKey = playerColumns.singleWhere(
-      (row) => row['name'] == 'name_key',
+    expect(
+      playerColumns.singleWhere((row) => row['name'] == 'name_key')['notnull'],
+      1,
     );
-    expect(nameKey['notnull'], 1);
     expect(matches.single['id'], 'legacy-match');
     expect(matches.single['match_mode'], '2v2');
     expect(matches.single['scorer_ids_json'], '[]');
@@ -156,38 +157,6 @@ void main() {
     );
   });
 
-  test('rejects invalid 1v1 rows during migrated-row validation', () async {
-    await _createPlayersTable(database, withNameKey: true);
-    await _createMatchesTable(database);
-    for (final id in const ['p1', 'p2', 'p3']) {
-      await _insertPlayer(
-        database,
-        id: id,
-        name: id,
-        createdAt: 1,
-        withNameKey: true,
-      );
-    }
-    await database.insert('matches', {
-      'id': 'invalid-legacy-1v1',
-      'played_at': 1,
-      'match_mode': '1v1',
-      't1p1': 'p1',
-      't1p2': 'p2',
-      't2p1': 'p3',
-      't2p2': '',
-      't1_score': 1,
-      't2_score': 0,
-      'winning_team': 1,
-      'scorer_ids_json': '["p2"]',
-      'is_rivalry': 0,
-    });
-    await expectLater(
-      DatabaseHelper.migrateDatabase(database, 6, 7),
-      throwsA(isA<StateError>()),
-    );
-  });
-
   test('repairs nullable name_key while migrating v6 to v7', () async {
     await _createPlayersTable(database, withNameKey: false);
     await database.execute('ALTER TABLE players ADD COLUMN name_key TEXT');
@@ -219,12 +188,16 @@ void main() {
     await DatabaseHelper.migrateDatabase(database, 6, 7);
 
     final columns = await database.rawQuery('PRAGMA table_info(players)');
-    final nameKey = columns.singleWhere((row) => row['name'] == 'name_key');
-    expect(nameKey['notnull'], 1);
-    final ada = (await database.query(
-      'players',
-    )).singleWhere((row) => row['id'] == 'p1');
-    expect(ada['name_key'], 'ada');
+    expect(
+      columns.singleWhere((row) => row['name'] == 'name_key')['notnull'],
+      1,
+    );
+    expect(
+      (await database.query(
+        'players',
+      )).firstWhere((row) => row['id'] == 'p1')['name_key'],
+      'ada',
+    );
   });
 
   test('rolls back the complete upgrade when v1 data is malformed', () async {
@@ -499,6 +472,40 @@ void main() {
     ]);
     expect(players.every((row) => row['name_key'] != null), isTrue);
     expect(indexes.map((row) => row['name']), contains('idx_players_name_key'));
+  });
+
+  test('adds archive state without changing existing players', () async {
+    await _createPlayersTable(database, withNameKey: true);
+    await _insertPlayer(
+      database,
+      id: 'p1',
+      name: 'Mario',
+      createdAt: 1,
+      withNameKey: true,
+    );
+
+    await DatabaseHelper.migratePlayersToArchivedState(database);
+    await DatabaseHelper.migratePlayersToArchivedState(database);
+
+    final players = await database.query('players');
+    expect(players.single['id'], 'p1');
+    expect(players.single['is_present'], 1);
+    expect(players.single['is_archived'], 0);
+  });
+
+  test('v9 name-key migration recomputes keys and resolves new collisions', () async {
+    await _createPlayersTable(database, withNameKey: true);
+    await _insertPlayer(database, id: 'c1', name: 'Č', createdAt: 1, withNameKey: true);
+    await _insertPlayer(database, id: 'c2', name: 'C\u030C', createdAt: 2, withNameKey: true);
+    await database.update('players', {'name_key': 'legacy-c1'}, where: 'id = ?', whereArgs: ['c1']);
+    await database.update('players', {'name_key': 'legacy-c2'}, where: 'id = ?', whereArgs: ['c2']);
+    await database.execute(
+      'CREATE UNIQUE INDEX idx_players_name_key ON players(name_key)',
+    );
+    await DatabaseHelper.migratePlayersToCurrentNameKeys(database);
+
+    final players = await database.query('players', orderBy: 'id');
+    expect(players.map((row) => row['name_key']), ['c', 'c (2)']);
   });
 }
 

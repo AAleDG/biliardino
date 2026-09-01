@@ -65,7 +65,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     NewMatchFeedback? fallbackFeedback,
   }) {
     final presentIds = players
-        .where((player) => player.isPresent)
+        .where((player) => player.isEligibleForMatch)
         .map((player) => player.id)
         .toSet();
     final assignment = Map<String, int>.unmodifiable(
@@ -628,7 +628,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     final players = _deferredPlayers ?? state.players;
     _deferredPlayers = null;
     final presentIds = players
-        .where((player) => player.isPresent)
+        .where((player) => player.isEligibleForMatch)
         .map((player) => player.id)
         .toSet();
     final assignment = Map<String, int>.unmodifiable(

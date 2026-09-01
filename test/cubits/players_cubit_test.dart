@@ -46,6 +46,47 @@ void main() {
       await cubit.close();
       await repository.dispose();
     });
+
+    test('delegates archive and reactivation lifecycle', () async {
+      final repository = _PlayerRepositoryFake();
+      final cubit = PlayersCubit(repository);
+      final player = Player(
+        id: 'p1',
+        name: 'Mario',
+        createdAt: DateTime(2026),
+        isPresent: true,
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(await cubit.archivePlayer(player), isTrue);
+      expect(await cubit.reactivatePlayer(player), isTrue);
+      expect(repository.archiveCalls, 1);
+      expect(repository.reactivateCalls, 1);
+
+      await cubit.close();
+      await repository.dispose();
+    });
+
+    test('excludes archived players from active presence', () {
+      final active = Player(
+        id: 'active',
+        name: 'Active',
+        createdAt: DateTime(2026),
+        isPresent: true,
+      );
+      final archived = Player(
+        id: 'archived',
+        name: 'Archived',
+        createdAt: DateTime(2026),
+        isPresent: true,
+        isArchived: true,
+      );
+      final state = PlayersState(players: [active, archived]);
+
+      expect(state.active, [active]);
+      expect(state.archived, [archived]);
+      expect(state.present, [active]);
+    });
   });
 }
 
@@ -55,6 +96,8 @@ class _PlayerRepositoryFake implements PlayerRepository {
   Object? addError;
   Completer<void>? pendingAdd;
   int addCalls = 0;
+  int archiveCalls = 0;
+  int reactivateCalls = 0;
 
   @override
   List<Player> get players => const [];
@@ -69,6 +112,16 @@ class _PlayerRepositoryFake implements PlayerRepository {
 
   @override
   Future<void> renamePlayer(Player player, String name) async {}
+
+  @override
+  Future<void> archivePlayer(Player player) async {
+    archiveCalls++;
+  }
+
+  @override
+  Future<void> reactivatePlayer(Player player) async {
+    reactivateCalls++;
+  }
 
   @override
   Future<void> dispose() => _controller.close();

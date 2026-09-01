@@ -35,9 +35,9 @@ void main() {
       final events = <List<Player>>[];
       var isDone = false;
       final subscription = repository.watchPlayers().listen(
-        events.add,
-        onDone: () => isDone = true,
-      );
+            events.add,
+            onDone: () => isDone = true,
+          );
       await Future<void>.delayed(Duration.zero);
 
       await repository.dispose();
@@ -104,6 +104,43 @@ void main() {
         await repository.dispose();
       },
     );
+
+    test('archives and reactivates players without removing them', () async {
+      final player = _player('p1');
+      final database = FakeDatabaseHelper(players: [player]);
+      final repository = PlayerRepository(database);
+      await repository.load();
+
+      await repository.archivePlayer(player);
+
+      expect(repository.players.single.isArchived, isTrue);
+      expect(repository.players.single.isPresent, isFalse);
+
+      await repository.reactivatePlayer(repository.players.single);
+
+      expect(repository.players.single.isArchived, isFalse);
+      expect(repository.players.single.isPresent, isFalse);
+      expect(database.updatePlayerCalls, 2);
+      await repository.dispose();
+    });
+
+    test('rejects presence changes for archived players', () async {
+      final archived = Player(
+        id: 'p1',
+        name: 'Mario',
+        createdAt: DateTime(2026),
+        isPresent: false,
+        isArchived: true,
+      );
+      final database = FakeDatabaseHelper(players: [archived]);
+      final repository = PlayerRepository(database);
+      await repository.load();
+
+      await expectLater(repository.togglePresent(archived), throwsStateError);
+
+      expect(database.updatePlayerCalls, 0);
+      await repository.dispose();
+    });
   });
 }
 
