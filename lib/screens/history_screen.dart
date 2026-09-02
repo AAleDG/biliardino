@@ -1541,14 +1541,19 @@ class _TeamResultLine extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         SizedBox(
-          width: 32,
-          child: Text(
-            '$score',
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              color: isWinner ? color : NttColors.textFaint,
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
+          width: 40,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              '$score',
+              maxLines: 1,
+              softWrap: false,
+              style: TextStyle(
+                color: isWinner ? color : NttColors.textFaint,
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
         ),

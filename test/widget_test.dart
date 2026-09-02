@@ -95,6 +95,17 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Lo storico mostra gli score a due cifre su una sola riga', (
+    WidgetTester tester,
+  ) async {
+    final sample = _sampleData();
+    await _pumpHome(tester, home: const HistoryScreen(), repos: sample);
+    await tester.pumpAndSettle();
+
+    final score = find.text('10').first;
+    expect(tester.getSize(score).height, lessThan(60));
+  });
+
   testWidgets('La Rivalita compare solo a squadre complete e apre il popup', (
     WidgetTester tester,
   ) async {
