@@ -88,6 +88,45 @@ void main() {
     expect(data.players.single.isArchived, isFalse);
   });
 
+  test('requires the archive field in version 2 backups', () {
+    final service = DataBackupService(FakeDatabaseHelper());
+    expect(
+      () => service.parse(jsonEncode({
+        'version': 2,
+        'players': [
+          {
+            'id': 'p1',
+            'name': 'Alice',
+            'createdAt': '2026-01-01T00:00:00.000Z',
+            'isPresent': true,
+          },
+        ],
+        'matches': <Object?>[],
+      })),
+      throwsFormatException,
+    );
+  });
+
+  test('rejects a null archive field in version 2 backups', () {
+    final service = DataBackupService(FakeDatabaseHelper());
+    expect(
+      () => service.parse(jsonEncode({
+        'version': 2,
+        'players': [
+          {
+            'id': 'p1',
+            'name': 'Alice',
+            'createdAt': '2026-01-01T00:00:00.000Z',
+            'isPresent': true,
+            'isArchived': null,
+          },
+        ],
+        'matches': <Object?>[],
+      })),
+      throwsFormatException,
+    );
+  });
+
   test('rejects an archived player that is still present', () {
     final service = DataBackupService(FakeDatabaseHelper());
     expect(

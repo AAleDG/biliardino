@@ -52,7 +52,7 @@ class DataBackupService {
     final playersJson = _list(decoded, 'players');
     final matchesJson = _list(decoded, 'matches');
     final players = playersJson
-        .map((item) => version == 0 ? _legacyPlayer(item) : _player(item))
+        .map((item) => version == 0 ? _legacyPlayer(item) : _player(item, version))
         .toList(growable: false);
     final matches = matchesJson
         .map((item) => version == 0 ? _legacyMatch(item) : _match(item))
@@ -93,14 +93,16 @@ class DataBackupService {
     'isRivalry': match.isRivalry,
   };
 
-  static Player _player(Object? value) {
+  static Player _player(Object? value, int version) {
     final map = _object(value, 'player');
     return Player(
       id: _string(map, 'id'),
       name: _string(map, 'name'),
       createdAt: _date(map, 'createdAt'),
       isPresent: _bool(map, 'isPresent'),
-      isArchived: _optionalBool(map, 'isArchived'),
+      isArchived: version >= 2
+          ? _bool(map, 'isArchived')
+          : _optionalBool(map, 'isArchived'),
     );
   }
 
