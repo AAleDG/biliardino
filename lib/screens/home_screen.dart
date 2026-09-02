@@ -5,6 +5,7 @@ import '../cubits/home/home_cubit.dart';
 import '../cubits/new_match/new_match_cubit.dart';
 import '../cubits/new_match/new_match_state.dart';
 import '../theme/app_theme.dart';
+import 'data_management_screen.dart';
 import 'history_screen.dart';
 import 'leaderboard_screen.dart';
 import 'new_match_screen.dart';
@@ -18,6 +19,7 @@ class HomeScreen extends StatelessWidget {
     NewMatchScreen(),
     HistoryScreen(),
     LeaderboardScreen(),
+    DataManagementScreen(),
   ];
 
   @override
@@ -122,7 +124,7 @@ class _BottomNav extends StatelessWidget {
           children: [
             LayoutBuilder(
               builder: (context, constraints) {
-                final tabWidth = constraints.maxWidth / 4;
+                final tabWidth = constraints.maxWidth / 5;
                 return SizedBox(
                   height: 3,
                   child: Stack(
@@ -173,6 +175,11 @@ class _BottomNav extends StatelessWidget {
                   icon: Icon(Icons.leaderboard_outlined),
                   selectedIcon: Icon(Icons.leaderboard),
                   label: 'Classifica',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.storage_outlined),
+                  selectedIcon: Icon(Icons.storage),
+                  label: 'Dati',
                 ),
               ],
             ),

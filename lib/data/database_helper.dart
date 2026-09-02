@@ -135,6 +135,35 @@ class DatabaseHelper {
     return nameKey.length == 1 && nameKey.single['notnull'] == 1;
   }
 
+  Future<void> replacePlayersAndMatches({
+    required List<Player> players,
+    required List<GameMatch> matches,
+  }) async {
+    final db = await _database;
+    await db.transaction(
+      (txn) => replacePlayersAndMatchesIn(
+        txn,
+        players: players,
+        matches: matches,
+      ),
+    );
+  }
+
+  static Future<void> replacePlayersAndMatchesIn(
+    DatabaseExecutor db, {
+    required List<Player> players,
+    required List<GameMatch> matches,
+  }) async {
+    await db.delete('matches');
+    await db.delete('players');
+    for (final player in players) {
+      await db.insert('players', player.toMap());
+    }
+    for (final match in matches) {
+      await db.insert('matches', match.toMap());
+    }
+  }
+
   static Future<void> _createIndexes(DatabaseExecutor db) async {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_matches_played_at ON matches(played_at)',
