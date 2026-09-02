@@ -50,6 +50,64 @@ void main() {
     expect(service.summarize(data).matches, 1);
   });
 
+  test('exports, parses, and restores an archived player', () async {
+    final archivedPlayer = Player(
+      id: 'p3',
+      name: 'Archived Alice',
+      createdAt: DateTime.utc(2026),
+      isPresent: false,
+      isArchived: true,
+    );
+    final database = FakeDatabaseHelper(players: [archivedPlayer]);
+    final service = DataBackupService(database);
+
+    final backup = await service.createJson(DateTime.utc(2026, 9, 2));
+    final data = service.parse(backup);
+    await service.restore(data);
+
+    expect(jsonDecode(backup)['version'], 2);
+    expect(jsonDecode(backup)['players'].single['isArchived'], isTrue);
+    expect(database.players.single.isArchived, isTrue);
+  });
+
+  test('defaults a missing archive field to false for version 1 backups', () {
+    final service = DataBackupService(FakeDatabaseHelper());
+    final data = service.parse(jsonEncode({
+      'version': 1,
+      'players': [
+        {
+          'id': 'p1',
+          'name': 'Alice',
+          'createdAt': '2026-01-01T00:00:00.000Z',
+          'isPresent': true,
+        },
+      ],
+      'matches': <Object?>[],
+    }));
+
+    expect(data.players.single.isArchived, isFalse);
+  });
+
+  test('rejects an archived player that is still present', () {
+    final service = DataBackupService(FakeDatabaseHelper());
+    expect(
+      () => service.parse(jsonEncode({
+        'version': 2,
+        'players': [
+          {
+            'id': 'p1',
+            'name': 'Alice',
+            'createdAt': '2026-01-01T00:00:00.000Z',
+            'isPresent': true,
+            'isArchived': true,
+          },
+        ],
+        'matches': <Object?>[],
+      })),
+      throwsFormatException,
+    );
+  });
+
   test('supports the older unversioned database-map format', () {
     final database = FakeDatabaseHelper();
     final service = DataBackupService(database);

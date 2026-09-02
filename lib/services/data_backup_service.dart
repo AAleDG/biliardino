@@ -21,7 +21,7 @@ class ImportSummary {
 class DataBackupService {
   const DataBackupService(this._database);
 
-  static const currentVersion = 1;
+  static const currentVersion = 2;
   final DatabaseHelper _database;
 
   Future<String> createJson(DateTime exportedAt) async {
@@ -77,6 +77,7 @@ class DataBackupService {
     'name': player.name,
     'createdAt': player.createdAt.toUtc().toIso8601String(),
     'isPresent': player.isPresent,
+    'isArchived': player.isArchived,
   };
 
   static Map<String, Object?> _matchToJson(GameMatch match) => {
@@ -99,6 +100,7 @@ class DataBackupService {
       name: _string(map, 'name'),
       createdAt: _date(map, 'createdAt'),
       isPresent: _bool(map, 'isPresent'),
+      isArchived: _optionalBool(map, 'isArchived'),
     );
   }
 
@@ -138,6 +140,11 @@ class DataBackupService {
     for (final player in players) {
       if (player.id.trim().isEmpty || !ids.add(player.id)) {
         throw const FormatException('Player IDs must be non-empty and unique.');
+      }
+      if (player.isArchived && player.isPresent) {
+        throw FormatException(
+          'Player ${player.id} cannot be archived and present.',
+        );
       }
       final nameKey = Player.normalizedNameKey(player.name);
       if (nameKey.isEmpty || !names.add(nameKey)) {
@@ -208,6 +215,13 @@ class DataBackupService {
 
   static bool _bool(Map<String, dynamic> map, String key) {
     final value = map[key];
+    if (value is! bool) throw FormatException('$key must be a boolean.');
+    return value;
+  }
+
+  static bool _optionalBool(Map<String, dynamic> map, String key) {
+    final value = map[key];
+    if (value == null) return false;
     if (value is! bool) throw FormatException('$key must be a boolean.');
     return value;
   }
