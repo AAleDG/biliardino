@@ -15,6 +15,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
+  late final bool _reduceMotion;
   late final Animation<double> _fieldFade;
   late final Animation<double> _ballProgress;
   late final Animation<double> _logoFade;
@@ -25,9 +26,12 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+    _reduceMotion = shouldReduceMotion();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2800),
+      duration: _reduceMotion
+          ? Duration.zero
+          : const Duration(milliseconds: 2800),
     );
 
     _fieldFade = CurvedAnimation(
@@ -42,13 +46,13 @@ class _SplashScreenState extends State<SplashScreen>
       parent: _controller,
       curve: const Interval(0.55, 0.78, curve: Curves.easeOut),
     );
-    _logoSlide = Tween<Offset>(
-      begin: const Offset(0, 0.35),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0.55, 0.82, curve: Curves.easeOutBack),
-    ));
+    _logoSlide = Tween<Offset>(begin: const Offset(0, 0.35), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.55, 0.82, curve: Curves.easeOutBack),
+          ),
+        );
     _taglineFade = CurvedAnimation(
       parent: _controller,
       curve: const Interval(0.80, 0.95, curve: Curves.easeOut),
@@ -60,14 +64,24 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    _controller.forward().whenComplete(_goHome);
+    if (_reduceMotion) {
+      _controller.value = 1;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _goHome());
+    } else {
+      _controller.forward().whenComplete(_goHome);
+    }
   }
 
   void _goHome() {
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       PageRouteBuilder<void>(
-        transitionDuration: const Duration(milliseconds: 450),
+        transitionDuration: _reduceMotion
+            ? Duration.zero
+            : const Duration(milliseconds: 450),
+        reverseTransitionDuration: _reduceMotion
+            ? Duration.zero
+            : const Duration(milliseconds: 450),
         pageBuilder: (_, __, ___) => const HomeScreen(),
         transitionsBuilder: (_, animation, __, child) =>
             FadeTransition(opacity: animation, child: child),
@@ -159,19 +173,19 @@ class _BackgroundGradient extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              NttColors.surfaceDark,
-              NttColors.primaryDeep,
-              NttColors.surfaceDark,
-            ],
-            stops: [0.0, 0.55, 1.0],
-          ),
-        ),
-      );
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          NttColors.surfaceDark,
+          NttColors.primaryDeep,
+          NttColors.surfaceDark,
+        ],
+        stops: [0.0, 0.55, 1.0],
+      ),
+    ),
+  );
 }
 
 class _Ball extends StatelessWidget {
@@ -257,21 +271,11 @@ class _FieldPainter extends CustomPainter {
     final goalW = fieldHalfW * 0.18;
     final goalH = fieldHalfH * 0.55;
     canvas.drawRect(
-      Rect.fromLTWH(
-        cx - fieldHalfW,
-        cy - goalH / 2,
-        goalW,
-        goalH,
-      ),
+      Rect.fromLTWH(cx - fieldHalfW, cy - goalH / 2, goalW, goalH),
       line,
     );
     canvas.drawRect(
-      Rect.fromLTWH(
-        cx + fieldHalfW - goalW,
-        cy - goalH / 2,
-        goalW,
-        goalH,
-      ),
+      Rect.fromLTWH(cx + fieldHalfW - goalW, cy - goalH / 2, goalW, goalH),
       line,
     );
 
@@ -357,12 +361,12 @@ class _Tagline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Text(
-        'OFFICE LEAGUE',
-        style: TextStyle(
-          color: NttColors.textFaint,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 6,
-        ),
-      );
+    'OFFICE LEAGUE',
+    style: TextStyle(
+      color: NttColors.textFaint,
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 6,
+    ),
+  );
 }

@@ -63,15 +63,14 @@ class PlayersScreen extends StatelessWidget {
                               : () => _showArchiveDialog(context, players[i]),
                           onReactivate:
                               state.isMutating || !players[i].isArchived
-                                  ? null
-                                  : () => context
-                                      .read<PlayersCubit>()
-                                      .reactivatePlayer(players[i]),
+                              ? null
+                              : () => context
+                                    .read<PlayersCubit>()
+                                    .reactivatePlayer(players[i]),
                           onOpenProfile: () => Navigator.of(context).push(
                             MaterialPageRoute<void>(
-                              builder: (_) => PlayerProfileScreen(
-                                playerId: players[i].id,
-                              ),
+                              builder: (_) =>
+                                  PlayerProfileScreen(playerId: players[i].id),
                             ),
                           ),
                         ),
@@ -267,8 +266,6 @@ class _PlayerRow extends StatelessWidget {
                   children: [
                     Text(
                       player.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -276,12 +273,15 @@ class _PlayerRow extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 220),
+                      duration: shouldReduceMotion()
+                          ? Duration.zero
+                          : const Duration(milliseconds: 220),
                       transitionBuilder: (child, anim) =>
                           FadeTransition(opacity: anim, child: child),
                       child: _PresenceBadge(
                         key: ValueKey(
-                            '${player.isPresent}-${player.isArchived}'),
+                          '${player.isPresent}-${player.isArchived}',
+                        ),
                         isPresent: player.isPresent,
                         isArchived: player.isArchived,
                       ),
@@ -290,13 +290,23 @@ class _PlayerRow extends StatelessWidget {
                 ),
               ),
               if (!player.isArchived)
-                Switch(
-                  value: player.isPresent,
-                  onChanged: onToggle == null ? null : (_) => onToggle!(),
+                Semantics(
+                  key: ValueKey('player-presence-${player.id}'),
+                  container: true,
+                  label: 'Presenza di ${player.name}',
+                  toggled: player.isPresent,
+                  enabled: onToggle != null,
+                  onTap: onToggle,
+                  child: ExcludeSemantics(
+                    child: Switch(
+                      value: player.isPresent,
+                      onChanged: onToggle == null ? null : (_) => onToggle!(),
+                    ),
+                  ),
                 ),
               PopupMenuButton<_PlayerAction>(
                 key: ValueKey('player-actions-${player.id}'),
-                tooltip: 'Azioni giocatore',
+                tooltip: 'Azioni giocatore: ${player.name}',
                 onSelected: (action) {
                   switch (action) {
                     case _PlayerAction.rename:
@@ -367,8 +377,9 @@ class _PresenceBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        isPresent && !isArchived ? NttColors.success : NttColors.textFaint;
+    final color = isPresent && !isArchived
+        ? NttColors.success
+        : NttColors.textFaint;
     return Row(
       children: [
         Container(
@@ -388,8 +399,8 @@ class _PresenceBadge extends StatelessWidget {
             isArchived
                 ? 'Archiviato'
                 : isPresent
-                    ? 'In ufficio'
-                    : 'Assente',
+                ? 'In ufficio'
+                : 'Assente',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -413,22 +424,22 @@ class _Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withValues(alpha: 0.4)),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            color: color,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.6,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.14),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: color.withValues(alpha: 0.4)),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(
+        color: color,
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.6,
+      ),
+    ),
+  );
 }
 
 class _Empty extends StatelessWidget {
@@ -436,30 +447,30 @@ class _Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.people_outline, size: 64, color: NttColors.textFaint),
-              SizedBox(height: 16),
-              Text(
-                'Nessun giocatore',
-                style: TextStyle(
-                  color: NttColors.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1,
-                ),
-              ),
-              SizedBox(height: 6),
-              Text(
-                'Aggiungi il primo player con il pulsante in basso.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: NttColors.textMuted),
-              ),
-            ],
+    child: Padding(
+      padding: EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.people_outline, size: 64, color: NttColors.textFaint),
+          SizedBox(height: 16),
+          Text(
+            'Nessun giocatore',
+            style: TextStyle(
+              color: NttColors.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1,
+            ),
           ),
-        ),
-      );
+          SizedBox(height: 6),
+          Text(
+            'Aggiungi il primo player con il pulsante in basso.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: NttColors.textMuted),
+          ),
+        ],
+      ),
+    ),
+  );
 }

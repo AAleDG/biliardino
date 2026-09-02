@@ -93,6 +93,7 @@ class _GoalOverlay extends StatefulWidget {
 class _GoalOverlayState extends State<_GoalOverlay>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
+  late final bool _reduceMotion;
   late final Animation<double> _scale;
   late final Animation<double> _fade;
   late final Animation<double> _tint;
@@ -101,6 +102,7 @@ class _GoalOverlayState extends State<_GoalOverlay>
   @override
   void initState() {
     super.initState();
+    _reduceMotion = shouldReduceMotion();
     _ctrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1100),
@@ -108,19 +110,25 @@ class _GoalOverlayState extends State<_GoalOverlay>
 
     _scale = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween(begin: 0.4, end: 1.15)
-            .chain(CurveTween(curve: Curves.easeOutBack)),
+        tween: Tween(
+          begin: 0.4,
+          end: 1.15,
+        ).chain(CurveTween(curve: Curves.easeOutBack)),
         weight: 25,
       ),
       TweenSequenceItem(
-        tween: Tween(begin: 1.15, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween(
+          begin: 1.15,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 15,
       ),
       TweenSequenceItem(tween: ConstantTween(1.0), weight: 35),
       TweenSequenceItem(
-        tween: Tween(begin: 1.0, end: 0.85)
-            .chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween(
+          begin: 1.0,
+          end: 0.85,
+        ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 25,
       ),
     ]).animate(_ctrl);
@@ -142,7 +150,15 @@ class _GoalOverlayState extends State<_GoalOverlay>
       TweenSequenceItem(tween: ConstantTween(0.0), weight: 80),
     ]).animate(_ctrl);
 
-    _ctrl.forward().whenComplete(widget.onComplete);
+    if (_reduceMotion) {
+      // Keep the announcement visible briefly without animating it.
+      _ctrl.value = 0.5;
+      Future<void>.delayed(const Duration(milliseconds: 1100), () {
+        if (mounted) widget.onComplete();
+      });
+    } else {
+      _ctrl.forward().whenComplete(widget.onComplete);
+    }
   }
 
   @override
@@ -153,100 +169,112 @@ class _GoalOverlayState extends State<_GoalOverlay>
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: AnimatedBuilder(
-        animation: _ctrl,
-        builder: (_, __) {
-          return Stack(
-            fit: StackFit.expand,
-            children: [
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: Alignment.center,
-                    radius: 1.0,
-                    colors: [
-                      widget.color.withValues(alpha: _tint.value),
-                      widget.color.withValues(alpha: _tint.value * 0.2),
-                    ],
+    return Semantics(
+      key: const ValueKey('goal-overlay'),
+      container: true,
+      liveRegion: true,
+      label: 'Goal. ${widget.teamLabel}',
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: _ctrl,
+          builder: (_, __) {
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment.center,
+                      radius: 1.0,
+                      colors: [
+                        widget.color.withValues(alpha: _tint.value),
+                        widget.color.withValues(alpha: _tint.value * 0.2),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: _flash.value),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: _flash.value),
+                  ),
                 ),
-              ),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  return Center(
-                    child: Opacity(
-                      opacity: _fade.value,
-                      child: Transform.scale(
-                        scale: _scale.value,
-                        child: SizedBox(
-                          width: constraints.maxWidth - 40,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  'GOAL!',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 108,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 8,
-                                    height: 1,
-                                    shadows: [
-                                      Shadow(
-                                          color: widget.color, blurRadius: 28),
-                                      Shadow(
-                                        color:
-                                            widget.color.withValues(alpha: 0.7),
-                                        blurRadius: 60,
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return Center(
+                      child: Opacity(
+                        opacity: _fade.value,
+                        child: Transform.scale(
+                          scale: _scale.value,
+                          child: SizedBox(
+                            width: constraints.maxWidth - 40,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    'GOAL!',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 108,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 8,
+                                      height: 1,
+                                      shadows: [
+                                        Shadow(
+                                          color: widget.color,
+                                          blurRadius: 28,
+                                        ),
+                                        Shadow(
+                                          color: widget.color.withValues(
+                                            alpha: 0.7,
+                                          ),
+                                          blurRadius: 60,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 7,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: widget.color,
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: widget.color.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                        blurRadius: 20,
                                       ),
                                     ],
                                   ),
-                                ),
-                              ),
-                              const SizedBox(height: 14),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 7),
-                                decoration: BoxDecoration(
-                                  color: widget.color,
-                                  borderRadius: BorderRadius.circular(8),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color:
-                                          widget.color.withValues(alpha: 0.6),
-                                      blurRadius: 20,
+                                  child: Text(
+                                    widget.teamLabel,
+                                    style: const TextStyle(
+                                      color: NttColors.surfaceDark,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 3,
+                                      fontSize: 13,
                                     ),
-                                  ],
-                                ),
-                                child: Text(
-                                  widget.teamLabel,
-                                  style: const TextStyle(
-                                    color: NttColors.surfaceDark,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 3,
-                                    fontSize: 13,
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          );
-        },
+                    );
+                  },
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -280,24 +308,37 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
   late final AnimationController _entry;
   late final AnimationController _confetti;
   late final List<_ConfettiSpec> _specs;
+  late final bool _reduceMotion;
 
   @override
   void initState() {
     super.initState();
+    _reduceMotion = shouldReduceMotion();
     _entry = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1300),
-    )..forward();
+      duration: _reduceMotion
+          ? Duration.zero
+          : const Duration(milliseconds: 1300),
+    );
     _confetti = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 6),
-    )..forward();
+    );
+    if (_reduceMotion) {
+      _entry.value = 1;
+    } else {
+      _entry.forward();
+      _confetti.forward();
+    }
     final rng = math.Random();
     _specs = List.generate(90, (_) => _ConfettiSpec.random(rng, widget.color));
   }
 
-  Animation<double> _interval(double begin, double end,
-      [Curve curve = Curves.easeOutBack]) {
+  Animation<double> _interval(
+    double begin,
+    double end, [
+    Curve curve = Curves.easeOutBack,
+  ]) {
     return CurvedAnimation(
       parent: _entry,
       curve: Interval(begin, end, curve: curve),
@@ -319,206 +360,235 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
     final scoreAnim = _interval(0.55, 0.82);
     final buttonAnim = _interval(0.78, 1.0, Curves.easeOut);
 
-    return Material(
-      color: Colors.transparent,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.topCenter,
-                radius: 1.3,
-                colors: [
-                  widget.color.withValues(alpha: 0.30),
-                  NttColors.surfaceDark.withValues(alpha: 0.97),
-                ],
+    return Semantics(
+      key: const ValueKey('victory-overlay'),
+      container: true,
+      liveRegion: true,
+      namesRoute: true,
+      scopesRoute: true,
+      explicitChildNodes: true,
+      label:
+          'Vittoria: ${widget.teamLabel}. ${widget.playerNames.join(' e ')}. '
+          'Punteggio ${widget.winnerScore} a ${widget.loserScore}.',
+      child: BlockSemantics(
+        child: Material(
+          color: Colors.transparent,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              const ModalBarrier(
+                color: Colors.transparent,
+                dismissible: false,
+                barrierSemanticsDismissible: false,
               ),
-            ),
-          ),
-          AnimatedBuilder(
-            animation: _confetti,
-            builder: (_, __) => CustomPaint(
-              painter: _ConfettiPainter(
-                specs: _specs,
-                t: _confetti.value * 6,
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.topCenter,
+                    radius: 1.3,
+                    colors: [
+                      widget.color.withValues(alpha: 0.30),
+                      NttColors.surfaceDark.withValues(alpha: 0.97),
+                    ],
+                  ),
+                ),
               ),
-              size: Size.infinite,
-            ),
-          ),
-          SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) => Center(
-                child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: constraints.maxWidth - 48,
+              if (!_reduceMotion)
+                AnimatedBuilder(
+                  animation: _confetti,
+                  builder: (_, __) => CustomPaint(
+                    painter: _ConfettiPainter(
+                      specs: _specs,
+                      t: _confetti.value * 6,
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _staggered(
-                          trophyAnim,
-                          scale: true,
-                          child: Icon(
-                            Icons.emoji_events,
-                            size: 116,
-                            color: widget.color,
-                            shadows: [
-                              Shadow(color: widget.color, blurRadius: 36),
-                            ],
-                          ),
+                    size: Size.infinite,
+                  ),
+                ),
+              SafeArea(
+                child: LayoutBuilder(
+                  builder: (context, constraints) => Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 24,
+                      ),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: constraints.maxWidth - 48,
                         ),
-                        const SizedBox(height: 10),
-                        _staggered(
-                          titleAnim,
-                          slideUp: true,
-                          child: const FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              'VITTORIA',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 44,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 8,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _staggered(
+                              trophyAnim,
+                              scale: true,
+                              child: Icon(
+                                Icons.emoji_events,
+                                size: 116,
+                                color: widget.color,
+                                shadows: [
+                                  Shadow(color: widget.color, blurRadius: 36),
+                                ],
                               ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        _staggered(
-                          teamAnim,
-                          slideUp: true,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 22, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: widget.color,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: widget.color.withValues(alpha: 0.55),
-                                  blurRadius: 26,
+                            const SizedBox(height: 10),
+                            _staggered(
+                              titleAnim,
+                              slideUp: true,
+                              child: const FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  'VITTORIA',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 44,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 8,
+                                  ),
                                 ),
-                              ],
-                            ),
-                            child: Text(
-                              widget.teamLabel,
-                              style: const TextStyle(
-                                color: NttColors.surfaceDark,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 4,
-                                fontSize: 17,
                               ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _staggered(
-                          teamAnim,
-                          child: Text(
-                            widget.playerNames.join('  &  '),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        _staggered(
-                          scoreAnim,
-                          scale: true,
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              '${widget.winnerScore} — ${widget.loserScore}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 60,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 2,
-                                height: 1,
+                            const SizedBox(height: 28),
+                            _staggered(
+                              teamAnim,
+                              slideUp: true,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 22,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: widget.color,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: widget.color.withValues(
+                                        alpha: 0.55,
+                                      ),
+                                      blurRadius: 26,
+                                    ),
+                                  ],
+                                ),
+                                child: Text(
+                                  widget.teamLabel,
+                                  style: const TextStyle(
+                                    color: NttColors.surfaceDark,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 4,
+                                    fontSize: 17,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 40),
-                        _staggered(
-                          buttonAnim,
-                          slideUp: true,
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 360),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: widget.onChangeTeams,
-                                    style: ElevatedButton.styleFrom(
-                                      elevation: 0,
-                                      backgroundColor:
-                                          NttColors.surfaceDark.withValues(
-                                        alpha: 0.78,
-                                      ),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(18),
-                                        side: BorderSide(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.28,
+                            const SizedBox(height: 12),
+                            _staggered(
+                              teamAnim,
+                              child: Text(
+                                widget.playerNames.join('  &  '),
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            _staggered(
+                              scoreAnim,
+                              scale: true,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  '${widget.winnerScore} — ${widget.loserScore}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 60,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 2,
+                                    height: 1,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 40),
+                            _staggered(
+                              buttonAnim,
+                              slideUp: true,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 360,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: widget.onChangeTeams,
+                                        style: ElevatedButton.styleFrom(
+                                          elevation: 0,
+                                          backgroundColor: NttColors.surfaceDark
+                                              .withValues(alpha: 0.78),
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 16,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              18,
+                                            ),
+                                            side: BorderSide(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.28,
+                                              ),
+                                            ),
+                                          ),
+                                          textStyle: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 1.8,
                                           ),
                                         ),
-                                      ),
-                                      textStyle: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 1.8,
+                                        child: const Text('CAMBIA SQUADRE'),
                                       ),
                                     ),
-                                    child: const Text('CAMBIA SQUADRE'),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: widget.onRematch,
-                                    style: ElevatedButton.styleFrom(
-                                      elevation: 0,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(18),
-                                      ),
-                                      textStyle: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 1.8,
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: widget.onRematch,
+                                        style: ElevatedButton.styleFrom(
+                                          elevation: 0,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 16,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              18,
+                                            ),
+                                          ),
+                                          textStyle: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 1.8,
+                                          ),
+                                        ),
+                                        child: const Text('RIVINCITA'),
                                       ),
                                     ),
-                                    child: const Text('RIVINCITA'),
-                                  ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

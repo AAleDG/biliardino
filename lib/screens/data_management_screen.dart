@@ -60,9 +60,13 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
                 'Il contenuto viene verificato prima di sostituire i dati',
             onTap: _busy ? null : _restore,
           ),
-          if (_busy) ...const [
-            SizedBox(height: 20),
-            Center(child: CircularProgressIndicator()),
+          if (_busy) ...[
+            const SizedBox(height: 20),
+            Semantics(
+              liveRegion: true,
+              label: 'Operazione in corso',
+              child: const Center(child: CircularProgressIndicator()),
+            ),
           ],
         ],
       ),
