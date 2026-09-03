@@ -1129,7 +1129,7 @@ void main() {
   );
 
   test('I colori dinamici mantengono il contrasto sul pannello HUD', () {
-    final names = [
+    final List<String> names = [
       '',
       'Alessandro Antonio Delgaudio',
       'Beatrice Lunghissimo Cognome',
