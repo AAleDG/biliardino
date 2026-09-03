@@ -941,6 +941,8 @@ class _TeamPanelState extends State<_TeamPanel>
                   padding: const EdgeInsets.symmetric(vertical: 1),
                   child: Text(
                     name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: NttColors.textPrimary,

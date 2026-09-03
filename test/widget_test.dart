@@ -82,6 +82,46 @@ void main() {
     },
   );
 
+  testWidgets(
+    'La partita in corso resta utilizzabile con testo al 200 percento',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+      await _pumpHome(
+        tester,
+        home: const NewMatchScreen(),
+        repos: _sampleData(),
+      );
+      await tester.pumpAndSettle();
+
+      await _assignTeam(tester, 'Alessandro Antonio Delgaudio', 'S1');
+      await _assignTeam(tester, 'Beatrice Lunghissimo Cognome', 'S1');
+      await _assignTeam(tester, 'Cristiano Nome Molto Esteso', 'S2');
+      await _assignTeam(tester, 'Daniela Super Competitiva', 'S2');
+      await tester.ensureVisible(find.text('INIZIA PARTITA'));
+      await tester.tap(find.text('INIZIA PARTITA'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('PARTITA IN CORSO'), findsOneWidget);
+      expect(find.byKey(const ValueKey('score-add-team-1')), findsOneWidget);
+      expect(find.byKey(const ValueKey('score-add-team-2')), findsOneWidget);
+      for (final teamNumber in [1, 2]) {
+        expect(
+          tester
+              .getRect(find.byKey(ValueKey('score-add-team-$teamNumber')))
+              .bottom,
+          lessThanOrEqualTo(640),
+        );
+      }
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('Lo storico raggruppa le partite per data', (
     WidgetTester tester,
   ) async {
@@ -744,6 +784,38 @@ void main() {
     expect(repos.updatedMatches, hasLength(1));
     expect(repos.updatedMatches.single.scorerIds, ['p1', 'p1']);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Un errore di modifica viene annunciato una sola volta', (
+    WidgetTester tester,
+  ) async {
+    await _setTallTestViewport(tester);
+    final semantics = tester.ensureSemantics();
+    final repos = _sampleDataMixedFormats();
+    try {
+      await _pumpHome(tester, home: const HistoryScreen(), repos: repos);
+      await tester.pumpAndSettle();
+      await _openFirstMatchEditDialog(tester);
+
+      final scoreFields = find.byType(TextField);
+      await tester.enterText(scoreFields.at(2), '10');
+      await tester.enterText(scoreFields.at(3), '10');
+      await tester.tap(find.text('Salva'));
+      await tester.pumpAndSettle();
+
+      const errorMessage = 'La partita deve avere un vincitore.';
+      final errorFinder = find.byKey(const ValueKey('edit-match-error'));
+      expect(find.text(errorMessage), findsOneWidget);
+      await tester.ensureVisible(errorFinder);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(errorFinder),
+        matchesSemantics(label: errorMessage, isLiveRegion: true),
+      );
+      expect(tester.takeException(), isNull);
+    } finally {
+      semantics.dispose();
+    }
   });
 
   testWidgets('Lo storico invalida marcatori se cambia la squadra', (

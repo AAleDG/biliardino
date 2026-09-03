@@ -384,12 +384,15 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
               if (_error != null) ...[
                 const SizedBox(height: 8),
                 Semantics(
+                  key: const ValueKey('edit-match-error'),
                   container: true,
                   liveRegion: true,
                   label: _error!,
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: NttColors.warning),
+                  child: ExcludeSemantics(
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(color: NttColors.warning),
+                    ),
                   ),
                 ),
               ],
