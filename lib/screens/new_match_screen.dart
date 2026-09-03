@@ -638,16 +638,20 @@ class _Setup extends StatelessWidget {
                           ),
                         ),
                         _TeamChip(
+                          semanticKey: ValueKey('team-chip-${p.id}-team-1'),
                           label: 'S1',
                           color: NttColors.team1,
                           selected: a == 1,
+                          semanticLabel: '${p.name}, Squadra 1',
                           onTap: t1Full ? null : () => onToggle(p.id, 1),
                         ),
                         const SizedBox(width: 6),
                         _TeamChip(
+                          semanticKey: ValueKey('team-chip-${p.id}-team-2'),
                           label: 'S2',
                           color: NttColors.team2,
                           selected: a == 2,
+                          semanticLabel: '${p.name}, Squadra 2',
                           onTap: t2Full ? null : () => onToggle(p.id, 2),
                         ),
                       ],
@@ -760,6 +764,7 @@ class _Scoreboard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _TeamPanel(
+                        teamNumber: 1,
                         label: 'SQUADRA 1',
                         color: NttColors.team1,
                         playerNames: team1Players
@@ -777,6 +782,7 @@ class _Scoreboard extends StatelessWidget {
                     ),
                     Expanded(
                       child: _TeamPanel(
+                        teamNumber: 2,
                         label: 'SQUADRA 2',
                         color: NttColors.team2,
                         playerNames: team2Players
@@ -828,6 +834,7 @@ class _Scoreboard extends StatelessWidget {
 
 class _TeamPanel extends StatefulWidget {
   const _TeamPanel({
+    required this.teamNumber,
     required this.label,
     required this.color,
     required this.playerNames,
@@ -837,6 +844,7 @@ class _TeamPanel extends StatefulWidget {
     required this.onRemoveGoal,
   });
 
+  final int teamNumber;
   final String label;
   final Color color;
   final List<String> playerNames;
@@ -852,20 +860,25 @@ class _TeamPanel extends StatefulWidget {
 class _TeamPanelState extends State<_TeamPanel>
     with SingleTickerProviderStateMixin {
   late final AnimationController _flash;
+  late final bool _reduceMotion;
 
   @override
   void initState() {
     super.initState();
+    _reduceMotion = shouldReduceMotion();
     _flash = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 420),
     );
+    if (_reduceMotion) {
+      _flash.value = 1;
+    }
   }
 
   @override
   void didUpdateWidget(covariant _TeamPanel old) {
     super.didUpdateWidget(old);
-    if (widget.score > old.score) {
+    if (widget.score > old.score && !_reduceMotion) {
       _flash.forward(from: 0);
     }
   }
@@ -928,8 +941,9 @@ class _TeamPanelState extends State<_TeamPanel>
                   padding: const EdgeInsets.symmetric(vertical: 1),
                   child: Text(
                     name,
-                    textAlign: TextAlign.center,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: NttColors.textPrimary,
                       fontSize: 15,
@@ -940,84 +954,117 @@ class _TeamPanelState extends State<_TeamPanel>
               ),
               Expanded(
                 child: Center(
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 420),
-                    switchInCurve: Curves.elasticOut,
-                    switchOutCurve: Curves.easeOut,
-                    transitionBuilder: (child, anim) {
-                      return ScaleTransition(
-                        scale: anim,
-                        child: FadeTransition(opacity: anim, child: child),
-                      );
-                    },
-                    layoutBuilder: (currentChild, previousChildren) {
-                      return Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          ...previousChildren,
-                          if (currentChild != null) currentChild,
-                        ],
-                      );
-                    },
-                    child: FittedBox(
-                      key: ValueKey(widget.score),
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        '${widget.score}',
-                        style: TextStyle(
-                          color: NttColors.textPrimary,
-                          fontSize: 120,
-                          fontWeight: FontWeight.w900,
-                          height: 1,
-                          letterSpacing: -3,
-                          shadows: [
-                            Shadow(
-                              color: widget.color.withValues(alpha: 0.75),
-                              blurRadius: 24,
+                  child: Semantics(
+                    key: ValueKey('score-team-${widget.teamNumber}'),
+                    container: true,
+                    liveRegion: true,
+                    label: 'Punteggio ${widget.label}: ${widget.score}',
+                    child: ExcludeSemantics(
+                      child: AnimatedSwitcher(
+                        duration: shouldReduceMotion()
+                            ? Duration.zero
+                            : const Duration(milliseconds: 420),
+                        switchInCurve: Curves.elasticOut,
+                        switchOutCurve: Curves.easeOut,
+                        transitionBuilder: (child, anim) {
+                          return ScaleTransition(
+                            scale: anim,
+                            child: FadeTransition(opacity: anim, child: child),
+                          );
+                        },
+                        layoutBuilder: (currentChild, previousChildren) {
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              ...previousChildren,
+                              if (currentChild != null) currentChild,
+                            ],
+                          );
+                        },
+                        child: FittedBox(
+                          key: ValueKey(widget.score),
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '${widget.score}',
+                            style: TextStyle(
+                              color: NttColors.textPrimary,
+                              fontSize: 120,
+                              fontWeight: FontWeight.w900,
+                              height: 1,
+                              letterSpacing: -3,
+                              shadows: [
+                                Shadow(
+                                  color: widget.color.withValues(alpha: 0.75),
+                                  blurRadius: 24,
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-              SizedBox(
-                height: 58,
-                child: ElevatedButton(
-                  onPressed: widget.enabled ? widget.onAddGoal : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: widget.color,
-                    foregroundColor: NttColors.surfaceDark,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+              Semantics(
+                key: ValueKey('score-add-team-${widget.teamNumber}'),
+                container: true,
+                button: true,
+                enabled: widget.enabled,
+                label:
+                    'Aggiungi un goal a ${widget.label}. Punteggio attuale ${widget.score}.',
+                onTap: widget.enabled ? widget.onAddGoal : null,
+                child: ExcludeSemantics(
+                  child: SizedBox(
+                    height: 58,
+                    child: ElevatedButton(
+                      onPressed: widget.enabled ? widget.onAddGoal : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: widget.color,
+                        foregroundColor: NttColors.surfaceDark,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        textStyle: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                        ),
+                        padding: EdgeInsets.zero,
+                      ),
+                      child: const Text('+1 GOAL'),
                     ),
-                    textStyle: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
-                    ),
-                    padding: EdgeInsets.zero,
                   ),
-                  child: const Text('+1 GOAL'),
                 ),
               ),
               const SizedBox(height: 6),
-              SizedBox(
-                height: 32,
-                child: TextButton.icon(
-                  onPressed: widget.enabled && widget.score > 0
-                      ? widget.onRemoveGoal
-                      : null,
-                  icon: const Icon(Icons.remove, size: 16),
-                  label: const Text('Annulla'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: widget.color,
-                    disabledForegroundColor: NttColors.textFaint,
-                    textStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
+              Semantics(
+                key: ValueKey('score-undo-team-${widget.teamNumber}'),
+                container: true,
+                button: true,
+                enabled: widget.enabled && widget.score > 0,
+                label: 'Annulla ultimo goal di ${widget.label}',
+                onTap: widget.enabled && widget.score > 0
+                    ? widget.onRemoveGoal
+                    : null,
+                child: ExcludeSemantics(
+                  child: SizedBox(
+                    height: 48,
+                    child: TextButton.icon(
+                      onPressed: widget.enabled && widget.score > 0
+                          ? widget.onRemoveGoal
+                          : null,
+                      icon: const Icon(Icons.remove, size: 16),
+                      label: const Text('Annulla'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: widget.color,
+                        disabledForegroundColor: NttColors.textFaint,
+                        textStyle: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -1109,7 +1156,6 @@ class _SetupTeamCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 2),
                 child: Text(
                   n,
-                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: NttColors.textPrimary,
                     fontSize: 14,
@@ -1156,48 +1202,63 @@ class _MatchModeSelector extends StatelessWidget {
               final index = entry.key;
               final option = entry.value;
               final selected = option.mode == selectedMode;
-              final card = InkWell(
-                borderRadius: BorderRadius.circular(14),
+              final card = Semantics(
+                key: ValueKey(
+                  'match-mode-${option.mode == MatchMode.oneVsOne ? 'one-vs-one' : 'two-vs-two'}',
+                ),
+                container: true,
+                button: true,
+                enabled: true,
+                selected: selected,
+                label: '${option.title}: ${option.description}',
                 onTap: () => onChanged(option.mode),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? NttColors.accent.withValues(alpha: 0.12)
-                        : NttColors.surfaceMid,
+                child: ExcludeSemantics(
+                  child: InkWell(
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: selected
-                          ? NttColors.accent
-                          : Colors.white.withValues(alpha: 0.08),
-                      width: selected ? 1.5 : 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        option.title,
-                        style: TextStyle(
+                    onTap: () => onChanged(option.mode),
+                    child: AnimatedContainer(
+                      duration: shouldReduceMotion()
+                          ? Duration.zero
+                          : const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? NttColors.accent.withValues(alpha: 0.12)
+                            : NttColors.surfaceMid,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
                           color: selected
                               ? NttColors.accent
-                              : NttColors.textPrimary,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.2,
+                              : Colors.white.withValues(alpha: 0.08),
+                          width: selected ? 1.5 : 1,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        option.description,
-                        style: const TextStyle(
-                          color: NttColors.textMuted,
-                          fontSize: 12,
-                          height: 1.35,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            option.title,
+                            style: TextStyle(
+                              color: selected
+                                  ? NttColors.accent
+                                  : NttColors.textPrimary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            option.description,
+                            style: const TextStyle(
+                              color: NttColors.textMuted,
+                              fontSize: 12,
+                              height: 1.35,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               );
@@ -1300,7 +1361,8 @@ class _MatchRulesSelector extends StatelessWidget {
                 ),
                 IconButton.filledTonal(
                   tooltip: 'Diminuisci',
-                  onPressed: isPersistingRules ||
+                  onPressed:
+                      isPersistingRules ||
                           rules.targetScore <= MatchRules.minTargetScore
                       ? null
                       : () => onTargetScoreChanged(rules.targetScore - 1),
@@ -1320,7 +1382,8 @@ class _MatchRulesSelector extends StatelessWidget {
                 ),
                 IconButton.filledTonal(
                   tooltip: 'Aumenta',
-                  onPressed: isPersistingRules ||
+                  onPressed:
+                      isPersistingRules ||
                           rules.targetScore >= MatchRules.maxTargetScore
                       ? null
                       : () => onTargetScoreChanged(rules.targetScore + 1),
@@ -1703,47 +1766,70 @@ Future<bool> _confirmRivalryActivation(
 
 class _TeamChip extends StatelessWidget {
   const _TeamChip({
+    this.semanticKey,
     required this.label,
     required this.color,
     required this.selected,
+    required this.semanticLabel,
     required this.onTap,
   });
 
+  final Key? semanticKey;
   final String label;
   final Color color;
   final bool selected;
+  final String semanticLabel;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null;
-    return InkWell(
+    return Semantics(
+      key: semanticKey,
+      container: true,
+      button: true,
+      enabled: enabled,
+      selected: selected,
+      label: semanticLabel,
       onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        width: 44,
-        height: 36,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: selected ? color : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: enabled
-                ? color.withValues(alpha: selected ? 1 : 0.55)
-                : NttColors.textFaint.withValues(alpha: 0.3),
-            width: 1.5,
-          ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected
-                ? NttColors.surfaceDark
-                : (enabled ? color : NttColors.textFaint),
-            fontWeight: FontWeight.w900,
-            fontSize: 13,
-            letterSpacing: 0.8,
+      child: SizedBox(
+        width: 48,
+        height: 48,
+        child: ExcludeSemantics(
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(10),
+            child: Center(
+              child: AnimatedContainer(
+                duration: shouldReduceMotion()
+                    ? Duration.zero
+                    : const Duration(milliseconds: 180),
+                width: 44,
+                height: 36,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: selected ? color : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: enabled
+                        ? color.withValues(alpha: selected ? 1 : 0.55)
+                        : NttColors.textFaint.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: selected
+                        ? NttColors.surfaceDark
+                        : (enabled ? color : NttColors.textFaint),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -1758,13 +1844,16 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: NttColors.textMuted,
-        fontSize: 11,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 3,
+    return Semantics(
+      header: true,
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: NttColors.textMuted,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 3,
+        ),
       ),
     );
   }

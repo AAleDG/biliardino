@@ -18,6 +18,8 @@ import 'package:biliardino/screens/new_match_screen.dart';
 import 'package:biliardino/screens/players_screen.dart';
 import 'package:biliardino/screens/player_profile_screen.dart';
 import 'package:biliardino/theme/app_theme.dart';
+import 'package:biliardino/widgets/avatar.dart';
+import 'package:biliardino/widgets/celebrations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -77,6 +79,46 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
       }
+    },
+  );
+
+  testWidgets(
+    'La partita in corso resta utilizzabile con testo al 200 percento',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+      await _pumpHome(
+        tester,
+        home: const NewMatchScreen(),
+        repos: _sampleData(),
+      );
+      await tester.pumpAndSettle();
+
+      await _assignTeam(tester, 'Alessandro Antonio Delgaudio', 'S1');
+      await _assignTeam(tester, 'Beatrice Lunghissimo Cognome', 'S1');
+      await _assignTeam(tester, 'Cristiano Nome Molto Esteso', 'S2');
+      await _assignTeam(tester, 'Daniela Super Competitiva', 'S2');
+      await tester.ensureVisible(find.text('INIZIA PARTITA'));
+      await tester.tap(find.text('INIZIA PARTITA'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('PARTITA IN CORSO'), findsOneWidget);
+      expect(find.byKey(const ValueKey('score-add-team-1')), findsOneWidget);
+      expect(find.byKey(const ValueKey('score-add-team-2')), findsOneWidget);
+      for (final teamNumber in [1, 2]) {
+        expect(
+          tester
+              .getRect(find.byKey(ValueKey('score-add-team-$teamNumber')))
+              .bottom,
+          lessThanOrEqualTo(640),
+        );
+      }
+      expect(tester.takeException(), isNull);
     },
   );
 
@@ -160,6 +202,7 @@ void main() {
       final randomAction = find.byKey(const ValueKey('random-teams-action'));
       final balancedAction = find.byKey(
         const ValueKey('balanced-teams-action'),
+        skipOffstage: false,
       );
       expect(randomAction, findsOneWidget);
       expect(balancedAction, findsOneWidget);
@@ -201,7 +244,12 @@ void main() {
       expect(cubit.state.assignment, isNot(contains(firstPlayerId)));
       expect(cubit.state.teamsValid, isFalse);
 
-      await tester.ensureVisible(balancedAction);
+      await tester.scrollUntilVisible(
+        balancedAction,
+        -250,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(balancedAction);
       await tester.pump();
       expect(cubit.state.teamsValid, isTrue);
@@ -738,6 +786,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Un errore di modifica viene annunciato una sola volta', (
+    WidgetTester tester,
+  ) async {
+    await _setTallTestViewport(tester);
+    final semantics = tester.ensureSemantics();
+    final repos = _sampleDataMixedFormats();
+    try {
+      await _pumpHome(tester, home: const HistoryScreen(), repos: repos);
+      await tester.pumpAndSettle();
+      await _openFirstMatchEditDialog(tester);
+
+      final scoreFields = find.byType(TextField);
+      await tester.enterText(scoreFields.at(2), '10');
+      await tester.enterText(scoreFields.at(3), '10');
+      await tester.tap(find.text('Salva'));
+      await tester.pumpAndSettle();
+
+      const errorMessage = 'La partita deve avere un vincitore.';
+      final errorFinder = find.byKey(const ValueKey('edit-match-error'));
+      expect(find.text(errorMessage), findsOneWidget);
+      await tester.ensureVisible(errorFinder);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(errorFinder),
+        matchesSemantics(label: errorMessage, isLiveRegion: true),
+      );
+      expect(tester.takeException(), isNull);
+    } finally {
+      semantics.dispose();
+    }
+  });
+
   testWidgets('Lo storico invalida marcatori se cambia la squadra', (
     WidgetTester tester,
   ) async {
@@ -878,6 +958,419 @@ void main() {
     expect(find.byKey(const ValueKey('history-match-m1')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'I selettori della partita espongono stato e target accessibili',
+    (WidgetTester tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await _pumpHome(
+          tester,
+          home: const NewMatchScreen(),
+          repos: _sampleData(),
+        );
+        await tester.pumpAndSettle();
+
+        final oneVsOne = find.byKey(const ValueKey('match-mode-one-vs-one'));
+        expect(
+          tester.getSemantics(oneVsOne),
+          matchesSemantics(
+            label: '1 VS 1: 2 giocatori totali, uno per squadra.',
+            isButton: true,
+            isSelected: false,
+            hasSelectedState: true,
+            hasEnabledState: true,
+            isEnabled: true,
+            hasTapAction: true,
+          ),
+        );
+
+        await tester.tap(find.text('1 VS 1').first);
+        await tester.pumpAndSettle();
+
+        expect(
+          tester.getSemantics(oneVsOne),
+          matchesSemantics(
+            label: '1 VS 1: 2 giocatori totali, uno per squadra.',
+            isButton: true,
+            isSelected: true,
+            hasSelectedState: true,
+            hasEnabledState: true,
+            isEnabled: true,
+            hasTapAction: true,
+          ),
+        );
+
+        await tester.scrollUntilVisible(
+          find.byKey(const ValueKey('present-player-p1')),
+          250,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        final teamOneChip = find.byKey(const ValueKey('team-chip-p1-team-1'));
+        expect(teamOneChip, findsOneWidget);
+        expect(tester.getSize(teamOneChip).width, greaterThanOrEqualTo(48));
+        expect(tester.getSize(teamOneChip).height, greaterThanOrEqualTo(48));
+        expect(
+          tester.getSemantics(teamOneChip),
+          matchesSemantics(
+            label: 'Alessandro Antonio Delgaudio, Squadra 1',
+            isButton: true,
+            isSelected: false,
+            hasSelectedState: true,
+            hasEnabledState: true,
+            isEnabled: true,
+            hasTapAction: true,
+          ),
+        );
+      } finally {
+        semantics.dispose();
+      }
+    },
+  );
+
+  testWidgets('Il controllo presenza identifica il giocatore e il suo stato', (
+    WidgetTester tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      await _pumpHome(
+        tester,
+        home: const PlayersScreen(),
+        repos: _sampleData(),
+      );
+      await tester.pumpAndSettle();
+
+      final presence = find.byKey(const ValueKey('player-presence-p1'));
+      expect(
+        tester.getSemantics(presence),
+        matchesSemantics(
+          label: 'Presenza di Alessandro Antonio Delgaudio',
+          hasToggledState: true,
+          isToggled: true,
+          hasEnabledState: true,
+          isEnabled: true,
+          hasTapAction: true,
+        ),
+      );
+    } finally {
+      semantics.dispose();
+    }
+  });
+
+  testWidgets('I controlli del punteggio espongono squadra, stato e target', (
+    WidgetTester tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    try {
+      await _pumpHome(
+        tester,
+        home: const NewMatchScreen(),
+        repos: _sampleData(),
+      );
+      await tester.pumpAndSettle();
+
+      await _assignTeam(tester, 'Alessandro Antonio Delgaudio', 'S1');
+      await _assignTeam(tester, 'Beatrice Lunghissimo Cognome', 'S1');
+      await _assignTeam(tester, 'Cristiano Nome Molto Esteso', 'S2');
+      await _assignTeam(tester, 'Daniela Super Competitiva', 'S2');
+      await tester.ensureVisible(find.text('INIZIA PARTITA'));
+      await tester.tap(find.text('INIZIA PARTITA'));
+      await tester.pumpAndSettle();
+
+      final addGoal = find.byKey(const ValueKey('score-add-team-1'));
+      expect(
+        tester.getSemantics(addGoal),
+        matchesSemantics(
+          label: 'Aggiungi un goal a SQUADRA 1. Punteggio attuale 0.',
+          isButton: true,
+          hasEnabledState: true,
+          isEnabled: true,
+          hasTapAction: true,
+        ),
+      );
+
+      final score = find.byKey(const ValueKey('score-team-1'));
+      expect(
+        tester.getSemantics(score),
+        matchesSemantics(label: 'Punteggio SQUADRA 1: 0', isLiveRegion: true),
+      );
+
+      final undoGoal = find.byKey(const ValueKey('score-undo-team-1'));
+      expect(tester.getSize(undoGoal).height, greaterThanOrEqualTo(48));
+      expect(
+        tester.getSemantics(undoGoal),
+        matchesSemantics(
+          label: 'Annulla ultimo goal di SQUADRA 1',
+          isButton: true,
+          hasEnabledState: true,
+          isEnabled: false,
+        ),
+      );
+    } finally {
+      semantics.dispose();
+    }
+  });
+
+  testWidgets(
+    'Le celebrazioni annunciano il goal e isolano il risultato finale',
+    (WidgetTester tester) async {
+      final semantics = tester.ensureSemantics();
+      CelebrationOverlayHandle? victoryHandle;
+      var backgroundTaps = 0;
+      try {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.dark(),
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => Column(
+                  children: [
+                    ElevatedButton(
+                      key: const ValueKey('show-goal'),
+                      onPressed: () => Celebrations.showGoal(
+                        context,
+                        color: NttColors.team1,
+                        teamLabel: 'SQUADRA 1',
+                      ),
+                      child: const Text('Mostra goal'),
+                    ),
+                    ElevatedButton(
+                      key: const ValueKey('show-victory'),
+                      onPressed: () {
+                        victoryHandle = Celebrations.showVictory(
+                          context,
+                          color: NttColors.team1,
+                          teamLabel: 'SQUADRA 1',
+                          playerNames: const ['Ale', 'Bea'],
+                          winnerScore: 3,
+                          loserScore: 1,
+                          onChangeTeams: () {},
+                          onRematch: () {},
+                        );
+                      },
+                      child: const Text('Mostra risultato'),
+                    ),
+                    GestureDetector(
+                      onTap: () => backgroundTaps += 1,
+                      child: const SizedBox(
+                        key: ValueKey('background-action'),
+                        width: 100,
+                        height: 100,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(const ValueKey('show-goal')));
+        await tester.pump();
+        expect(
+          tester.getSemantics(find.byKey(const ValueKey('goal-overlay'))),
+          matchesSemantics(label: 'Goal. SQUADRA 1', isLiveRegion: true),
+        );
+        await tester.pump(const Duration(milliseconds: 1200));
+
+        await tester.tap(find.byKey(const ValueKey('show-victory')));
+        await tester.pump();
+        expect(
+          tester.getSemantics(find.byKey(const ValueKey('victory-overlay'))),
+          matchesSemantics(
+            label: 'Vittoria: SQUADRA 1. Ale e Bea. Punteggio 3 a 1.',
+            isLiveRegion: true,
+            namesRoute: true,
+            scopesRoute: true,
+          ),
+        );
+        await tester.tap(
+          find.byKey(const ValueKey('background-action')),
+          warnIfMissed: false,
+        );
+        expect(backgroundTaps, 0);
+        expect(find.text('RIVINCITA'), findsOneWidget);
+      } finally {
+        victoryHandle?.dismiss();
+        semantics.dispose();
+      }
+    },
+  );
+
+  test('I colori dinamici mantengono il contrasto sul pannello HUD', () {
+    final List<String> names = [
+      '',
+      'Alessandro Antonio Delgaudio',
+      'Beatrice Lunghissimo Cognome',
+      'Cristiano Nome Molto Esteso',
+      ...List.generate(360, (index) => 'Player $index'),
+    ];
+
+    for (final name in names) {
+      final ratio = _contrastRatio(hudColorForName(name), NttColors.surfaceMid);
+      expect(
+        ratio,
+        greaterThanOrEqualTo(4.5),
+        reason: 'Contrast for "$name" was $ratio',
+      );
+    }
+  });
+
+  testWidgets(
+    'Lo storico annuncia squadra, punteggio e vittoria senza affidarsi al colore',
+    (WidgetTester tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await _pumpHome(
+          tester,
+          home: const HistoryScreen(),
+          repos: _sampleData(),
+        );
+        await tester.pumpAndSettle();
+
+        final teamResult = find.byKey(const ValueKey('history-team-m1-team-1'));
+        expect(
+          tester.getSemantics(teamResult),
+          matchesSemantics(
+            label:
+                'Squadra 1: Alessandro Antonio Delgaudio / '
+                'Beatrice Lunghissimo Cognome, punteggio 10, vittoria',
+          ),
+        );
+      } finally {
+        semantics.dispose();
+      }
+    },
+  );
+
+  testWidgets(
+    'La forma recente espone vittoria e sconfitta senza affidarsi al colore',
+    (WidgetTester tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await _pumpHome(
+          tester,
+          home: const PlayerProfileScreen(playerId: 'p1'),
+          repos: _sampleData(),
+        );
+        await tester.pumpAndSettle();
+        await tester.scrollUntilVisible(
+          find.text('FORMA RECENTE'),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.bySemanticsLabel('Vittoria'), findsOneWidget);
+        expect(find.bySemanticsLabel('Sconfitta'), findsOneWidget);
+      } finally {
+        semantics.dispose();
+      }
+    },
+  );
+
+  testWidgets(
+    'La classifica espone il podium come azione con contesto completo',
+    (WidgetTester tester) async {
+      final semantics = tester.ensureSemantics();
+      try {
+        await _pumpHome(
+          tester,
+          home: const LeaderboardScreen(),
+          repos: _sampleData(),
+        );
+        await tester.pumpAndSettle();
+
+        final podium = find.byKey(const ValueKey('leaderboard-podium-p2'));
+        expect(
+          tester.getSemantics(podium),
+          matchesSemantics(
+            label: 'Posizione 1: Beatrice Lunghissimo Cognome. 6 pt.',
+            isButton: true,
+            hasEnabledState: true,
+            isEnabled: true,
+            hasTapAction: true,
+          ),
+        );
+      } finally {
+        semantics.dispose();
+      }
+    },
+  );
+
+  testWidgets(
+    'Le schermate principali restano stabili con testo al 200 percento',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+      await _pumpHome(tester, home: const HomeScreen(), repos: _sampleData());
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      for (final label in ['Partita', 'Storico', 'Classifica', 'Giocatori']) {
+        await tester.tap(find.text(label).last);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
+
+  testWidgets(
+    'Le animazioni decorative rispettano la preferenza riduci movimento',
+    (WidgetTester tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(reduceMotion: true);
+      addTearDown(
+        tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+      );
+
+      await _pumpHome(
+        tester,
+        home: const LeaderboardScreen(),
+        repos: _sampleData(),
+      );
+      await tester.pump();
+
+      expect(tester.hasRunningAnimations, isFalse);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Il comando per aprire i filtri mantiene un target di almeno 48dp',
+    (WidgetTester tester) async {
+      await _pumpHome(
+        tester,
+        home: const HistoryScreen(),
+        repos: _sampleData(),
+      );
+      await tester.pumpAndSettle();
+
+      final openFilters = find.byKey(const ValueKey('history-open-filters'));
+      expect(tester.getSize(openFilters).width, greaterThanOrEqualTo(48));
+      expect(tester.getSize(openFilters).height, greaterThanOrEqualTo(48));
+    },
+  );
+}
+
+double _contrastRatio(Color foreground, Color background) {
+  final foregroundLuminance = foreground.computeLuminance();
+  final backgroundLuminance = background.computeLuminance();
+  final lighter = foregroundLuminance > backgroundLuminance
+      ? foregroundLuminance
+      : backgroundLuminance;
+  final darker = foregroundLuminance > backgroundLuminance
+      ? backgroundLuminance
+      : foregroundLuminance;
+  return (lighter + 0.05) / (darker + 0.05);
 }
 
 class _Repos {

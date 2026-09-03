@@ -129,21 +129,33 @@ class _RecentForm extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            for (final won in results) ...[
-              Container(
-                width: 34,
-                height: 34,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: (won ? NttColors.success : NttColors.textMuted)
-                      .withValues(alpha: 0.18),
-                ),
-                child: Text(
-                  won ? 'V' : 'P',
-                  style: TextStyle(
-                    color: won ? NttColors.success : NttColors.textMuted,
-                    fontWeight: FontWeight.w900,
+            for (final entry in results.asMap().entries) ...[
+              Semantics(
+                key: ValueKey('profile-recent-result-${entry.key}'),
+                container: true,
+                label: entry.value ? 'Vittoria' : 'Sconfitta',
+                child: ExcludeSemantics(
+                  child: Container(
+                    width: 34,
+                    height: 34,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color:
+                          (entry.value
+                                  ? NttColors.success
+                                  : NttColors.textMuted)
+                              .withValues(alpha: 0.18),
+                    ),
+                    child: Text(
+                      entry.value ? 'V' : 'P',
+                      style: TextStyle(
+                        color: entry.value
+                            ? NttColors.success
+                            : NttColors.textMuted,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -259,7 +271,7 @@ class _HeadToHead extends StatelessWidget {
           final name = StatsService.playerName(players, item.opponentId);
           return ListTile(
             leading: PlayerAvatar(name: name, size: 36),
-            title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
+            title: Text(name),
             subtitle: Text('${item.games} partite'),
             trailing: Text(
               '${item.wins}V · ${item.losses}P',
@@ -321,8 +333,6 @@ class _Header extends StatelessWidget {
                 children: [
                   Text(
                     player.name,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: NttColors.textPrimary,
                       fontSize: 22,
@@ -370,9 +380,10 @@ class _StatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
     return GridView.count(
       crossAxisCount: 2,
-      childAspectRatio: 2.8,
+      childAspectRatio: largeText ? 1.8 : 2.8,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 10,
@@ -419,8 +430,6 @@ class _Metric extends StatelessWidget {
             ),
             Text(
               label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: NttColors.textFaint,
                 fontSize: 11,
@@ -482,13 +491,16 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: NttColors.textMuted,
-        fontSize: 11,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 2,
+    return Semantics(
+      header: true,
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: NttColors.textMuted,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 2,
+        ),
       ),
     );
   }

@@ -44,10 +44,18 @@ class _HistoryViewState extends State<_HistoryView>
   @override
   void initState() {
     super.initState();
+    final reduceMotion = shouldReduceMotion();
     _ctrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700),
-    )..forward();
+      duration: reduceMotion
+          ? Duration.zero
+          : const Duration(milliseconds: 700),
+    );
+    if (reduceMotion) {
+      _ctrl.value = 1;
+    } else {
+      _ctrl.forward();
+    }
   }
 
   @override
@@ -119,10 +127,8 @@ Future<void> _openMatchDetails(
     useSafeArea: true,
     isScrollControlled: true,
     backgroundColor: NttColors.surfaceMid,
-    builder: (context) => _MatchDetailsSheet(
-      match: match,
-      players: state.players,
-    ),
+    builder: (context) =>
+        _MatchDetailsSheet(match: match, players: state.players),
   );
   if (action == null || !rootContext.mounted) {
     return;
@@ -377,7 +383,18 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
               ),
               if (_error != null) ...[
                 const SizedBox(height: 8),
-                Text(_error!, style: const TextStyle(color: NttColors.warning)),
+                Semantics(
+                  key: const ValueKey('edit-match-error'),
+                  container: true,
+                  liveRegion: true,
+                  label: _error!,
+                  child: ExcludeSemantics(
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(color: NttColors.warning),
+                    ),
+                  ),
+                ),
               ],
             ],
           ),
@@ -759,8 +776,6 @@ class _FilterSummaryBar extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           summaryLabel,
-                          maxLines: compact ? 1 : 2,
-                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             color: NttColors.textPrimary,
                             fontSize: compact ? 16 : 18,
@@ -779,7 +794,6 @@ class _FilterSummaryBar extends StatelessWidget {
                         compact
                             ? IconButton(
                                 key: const ValueKey('history-reset-filters'),
-                                visualDensity: VisualDensity.compact,
                                 tooltip: 'Reset filtri',
                                 icon: const Icon(Icons.refresh, size: 18),
                                 color: NttColors.accent,
@@ -789,13 +803,11 @@ class _FilterSummaryBar extends StatelessWidget {
                                 key: const ValueKey('history-reset-filters'),
                                 onPressed: onReset,
                                 style: TextButton.styleFrom(
-                                  minimumSize: Size.zero,
+                                  minimumSize: const Size(48, 48),
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
-                                    vertical: 4,
+                                    vertical: 8,
                                   ),
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
                                 ),
                                 child: const Text('Reset'),
                               )
@@ -803,7 +815,6 @@ class _FilterSummaryBar extends StatelessWidget {
                         SizedBox(height: compact ? 28 : 32),
                       IconButton(
                         key: const ValueKey('history-open-filters'),
-                        visualDensity: VisualDensity.compact,
                         tooltip: 'Apri filtri',
                         icon: const Icon(Icons.chevron_right, size: 22),
                         color: NttColors.accent,
@@ -1012,13 +1023,16 @@ class _FilterSectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: NttColors.textFaint,
-        fontSize: 11,
-        fontWeight: FontWeight.w900,
-        letterSpacing: 2,
+    return Semantics(
+      header: true,
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: NttColors.textFaint,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 2,
+        ),
       ),
     );
   }
@@ -1226,13 +1240,16 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        color: NttColors.textMuted,
-        fontSize: 11,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 2.2,
+    return Semantics(
+      header: true,
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: NttColors.textMuted,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 2.2,
+        ),
       ),
     );
   }
@@ -1257,18 +1274,21 @@ class _MatchCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final timeLabel = DateFormat('HH:mm').format(match.playedAt);
     final baseModeLabel = match.mode == MatchMode.oneVsOne ? '1v1' : '2v2';
-    final modeLabel =
-        match.isRivalry ? 'Rivalita · $baseModeLabel' : baseModeLabel;
-    final t1Names =
-        match.team1.map((id) => StatsService.playerName(players, id)).toList();
-    final t2Names =
-        match.team2.map((id) => StatsService.playerName(players, id)).toList();
+    final modeLabel = match.isRivalry
+        ? 'Rivalita · $baseModeLabel'
+        : baseModeLabel;
+    final t1Names = match.team1
+        .map((id) => StatsService.playerName(players, id))
+        .toList();
+    final t2Names = match.team2
+        .map((id) => StatsService.playerName(players, id))
+        .toList();
     final winColor = match.winningTeam == 1 ? NttColors.team1 : NttColors.team2;
     final modeColor = match.isRivalry
         ? NttColors.team2
         : (match.mode == MatchMode.oneVsOne
-            ? NttColors.warning
-            : NttColors.accentSoft);
+              ? NttColors.warning
+              : NttColors.accentSoft);
 
     return Card(
       key: ValueKey('history-match-${match.id}'),
@@ -1359,6 +1379,8 @@ class _MatchCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _TeamResultLine(
+                    semanticKey: ValueKey('history-team-${match.id}-team-1'),
+                    teamLabel: 'Squadra 1',
                     color: NttColors.team1,
                     names: t1Names,
                     score: match.t1Score,
@@ -1366,6 +1388,8 @@ class _MatchCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   _TeamResultLine(
+                    semanticKey: ValueKey('history-team-${match.id}-team-2'),
+                    teamLabel: 'Squadra 2',
                     color: NttColors.team2,
                     names: t2Names,
                     score: match.t2Score,
@@ -1502,12 +1526,16 @@ class _MatchDetailRow extends StatelessWidget {
 
 class _TeamResultLine extends StatelessWidget {
   const _TeamResultLine({
+    required this.semanticKey,
+    required this.teamLabel,
     required this.color,
     required this.names,
     required this.score,
     required this.isWinner,
   });
 
+  final Key semanticKey;
+  final String teamLabel;
   final Color color;
   final List<String> names;
   final int score;
@@ -1516,48 +1544,55 @@ class _TeamResultLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final namesLabel = names.join(' / ');
-    return Row(
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: isWinner ? 1 : 0.35),
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            namesLabel,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: isWinner ? NttColors.textPrimary : NttColors.textMuted,
-              fontSize: 16,
-              fontWeight: isWinner ? FontWeight.w800 : FontWeight.w500,
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 40,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerRight,
-            child: Text(
-              '$score',
-              maxLines: 1,
-              softWrap: false,
-              style: TextStyle(
-                color: isWinner ? color : NttColors.textFaint,
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
+    return Semantics(
+      key: semanticKey,
+      container: true,
+      label:
+          '$teamLabel: $namesLabel, punteggio $score'
+          '${isWinner ? ', vittoria' : ''}',
+      child: ExcludeSemantics(
+        child: Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: isWinner ? 1 : 0.35),
+                shape: BoxShape.circle,
               ),
             ),
-          ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                namesLabel,
+                style: TextStyle(
+                  color: isWinner ? NttColors.textPrimary : NttColors.textMuted,
+                  fontSize: 16,
+                  fontWeight: isWinner ? FontWeight.w800 : FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 40,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(
+                  '$score',
+                  maxLines: 1,
+                  softWrap: false,
+                  style: TextStyle(
+                    color: isWinner ? color : NttColors.textFaint,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

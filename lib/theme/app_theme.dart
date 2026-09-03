@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+bool shouldReduceMotion() {
+  final accessibilityFeatures =
+      WidgetsBinding.instance.platformDispatcher.accessibilityFeatures;
+  return accessibilityFeatures.disableAnimations ||
+      accessibilityFeatures.reduceMotion;
+}
+
 class NttColors {
   NttColors._();
 
@@ -27,19 +34,20 @@ class AppTheme {
   AppTheme._();
 
   static ThemeData dark() {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: NttColors.primary,
-      brightness: Brightness.dark,
-    ).copyWith(
-      primary: NttColors.accent,
-      onPrimary: NttColors.surfaceDark,
-      secondary: NttColors.primary,
-      onSecondary: NttColors.textPrimary,
-      surface: NttColors.surfaceMid,
-      onSurface: NttColors.textPrimary,
-      surfaceContainerHighest: NttColors.surfaceHigh,
-      error: NttColors.team2,
-    );
+    final scheme =
+        ColorScheme.fromSeed(
+          seedColor: NttColors.primary,
+          brightness: Brightness.dark,
+        ).copyWith(
+          primary: NttColors.accent,
+          onPrimary: NttColors.surfaceDark,
+          secondary: NttColors.primary,
+          onSecondary: NttColors.textPrimary,
+          surface: NttColors.surfaceMid,
+          onSurface: NttColors.textPrimary,
+          surfaceContainerHighest: NttColors.surfaceHigh,
+          error: NttColors.team2,
+        );
 
     return ThemeData(
       useMaterial3: true,
@@ -191,16 +199,12 @@ class AppTheme {
           fontWeight: FontWeight.w800,
         ),
         side: BorderSide.none,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: NttColors.surfaceMid,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         titleTextStyle: const TextStyle(
           color: NttColors.textPrimary,
           fontWeight: FontWeight.w700,
@@ -213,23 +217,23 @@ class AppTheme {
         backgroundColor: NttColors.surfaceHigh,
         contentTextStyle: const TextStyle(color: NttColors.textPrimary),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       listTileTheme: const ListTileThemeData(
         iconColor: NttColors.accent,
         textColor: NttColors.textPrimary,
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((states) =>
-            states.contains(WidgetState.selected)
-                ? NttColors.accent
-                : NttColors.textFaint),
-        trackColor: WidgetStateProperty.resolveWith((states) =>
-            states.contains(WidgetState.selected)
-                ? NttColors.accent.withValues(alpha: 0.4)
-                : NttColors.surfaceHigh),
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? NttColors.accent
+              : NttColors.textFaint,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? NttColors.accent.withValues(alpha: 0.4)
+              : NttColors.surfaceHigh,
+        ),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: NttColors.accent,
