@@ -1122,7 +1122,7 @@ void main() {
       try {
         await tester.pumpWidget(
           MaterialApp(
-            theme: AppTheme.dark(),
+            theme: AppTheme.southAfrica(),
             home: Scaffold(
               body: Builder(
                 builder: (context) => Column(
@@ -1131,7 +1131,7 @@ void main() {
                       key: const ValueKey('show-goal'),
                       onPressed: () => Celebrations.showGoal(
                         context,
-                        color: NttColors.team1,
+                        color: AppColors.teamOne,
                         teamLabel: 'SQUADRA 1',
                       ),
                       child: const Text('Mostra goal'),
@@ -1141,7 +1141,7 @@ void main() {
                       onPressed: () {
                         victoryHandle = Celebrations.showVictory(
                           context,
-                          color: NttColors.team1,
+                          color: AppColors.teamOne,
                           teamLabel: 'SQUADRA 1',
                           playerNames: const ['Ale', 'Bea'],
                           winnerScore: 3,
@@ -1200,7 +1200,7 @@ void main() {
     },
   );
 
-  test('I colori dinamici mantengono il contrasto sul pannello HUD', () {
+  test('Gli avatar neutrali mantengono il contrasto sul pannello', () {
     final List<String> names = [
       '',
       'Alessandro Antonio Delgaudio',
@@ -1210,7 +1210,7 @@ void main() {
     ];
 
     for (final name in names) {
-      final ratio = _contrastRatio(hudColorForName(name), NttColors.surfaceMid);
+      final ratio = _contrastRatio(avatarColorForName(name), AppColors.surface);
       expect(
         ratio,
         greaterThanOrEqualTo(4.5),
@@ -1529,7 +1529,7 @@ Future<void> _pumpHome(
             ),
           ),
         ],
-        child: MaterialApp(theme: AppTheme.dark(), home: home),
+        child: MaterialApp(theme: AppTheme.southAfrica(), home: home),
       ),
     ),
   );

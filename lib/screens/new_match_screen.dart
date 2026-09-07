@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/design/brand_header.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubits/home/home_cubit.dart';
@@ -62,7 +63,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
             final goal = state.lastGoal!;
             Celebrations.showGoal(
               ctx,
-              color: goal.team == 1 ? NttColors.team1 : NttColors.team2,
+              color: goal.team == 1 ? AppColors.teamOne : AppColors.teamTwo,
               teamLabel: state.isRivalry
                   ? 'RIVALITA · ${goal.scorerName.toUpperCase()}'
                   : '${goal.scorerName.toUpperCase()} · SQUADRA ${goal.team}',
@@ -82,8 +83,8 @@ class _NewMatchViewState extends State<_NewMatchView> {
           listener: (ctx, state) {
             final victory = state.lastVictory!;
             final color = victory.winningTeam == 1
-                ? NttColors.team1
-                : NttColors.team2;
+                ? AppColors.teamOne
+                : AppColors.teamTwo;
             _dismissVictoryOverlay();
             _victoryOverlay = Celebrations.showVictory(
               ctx,
@@ -122,10 +123,10 @@ class _NewMatchViewState extends State<_NewMatchView> {
           final showScoreboard = state.showScoreboard;
 
           return Scaffold(
-            appBar: AppBar(
-              title: Text(
-                showScoreboard ? 'PARTITA IN CORSO' : 'NUOVA PARTITA',
-              ),
+            appBar: brandAppBar(
+              context,
+              compactTitle: showScoreboard,
+              title: showScoreboard ? 'PARTITA IN CORSO' : 'NUOVA PARTITA',
               leading: showScoreboard
                   ? IconButton(
                       icon: const Icon(Icons.arrow_back),
@@ -276,7 +277,7 @@ Future<void> _handleAddGoal(
       ? players.first
       : await showModalBottomSheet<_MatchPlayer>(
           context: context,
-          backgroundColor: NttColors.surfaceMid,
+          backgroundColor: AppColors.surface,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
           ),
@@ -291,7 +292,7 @@ Future<void> _handleAddGoal(
                   Text(
                     'Chi ha segnato per la squadra $team?',
                     style: const TextStyle(
-                      color: NttColors.textPrimary,
+                      color: AppColors.ink,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),
@@ -299,7 +300,10 @@ Future<void> _handleAddGoal(
                   const SizedBox(height: 6),
                   const Text(
                     'Assegna il gol al giocatore corretto.',
-                    style: TextStyle(color: NttColors.textMuted, fontSize: 13),
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(height: 14),
                   ...players.map(
@@ -487,7 +491,11 @@ class _Setup extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.group_off, size: 64, color: NttColors.textFaint),
+              const Icon(
+                Icons.group_off,
+                size: 64,
+                color: AppColors.textSecondary,
+              ),
               const SizedBox(height: 16),
               _MatchModeSelector(selectedMode: mode, onChanged: onModeChanged),
               const SizedBox(height: 20),
@@ -495,7 +503,7 @@ class _Setup extends StatelessWidget {
                 _playersNeededMessage(mode),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: NttColors.textMuted,
+                  color: AppColors.textSecondary,
                   fontSize: 15,
                   height: 1.4,
                 ),
@@ -504,7 +512,7 @@ class _Setup extends StatelessWidget {
               const Text(
                 'Vai su Giocatori e segna chi è presente.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: NttColors.textFaint, fontSize: 12),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
               ),
             ],
           ),
@@ -563,7 +571,7 @@ class _Setup extends StatelessWidget {
                     Expanded(
                       child: _SetupTeamCard(
                         label: 'SQUADRA 1',
-                        color: NttColors.team1,
+                        color: AppColors.teamOne,
                         capacity: mode.teamSize,
                         names: team1
                             .map((id) => StatsService.playerName(players, id))
@@ -574,7 +582,7 @@ class _Setup extends StatelessWidget {
                     Expanded(
                       child: _SetupTeamCard(
                         label: 'SQUADRA 2',
-                        color: NttColors.team2,
+                        color: AppColors.teamTwo,
                         capacity: mode.teamSize,
                         names: team2
                             .map((id) => StatsService.playerName(players, id))
@@ -640,7 +648,7 @@ class _Setup extends StatelessWidget {
                         _TeamChip(
                           semanticKey: ValueKey('team-chip-${p.id}-team-1'),
                           label: 'S1',
-                          color: NttColors.team1,
+                          color: AppColors.teamOne,
                           selected: a == 1,
                           semanticLabel: '${p.name}, Squadra 1',
                           onTap: t1Full ? null : () => onToggle(p.id, 1),
@@ -649,7 +657,7 @@ class _Setup extends StatelessWidget {
                         _TeamChip(
                           semanticKey: ValueKey('team-chip-${p.id}-team-2'),
                           label: 'S2',
-                          color: NttColors.team2,
+                          color: AppColors.teamTwo,
                           selected: a == 2,
                           semanticLabel: '${p.name}, Squadra 2',
                           onTap: t2Full ? null : () => onToggle(p.id, 2),
@@ -753,7 +761,7 @@ class _Scoreboard extends StatelessWidget {
               borderRadius: BorderRadius.circular(18),
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: NttColors.surfaceMid,
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.06),
@@ -766,7 +774,7 @@ class _Scoreboard extends StatelessWidget {
                       child: _TeamPanel(
                         teamNumber: 1,
                         label: 'SQUADRA 1',
-                        color: NttColors.team1,
+                        color: AppColors.teamOne,
                         playerNames: team1Players
                             .map((player) => player.name)
                             .toList(),
@@ -784,7 +792,7 @@ class _Scoreboard extends StatelessWidget {
                       child: _TeamPanel(
                         teamNumber: 2,
                         label: 'SQUADRA 2',
-                        color: NttColors.team2,
+                        color: AppColors.teamTwo,
                         playerNames: team2Players
                             .map((player) => player.name)
                             .toList(),
@@ -945,7 +953,7 @@ class _TeamPanelState extends State<_TeamPanel>
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      color: NttColors.textPrimary,
+                      color: AppColors.ink,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -987,7 +995,7 @@ class _TeamPanelState extends State<_TeamPanel>
                           child: Text(
                             '${widget.score}',
                             style: TextStyle(
-                              color: NttColors.textPrimary,
+                              color: AppColors.ink,
                               fontSize: 120,
                               fontWeight: FontWeight.w900,
                               height: 1,
@@ -1021,7 +1029,7 @@ class _TeamPanelState extends State<_TeamPanel>
                       onPressed: widget.enabled ? widget.onAddGoal : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: widget.color,
-                        foregroundColor: NttColors.surfaceDark,
+                        foregroundColor: AppColors.background,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
@@ -1058,7 +1066,7 @@ class _TeamPanelState extends State<_TeamPanel>
                       label: const Text('Annulla'),
                       style: TextButton.styleFrom(
                         foregroundColor: widget.color,
-                        disabledForegroundColor: NttColors.textFaint,
+                        disabledForegroundColor: AppColors.textSecondary,
                         textStyle: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -1096,7 +1104,7 @@ class _SetupTeamCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       decoration: BoxDecoration(
-        color: NttColors.surfaceMid,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: filled == capacity
@@ -1145,7 +1153,7 @@ class _SetupTeamCard extends StatelessWidget {
             const Text(
               '— vuota —',
               style: TextStyle(
-                color: NttColors.textFaint,
+                color: AppColors.textSecondary,
                 fontStyle: FontStyle.italic,
                 fontSize: 13,
               ),
@@ -1157,7 +1165,7 @@ class _SetupTeamCard extends StatelessWidget {
                 child: Text(
                   n,
                   style: const TextStyle(
-                    color: NttColors.textPrimary,
+                    color: AppColors.ink,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1170,7 +1178,7 @@ class _SetupTeamCard extends StatelessWidget {
               child: Text(
                 _slotHint(capacity, filled),
                 style: const TextStyle(
-                  color: NttColors.textFaint,
+                  color: AppColors.textSecondary,
                   fontSize: 12,
                 ),
               ),
@@ -1223,12 +1231,12 @@ class _MatchModeSelector extends StatelessWidget {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: selected
-                            ? NttColors.accent.withValues(alpha: 0.12)
-                            : NttColors.surfaceMid,
+                            ? AppColors.primary.withValues(alpha: 0.12)
+                            : AppColors.surface,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: selected
-                              ? NttColors.accent
+                              ? AppColors.primary
                               : Colors.white.withValues(alpha: 0.08),
                           width: selected ? 1.5 : 1,
                         ),
@@ -1240,8 +1248,8 @@ class _MatchModeSelector extends StatelessWidget {
                             option.title,
                             style: TextStyle(
                               color: selected
-                                  ? NttColors.accent
-                                  : NttColors.textPrimary,
+                                  ? AppColors.primary
+                                  : AppColors.ink,
                               fontSize: 15,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.2,
@@ -1251,7 +1259,7 @@ class _MatchModeSelector extends StatelessWidget {
                           Text(
                             option.description,
                             style: const TextStyle(
-                              color: NttColors.textMuted,
+                              color: AppColors.textSecondary,
                               fontSize: 12,
                               height: 1.35,
                             ),
@@ -1320,7 +1328,7 @@ class _MatchRulesSelector extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: NttColors.surfaceMid,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
@@ -1353,7 +1361,7 @@ class _MatchRulesSelector extends StatelessWidget {
                   child: Text(
                     'Goal vittoria',
                     style: TextStyle(
-                      color: NttColors.textPrimary,
+                      color: AppColors.ink,
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                     ),
@@ -1374,7 +1382,7 @@ class _MatchRulesSelector extends StatelessWidget {
                     '${rules.targetScore}',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      color: NttColors.textPrimary,
+                      color: AppColors.ink,
                       fontSize: 20,
                       fontWeight: FontWeight.w900,
                     ),
@@ -1425,15 +1433,15 @@ class _RulesScoreboardBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: NttColors.surfaceMid,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: NttColors.accent.withValues(alpha: 0.18)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.18)),
       ),
       child: Text(
         text,
         textAlign: TextAlign.center,
         style: const TextStyle(
-          color: NttColors.accent,
+          color: AppColors.primary,
           fontSize: 12,
           fontWeight: FontWeight.w900,
           letterSpacing: 1.6,
@@ -1467,16 +1475,13 @@ class _RivalryOverviewCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: NttColors.surfaceMid,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: NttColors.warning.withValues(alpha: 0.25)),
+        border: Border.all(color: AppColors.ink.withValues(alpha: 0.25)),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            NttColors.warning.withValues(alpha: 0.12),
-            Colors.transparent,
-          ],
+          colors: [AppColors.ink.withValues(alpha: 0.12), Colors.transparent],
         ),
       ),
       child: Column(
@@ -1486,14 +1491,14 @@ class _RivalryOverviewCard extends StatelessWidget {
             children: [
               const Icon(
                 Icons.local_fire_department_outlined,
-                color: NttColors.warning,
+                color: AppColors.ink,
                 size: 18,
               ),
               const SizedBox(width: 8),
               Text(
                 title,
                 style: const TextStyle(
-                  color: NttColors.textPrimary,
+                  color: AppColors.ink,
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
                 ),
@@ -1504,7 +1509,7 @@ class _RivalryOverviewCard extends StatelessWidget {
           Text(
             description,
             style: const TextStyle(
-              color: NttColors.textMuted,
+              color: AppColors.textSecondary,
               fontSize: 13,
               height: 1.35,
             ),
@@ -1565,7 +1570,7 @@ class _RivalryToggleCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: NttColors.surfaceMid,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
@@ -1577,12 +1582,12 @@ class _RivalryToggleCard extends StatelessWidget {
             height: 36,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: NttColors.warning.withValues(alpha: 0.14),
+              color: AppColors.ink.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
               Icons.local_fire_department_outlined,
-              color: NttColors.warning,
+              color: AppColors.ink,
               size: 18,
             ),
           ),
@@ -1596,7 +1601,7 @@ class _RivalryToggleCard extends StatelessWidget {
                       ? 'Rivalita attiva'
                       : 'Modalita Rivalita disponibile',
                   style: const TextStyle(
-                    color: NttColors.textPrimary,
+                    color: AppColors.ink,
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
@@ -1605,7 +1610,7 @@ class _RivalryToggleCard extends StatelessWidget {
                 Text(
                   description,
                   style: const TextStyle(
-                    color: NttColors.textMuted,
+                    color: AppColors.textSecondary,
                     fontSize: 13,
                     height: 1.35,
                   ),
@@ -1653,9 +1658,9 @@ class _RivalryScoreboardBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: NttColors.surfaceMid,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: NttColors.warning.withValues(alpha: 0.22)),
+        border: Border.all(color: AppColors.ink.withValues(alpha: 0.22)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1663,7 +1668,7 @@ class _RivalryScoreboardBanner extends StatelessWidget {
           const Text(
             'RIVALITA ATTIVA',
             style: TextStyle(
-              color: NttColors.warning,
+              color: AppColors.ink,
               fontSize: 11,
               fontWeight: FontWeight.w900,
               letterSpacing: 1.8,
@@ -1673,7 +1678,7 @@ class _RivalryScoreboardBanner extends StatelessWidget {
           Text(
             _rivalryHeadline(overview, team1Name, team2Name),
             style: const TextStyle(
-              color: NttColors.textPrimary,
+              color: AppColors.ink,
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
@@ -1695,7 +1700,7 @@ class _RivalryStatTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: NttColors.surfaceHigh,
+        color: AppColors.disabledContainer,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -1704,7 +1709,7 @@ class _RivalryStatTile extends StatelessWidget {
           Text(
             label,
             style: const TextStyle(
-              color: NttColors.textFaint,
+              color: AppColors.textSecondary,
               fontSize: 11,
               fontWeight: FontWeight.w700,
             ),
@@ -1713,7 +1718,7 @@ class _RivalryStatTile extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              color: NttColors.textPrimary,
+              color: AppColors.ink,
               fontSize: 18,
               fontWeight: FontWeight.w900,
             ),
@@ -1813,7 +1818,7 @@ class _TeamChip extends StatelessWidget {
                   border: Border.all(
                     color: enabled
                         ? color.withValues(alpha: selected ? 1 : 0.55)
-                        : NttColors.textFaint.withValues(alpha: 0.3),
+                        : AppColors.textSecondary.withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                 ),
@@ -1821,8 +1826,8 @@ class _TeamChip extends StatelessWidget {
                   label,
                   style: TextStyle(
                     color: selected
-                        ? NttColors.surfaceDark
-                        : (enabled ? color : NttColors.textFaint),
+                        ? AppColors.background
+                        : (enabled ? color : AppColors.textSecondary),
                     fontWeight: FontWeight.w900,
                     fontSize: 13,
                     letterSpacing: 0.8,
@@ -1849,7 +1854,7 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(
-          color: NttColors.textMuted,
+          color: AppColors.textSecondary,
           fontSize: 11,
           fontWeight: FontWeight.w800,
           letterSpacing: 3,

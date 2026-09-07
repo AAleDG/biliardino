@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/design/brand_header.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubits/players/players_cubit.dart';
@@ -28,7 +29,7 @@ class PlayersScreen extends StatelessWidget {
         final presentCount = state.present.length;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('GIOCATORI')),
+          appBar: brandAppBar(context, title: 'GIOCATORI'),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: state.isMutating ? null : () => _showAddDialog(context),
             icon: const Icon(Icons.person_add_alt_1),
@@ -217,13 +218,13 @@ class _Summary extends StatelessWidget {
         children: [
           _Pill(
             text: '$presentCount/$total presenti',
-            color: NttColors.accentSoft,
+            color: AppColors.primary,
           ),
           _Pill(
             text: ready
                 ? 'Pronti a giocare'
                 : 'Servono ${minimumPlayers - presentCount} per giocare',
-            color: ready ? NttColors.success : NttColors.warning,
+            color: ready ? AppColors.success : AppColors.ink,
           ),
         ],
       ),
@@ -378,8 +379,8 @@ class _PresenceBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isPresent && !isArchived
-        ? NttColors.success
-        : NttColors.textFaint;
+        ? AppColors.success
+        : AppColors.textSecondary;
     return Row(
       children: [
         Container(
@@ -447,29 +448,35 @@ class _Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Center(
-    child: Padding(
-      padding: EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.people_outline, size: 64, color: NttColors.textFaint),
-          SizedBox(height: 16),
-          Text(
-            'Nessun giocatore',
-            style: TextStyle(
-              color: NttColors.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1,
+    child: SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.people_outline,
+              size: 64,
+              color: AppColors.textSecondary,
             ),
-          ),
-          SizedBox(height: 6),
-          Text(
-            'Aggiungi il primo player con il pulsante in basso.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: NttColors.textMuted),
-          ),
-        ],
+            SizedBox(height: 16),
+            Text(
+              'Nessun giocatore',
+              style: TextStyle(
+                color: AppColors.ink,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1,
+              ),
+            ),
+            SizedBox(height: 6),
+            Text(
+              'Aggiungi il primo player con il pulsante in basso.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ],
+        ),
       ),
     ),
   );

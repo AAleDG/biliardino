@@ -42,7 +42,13 @@ class HomeScreen extends StatelessWidget {
                 Navigator.of(context).pop(result);
               },
               child: Scaffold(
-                body: IndexedStack(index: index, children: _pages),
+                body: IndexedStack(
+                  index: index,
+                  children: [
+                    for (var page = 0; page < _pages.length; page++)
+                      TickerMode(enabled: page == index, child: _pages[page]),
+                  ],
+                ),
                 bottomNavigationBar: _BottomNav(
                   index: index,
                   onSelected: (selectedIndex) => _selectTab(
@@ -117,7 +123,7 @@ class _BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-    color: NttColors.surfaceMid,
+    color: AppColors.surface,
     elevation: 0,
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -130,20 +136,17 @@ class _BottomNav extends StatelessWidget {
               child: Stack(
                 children: [
                   AnimatedPositioned(
-                    duration: shouldReduceMotion()
+                    duration: shouldReduceMotion(context)
                         ? Duration.zero
-                        : const Duration(milliseconds: 380),
+                        : AppMotion.navigation,
                     curve: Curves.easeOutCubic,
                     left: tabWidth * index + tabWidth * 0.30,
                     width: tabWidth * 0.40,
                     height: 3,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: NttColors.accent,
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(2),
-                        boxShadow: const [
-                          BoxShadow(color: NttColors.accent, blurRadius: 10),
-                        ],
                       ),
                     ),
                   ),

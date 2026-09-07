@@ -178,9 +178,9 @@ class _BackgroundGradient extends StatelessWidget {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          NttColors.surfaceDark,
-          NttColors.primaryDeep,
-          NttColors.surfaceDark,
+          AppColors.background,
+          AppColors.primaryPressed,
+          AppColors.background,
         ],
         stops: [0.0, 0.55, 1.0],
       ),
@@ -205,7 +205,7 @@ class _Ball extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: NttColors.accent.withValues(alpha: 0.55),
+            color: AppColors.primary.withValues(alpha: 0.55),
             blurRadius: 18,
             spreadRadius: 1,
           ),
@@ -314,14 +314,14 @@ class _Logo extends StatelessWidget {
         Text(
           'NTT',
           style: TextStyle(
-            color: NttColors.accent,
+            color: AppColors.primary,
             fontSize: 64,
             fontWeight: FontWeight.w900,
             letterSpacing: 10,
             height: 1,
             shadows: [
               Shadow(
-                color: NttColors.accent.withValues(alpha: glow * 0.7),
+                color: AppColors.primary.withValues(alpha: glow * 0.7),
                 blurRadius: 24,
               ),
             ],
@@ -334,9 +334,9 @@ class _Logo extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                NttColors.accent.withValues(alpha: 0),
-                NttColors.accent,
-                NttColors.accent.withValues(alpha: 0),
+                AppColors.primary.withValues(alpha: 0),
+                AppColors.primary,
+                AppColors.primary.withValues(alpha: 0),
               ],
             ),
           ),
@@ -363,7 +363,7 @@ class _Tagline extends StatelessWidget {
   Widget build(BuildContext context) => const Text(
     'OFFICE LEAGUE',
     style: TextStyle(
-      color: NttColors.textFaint,
+      color: AppColors.textSecondary,
       fontSize: 12,
       fontWeight: FontWeight.w600,
       letterSpacing: 6,

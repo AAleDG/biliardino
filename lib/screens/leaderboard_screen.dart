@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../widgets/design/brand_header.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubits/leaderboard/leaderboard_cubit.dart';
@@ -81,16 +82,9 @@ class _LeaderboardScreenState extends State<LeaderboardScreen>
         return DefaultTabController(
           length: 2,
           child: Scaffold(
-            appBar: AppBar(
-              title: const Text(
-                'CLASSIFICA',
-                style: TextStyle(
-                  color: _Hud.cyan,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 5,
-                  shadows: [Shadow(color: _Hud.cyan, blurRadius: 14)],
-                ),
-              ),
+            appBar: brandAppBar(
+              context,
+              title: 'CLASSIFICA',
               actions: [
                 Builder(
                   builder: (buttonContext) {
@@ -400,7 +394,7 @@ class _PodiumColumn extends StatelessWidget {
       return const SizedBox.shrink();
     }
     final s = stats!;
-    final accent = hudColorForName(s.player.name);
+    final accent = avatarColorForName(s.player.name);
     final blockAnim = CurvedAnimation(
       parent: anim,
       curve: Interval(
@@ -605,7 +599,7 @@ class _HudAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = hudColorForName(name);
+    final accent = avatarColorForName(name);
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
     final size = winner ? 60.0 : 48.0;
     return Stack(
@@ -638,12 +632,12 @@ class _HudAvatar extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: accent,
-              border: Border.all(color: NttColors.surfaceDark, width: 2),
+              border: Border.all(color: AppColors.background, width: 2),
             ),
             child: Text(
               '$rank',
               style: const TextStyle(
-                color: NttColors.surfaceDark,
+                color: AppColors.background,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
               ),
@@ -773,7 +767,7 @@ class _LeaderRow extends StatelessWidget {
                   ),
                   Builder(
                     builder: (_) {
-                      final accent = hudColorForName(stats.player.name);
+                      final accent = avatarColorForName(stats.player.name);
                       return Text(
                         metricLabel(stats),
                         style: TextStyle(

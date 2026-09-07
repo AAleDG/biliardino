@@ -269,7 +269,7 @@ Calculated solid-color pairs: ink/background 17.31:1; secondary text/background 
 
 ## Typography
 
-Use **Barlow Condensed 800/900** for screen headings, short action labels and score/celebration moments. Use **Barlow 400/600** for names, explanatory text, metadata and navigation. Real font specimens and licenses are stored in [type/](design/experiments/south-africa-2010/type/README.md) for the offline review gallery; they are not yet registered in the application. Bundle the selected font files and their license locally when implementation starts. Generated lettering is a visual approximation, not a font asset.
+Use **Barlow Condensed 800/900** for screen headings, short action labels and score/celebration moments. Use **Barlow 400/600** for names, explanatory text, metadata and navigation. Real font specimens and licenses are stored in [type/](design/experiments/south-africa-2010/type/README.md) for the offline review gallery. The shared Flutter foundation now bundles those exact files and licenses under `assets/fonts/` and registers both families locally. Generated lettering is a visual approximation, not a font asset.
 
 The type scale is defined above. Scores may scale from 80 to 112 logical pixels to accommodate two digits and constrained layouts. Preserve large-text settings for utility content; allow names to wrap and row height to grow instead of shrinking all text. Use aligned numeral widths for statistics where supported by the selected font, verified in Flutter.
 
@@ -371,11 +371,13 @@ Score data updates immediately, independent of artwork. Rapid goals must not cre
 | Confetti | Bounded programmatic ribbon particles, deterministic seed for golden tests |
 | Fonts | Local Barlow and Barlow Condensed files plus licenses |
 
-SVG rendering may require a Flutter dependency; make that decision after the asset set is approved. There is no need to add an SVG renderer if the final marks remain simple programmatic paths. No runtime reference may point to the issue upload or a generated-image cache path.
+The approved SVG masters use restricted paths/circles/translations. `tool/generate_south_africa_artwork.py` verifies their approved hashes and compiles the geometry into `lib/widgets/design/artwork_paths.dart`; the shared painter renders it without an SVG runtime dependency. Regenerate from reviewed masters rather than hand-editing generated paths. No runtime reference may point to the issue upload or a generated-image cache path.
 
 The approved vector masters are available in the [R1 asset review](design/south-africa-2010/assets/r1/review.html), with an [inventory and usage guide](design/south-africa-2010/assets/README.md) and [hashed manifest](design/south-africa-2010/assets/r1/manifest.json). These include a rigid foosball figure, its rod assembly, a football and two ribbon geometry references. **All five R1 SVG assets were explicitly approved by the user on 2026-09-07 at the manifest hashes.** The user still requires review of newly created or materially revised artwork before integration. Ribbon SVGs are reference geometry for a shared painter; the review PNG is not a runtime asset. A shaded PNG or stadium silhouette is conditional on a concrete composition need and would require its own review.
 
 ## Review coverage and implementation sequence
+
+Implementation is in progress: shared tokens, Material theme, font registration, asset painter, navigation/header treatment and motion policy are present. Screen composition and animation migration still require the complete phase and simulator checks.
 
 The four mockup deliverables cover populated players, complete setup (two scroll positions), live match and leaderboard. Their examples are recorded in [MOCKUP_BRIEF.md](design/experiments/south-africa-2010/MOCKUP_BRIEF.md). Remaining states are covered by the component matrix, not silently omitted from implementation.
 

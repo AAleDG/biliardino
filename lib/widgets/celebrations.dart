@@ -256,7 +256,7 @@ class _GoalOverlayState extends State<_GoalOverlay>
                                   child: Text(
                                     widget.teamLabel,
                                     style: const TextStyle(
-                                      color: NttColors.surfaceDark,
+                                      color: AppColors.background,
                                       fontWeight: FontWeight.w900,
                                       letterSpacing: 3,
                                       fontSize: 13,
@@ -388,7 +388,7 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
                     radius: 1.3,
                     colors: [
                       widget.color.withValues(alpha: 0.30),
-                      NttColors.surfaceDark.withValues(alpha: 0.97),
+                      AppColors.background.withValues(alpha: 0.97),
                     ],
                   ),
                 ),
@@ -472,7 +472,7 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
                                 child: Text(
                                   widget.teamLabel,
                                   style: const TextStyle(
-                                    color: NttColors.surfaceDark,
+                                    color: AppColors.background,
                                     fontWeight: FontWeight.w900,
                                     letterSpacing: 4,
                                     fontSize: 17,
@@ -527,7 +527,7 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
                                         onPressed: widget.onChangeTeams,
                                         style: ElevatedButton.styleFrom(
                                           elevation: 0,
-                                          backgroundColor: NttColors.surfaceDark
+                                          backgroundColor: AppColors.background
                                               .withValues(alpha: 0.78),
                                           foregroundColor: Colors.white,
                                           padding: const EdgeInsets.symmetric(
@@ -645,9 +645,9 @@ class _ConfettiSpec {
 
   factory _ConfettiSpec.random(math.Random rng, Color teamColor) {
     const palette = [
-      NttColors.accent,
-      NttColors.success,
-      NttColors.warning,
+      AppColors.primary,
+      AppColors.success,
+      AppColors.ink,
       Colors.white,
     ];
     final colors = <Color>[teamColor, teamColor, ...palette, Colors.white];

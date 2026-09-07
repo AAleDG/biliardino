@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../widgets/design/brand_header.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -73,7 +74,7 @@ class _HistoryViewState extends State<_HistoryView>
         final hasActiveFilters = state.hasActiveFilters;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('STORICO')),
+          appBar: brandAppBar(context, title: 'STORICO'),
           body: Column(
             children: [
               Padding(
@@ -126,7 +127,7 @@ Future<void> _openMatchDetails(
     context: rootContext,
     useSafeArea: true,
     isScrollControlled: true,
-    backgroundColor: NttColors.surfaceMid,
+    backgroundColor: AppColors.surface,
     builder: (context) =>
         _MatchDetailsSheet(match: match, players: state.players),
   );
@@ -391,7 +392,7 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
                   child: ExcludeSemantics(
                     child: Text(
                       _error!,
-                      style: const TextStyle(color: NttColors.warning),
+                      style: const TextStyle(color: AppColors.ink),
                     ),
                   ),
                 ),
@@ -661,7 +662,7 @@ Future<void> _openFilters(BuildContext rootContext, HistoryState state) async {
   final cubit = rootContext.read<HistoryCubit>();
   final selectedFilters = await showModalBottomSheet<HistoryFilters>(
     context: rootContext,
-    backgroundColor: NttColors.surfaceMid,
+    backgroundColor: AppColors.surface,
     barrierColor: Colors.black.withValues(alpha: 0.55),
     isScrollControlled: true,
     useSafeArea: true,
@@ -698,7 +699,7 @@ class _FilterSummaryBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final summaryLabel = hasActiveFilters ? label : 'Tutti i risultati';
     return Material(
-      color: NttColors.surfaceMid,
+      color: AppColors.surface,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -712,7 +713,7 @@ class _FilterSummaryBar extends StatelessWidget {
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(
                   color: hasActiveFilters
-                      ? NttColors.accent.withValues(alpha: 0.55)
+                      ? AppColors.primary.withValues(alpha: 0.55)
                       : Colors.white.withValues(alpha: 0.06),
                 ),
               ),
@@ -725,8 +726,8 @@ class _FilterSummaryBar extends StatelessWidget {
                       Icons.filter_alt_outlined,
                       size: 22,
                       color: hasActiveFilters
-                          ? NttColors.accent
-                          : NttColors.textMuted,
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -740,7 +741,7 @@ class _FilterSummaryBar extends StatelessWidget {
                             Text(
                               hasActiveFilters ? 'Filtri attivi' : 'Filtri',
                               style: const TextStyle(
-                                color: NttColors.textFaint,
+                                color: AppColors.textSecondary,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 1.1,
@@ -755,16 +756,18 @@ class _FilterSummaryBar extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: hasActiveFilters
-                                      ? NttColors.accent.withValues(alpha: 0.14)
-                                      : NttColors.surfaceHigh,
+                                      ? AppColors.primary.withValues(
+                                          alpha: 0.14,
+                                        )
+                                      : AppColors.disabledContainer,
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: Text(
                                   '$matchesCount partite',
                                   style: TextStyle(
                                     color: hasActiveFilters
-                                        ? NttColors.accentSoft
-                                        : NttColors.textMuted,
+                                        ? AppColors.primary
+                                        : AppColors.textSecondary,
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -777,7 +780,7 @@ class _FilterSummaryBar extends StatelessWidget {
                         Text(
                           summaryLabel,
                           style: TextStyle(
-                            color: NttColors.textPrimary,
+                            color: AppColors.ink,
                             fontSize: compact ? 16 : 18,
                             fontWeight: FontWeight.w800,
                             height: 1.15,
@@ -796,7 +799,7 @@ class _FilterSummaryBar extends StatelessWidget {
                                 key: const ValueKey('history-reset-filters'),
                                 tooltip: 'Reset filtri',
                                 icon: const Icon(Icons.refresh, size: 18),
-                                color: NttColors.accent,
+                                color: AppColors.primary,
                                 onPressed: onReset,
                               )
                             : TextButton(
@@ -817,7 +820,7 @@ class _FilterSummaryBar extends StatelessWidget {
                         key: const ValueKey('history-open-filters'),
                         tooltip: 'Apri filtri',
                         icon: const Icon(Icons.chevron_right, size: 22),
-                        color: NttColors.accent,
+                        color: AppColors.primary,
                         onPressed: onOpenFilters,
                       ),
                     ],
@@ -882,7 +885,7 @@ class _HistoryFilterSheetState extends State<_HistoryFilterSheet> {
                   child: Text(
                     'Filtri storico',
                     style: TextStyle(
-                      color: NttColors.textPrimary,
+                      color: AppColors.ink,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),
@@ -968,7 +971,7 @@ class _HistoryFilterSheetState extends State<_HistoryFilterSheet> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: NttColors.accent,
+                        foregroundColor: AppColors.primary,
                         side: BorderSide(
                           color: Colors.white.withValues(alpha: 0.45),
                           width: 1.5,
@@ -1028,7 +1031,7 @@ class _FilterSectionLabel extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(
-          color: NttColors.textFaint,
+          color: AppColors.textSecondary,
           fontSize: 11,
           fontWeight: FontWeight.w900,
           letterSpacing: 2,
@@ -1067,18 +1070,18 @@ class _SegmentedFilter<T> extends StatelessWidget {
           selected: selected,
           onSelected: enabled ? (_) => onSelected(value) : null,
           labelStyle: TextStyle(
-            color: selected && enabled
-                ? NttColors.surfaceDark
-                : NttColors.textPrimary,
+            color: selected && enabled ? AppColors.background : AppColors.ink,
             fontSize: 13,
             fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
           ),
-          selectedColor: enabled ? NttColors.accent : NttColors.surfaceHigh,
-          backgroundColor: NttColors.surfaceHigh,
-          disabledColor: NttColors.surfaceHigh.withValues(alpha: 0.45),
+          selectedColor: enabled
+              ? AppColors.primary
+              : AppColors.disabledContainer,
+          backgroundColor: AppColors.disabledContainer,
+          disabledColor: AppColors.disabledContainer.withValues(alpha: 0.45),
           side: BorderSide(
             color: selected && enabled
-                ? NttColors.accent
+                ? AppColors.primary
                 : Colors.white.withValues(alpha: 0.06),
           ),
           shape: RoundedRectangleBorder(
@@ -1117,18 +1120,18 @@ class _PlayerSelector extends StatelessWidget {
               onSelected: (_) => onSelected(null),
               labelStyle: TextStyle(
                 color: selectedPlayerId == null
-                    ? NttColors.surfaceDark
-                    : NttColors.textPrimary,
+                    ? AppColors.background
+                    : AppColors.ink,
                 fontSize: 13,
                 fontWeight: selectedPlayerId == null
                     ? FontWeight.w900
                     : FontWeight.w600,
               ),
-              selectedColor: NttColors.accent,
-              backgroundColor: NttColors.surfaceHigh,
+              selectedColor: AppColors.primary,
+              backgroundColor: AppColors.disabledContainer,
               side: BorderSide(
                 color: selectedPlayerId == null
-                    ? NttColors.accent
+                    ? AppColors.primary
                     : Colors.white.withValues(alpha: 0.06),
               ),
               shape: RoundedRectangleBorder(
@@ -1143,17 +1146,15 @@ class _PlayerSelector extends StatelessWidget {
                 selected: selected,
                 onSelected: (_) => onSelected(player.id),
                 labelStyle: TextStyle(
-                  color: selected
-                      ? NttColors.surfaceDark
-                      : NttColors.textPrimary,
+                  color: selected ? AppColors.background : AppColors.ink,
                   fontSize: 13,
                   fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
                 ),
-                selectedColor: NttColors.accent,
-                backgroundColor: NttColors.surfaceHigh,
+                selectedColor: AppColors.primary,
+                backgroundColor: AppColors.disabledContainer,
                 side: BorderSide(
                   color: selected
-                      ? NttColors.accent
+                      ? AppColors.primary
                       : Colors.white.withValues(alpha: 0.06),
                 ),
                 shape: RoundedRectangleBorder(
@@ -1245,7 +1246,7 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(
-          color: NttColors.textMuted,
+          color: AppColors.textSecondary,
           fontSize: 11,
           fontWeight: FontWeight.w800,
           letterSpacing: 2.2,
@@ -1283,12 +1284,14 @@ class _MatchCard extends StatelessWidget {
     final t2Names = match.team2
         .map((id) => StatsService.playerName(players, id))
         .toList();
-    final winColor = match.winningTeam == 1 ? NttColors.team1 : NttColors.team2;
+    final winColor = match.winningTeam == 1
+        ? AppColors.teamOne
+        : AppColors.teamTwo;
     final modeColor = match.isRivalry
-        ? NttColors.team2
+        ? AppColors.teamTwo
         : (match.mode == MatchMode.oneVsOne
-              ? NttColors.warning
-              : NttColors.accentSoft);
+              ? AppColors.ink
+              : AppColors.primary);
 
     return Card(
       key: ValueKey('history-match-${match.id}'),
@@ -1313,13 +1316,13 @@ class _MatchCard extends StatelessWidget {
                       const Icon(
                         Icons.schedule,
                         size: 13,
-                        color: NttColors.textFaint,
+                        color: AppColors.textSecondary,
                       ),
                       const SizedBox(width: 5),
                       Text(
                         timeLabel,
                         style: const TextStyle(
-                          color: NttColors.textFaint,
+                          color: AppColors.textSecondary,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.8,
@@ -1359,7 +1362,7 @@ class _MatchCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: NttColors.surfaceHigh,
+                          color: AppColors.disabledContainer,
                           borderRadius: BorderRadius.circular(999),
                           border: Border.all(
                             color: Colors.white.withValues(alpha: 0.08),
@@ -1381,7 +1384,7 @@ class _MatchCard extends StatelessWidget {
                   _TeamResultLine(
                     semanticKey: ValueKey('history-team-${match.id}-team-1'),
                     teamLabel: 'Squadra 1',
-                    color: NttColors.team1,
+                    color: AppColors.teamOne,
                     names: t1Names,
                     score: match.t1Score,
                     isWinner: match.winningTeam == 1,
@@ -1390,7 +1393,7 @@ class _MatchCard extends StatelessWidget {
                   _TeamResultLine(
                     semanticKey: ValueKey('history-team-${match.id}-team-2'),
                     teamLabel: 'Squadra 2',
-                    color: NttColors.team2,
+                    color: AppColors.teamTwo,
                     names: t2Names,
                     score: match.t2Score,
                     isWinner: match.winningTeam == 2,
@@ -1437,7 +1440,7 @@ class _MatchDetailsSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: NttColors.textFaint,
+                  color: AppColors.textSecondary,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -1509,7 +1512,7 @@ class _MatchDetailRow extends StatelessWidget {
             width: 96,
             child: Text(
               label,
-              style: const TextStyle(color: NttColors.textMuted),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           ),
           Expanded(
@@ -1566,7 +1569,7 @@ class _TeamResultLine extends StatelessWidget {
               child: Text(
                 namesLabel,
                 style: TextStyle(
-                  color: isWinner ? NttColors.textPrimary : NttColors.textMuted,
+                  color: isWinner ? AppColors.ink : AppColors.textSecondary,
                   fontSize: 16,
                   fontWeight: isWinner ? FontWeight.w800 : FontWeight.w500,
                 ),
@@ -1583,7 +1586,7 @@ class _TeamResultLine extends StatelessWidget {
                   maxLines: 1,
                   softWrap: false,
                   style: TextStyle(
-                    color: isWinner ? color : NttColors.textFaint,
+                    color: isWinner ? color : AppColors.textSecondary,
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
                   ),
@@ -1616,13 +1619,13 @@ class _Empty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.history, size: 56, color: NttColors.textFaint),
+            const Icon(Icons.history, size: 56, color: AppColors.textSecondary),
             const SizedBox(height: 16),
             Text(
               title,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: NttColors.textPrimary,
+                color: AppColors.ink,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.5,
@@ -1632,7 +1635,7 @@ class _Empty extends StatelessWidget {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: NttColors.textMuted),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
           ],
         ),

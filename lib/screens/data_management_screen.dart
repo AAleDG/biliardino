@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/design/brand_header.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -25,7 +26,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('DATI')),
+      appBar: brandAppBar(context, title: 'DATI'),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

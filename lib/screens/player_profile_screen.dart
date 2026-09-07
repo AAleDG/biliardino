@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../widgets/design/brand_header.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -63,7 +64,7 @@ class _PlayerProfileScreenState extends State<PlayerProfileScreen> {
     final player = _findPlayer(_players, widget.playerId);
     if (player == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('PROFILO')),
+        appBar: brandAppBar(context, title: 'PROFILO'),
         body: const Center(child: Text('Giocatore non trovato.')),
       );
     }
@@ -76,7 +77,7 @@ class _PlayerProfileScreenState extends State<PlayerProfileScreen> {
     final profile = StatsService.computePlayerProfile(_matches, player.id);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('PROFILO')),
+      appBar: brandAppBar(context, title: 'PROFILO'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
@@ -143,16 +144,16 @@ class _RecentForm extends StatelessWidget {
                       shape: BoxShape.circle,
                       color:
                           (entry.value
-                                  ? NttColors.success
-                                  : NttColors.textMuted)
+                                  ? AppColors.success
+                                  : AppColors.textSecondary)
                               .withValues(alpha: 0.18),
                     ),
                     child: Text(
                       entry.value ? 'V' : 'P',
                       style: TextStyle(
                         color: entry.value
-                            ? NttColors.success
-                            : NttColors.textMuted,
+                            ? AppColors.success
+                            : AppColors.textSecondary,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -240,9 +241,9 @@ class _RelationshipCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: NttColors.accent, size: 20),
+            Icon(icon, color: AppColors.primary, size: 20),
             const SizedBox(height: 8),
-            Text(label, style: const TextStyle(color: NttColors.textFaint)),
+            Text(label, style: const TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 4),
             Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
             if (matches != null)
@@ -296,7 +297,7 @@ class _EmptyCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Text(
           message,
-          style: const TextStyle(color: NttColors.textMuted),
+          style: const TextStyle(color: AppColors.textSecondary),
         ),
       ),
     );
@@ -334,7 +335,7 @@ class _Header extends StatelessWidget {
                   Text(
                     player.name,
                     style: const TextStyle(
-                      color: NttColors.textPrimary,
+                      color: AppColors.ink,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                     ),
@@ -348,10 +349,10 @@ class _Header extends StatelessWidget {
                         : 'Assente',
                     style: TextStyle(
                       color: player.isArchived
-                          ? NttColors.textFaint
+                          ? AppColors.textSecondary
                           : player.isPresent
-                          ? NttColors.success
-                          : NttColors.textMuted,
+                          ? AppColors.success
+                          : AppColors.textSecondary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -361,7 +362,7 @@ class _Header extends StatelessWidget {
             Text(
               '${stats.points} pt',
               style: const TextStyle(
-                color: NttColors.accent,
+                color: AppColors.primary,
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
               ),
@@ -410,7 +411,7 @@ class _Metric extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: NttColors.surfaceMid,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
@@ -423,7 +424,7 @@ class _Metric extends StatelessWidget {
             Text(
               value,
               style: const TextStyle(
-                color: NttColors.textPrimary,
+                color: AppColors.ink,
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
               ),
@@ -431,7 +432,7 @@ class _Metric extends StatelessWidget {
             Text(
               label,
               style: const TextStyle(
-                color: NttColors.textFaint,
+                color: AppColors.textSecondary,
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
               ),
@@ -471,7 +472,7 @@ class _PersonalMatchRow extends StatelessWidget {
       child: ListTile(
         leading: Icon(
           won ? Icons.emoji_events : Icons.close,
-          color: won ? NttColors.success : NttColors.textMuted,
+          color: won ? AppColors.success : AppColors.textSecondary,
         ),
         title: Text(
           '$teamLabel · ${match.t1Score}-${match.t2Score}',
@@ -496,7 +497,7 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         text,
         style: const TextStyle(
-          color: NttColors.textMuted,
+          color: AppColors.textSecondary,
           fontSize: 11,
           fontWeight: FontWeight.w800,
           letterSpacing: 2,
