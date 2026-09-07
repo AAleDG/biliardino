@@ -377,7 +377,7 @@ The approved vector masters are available in the [R1 asset review](design/south-
 
 ## Review coverage and implementation sequence
 
-Implementation is in progress: shared tokens, Material theme, font registration, asset painter, navigation/header treatment and motion policy are present. Screen composition and animation migration still require the complete phase and simulator checks.
+Implementation is in progress: shared tokens, Material theme, font registration, asset painter, navigation/header treatment and motion policy are present. Players and setup now use grouped roster rows, adaptive team and mode controls, explicit busy states and a green pinned kickoff action. Live scoring, animation migration and remaining screens still require their phase and simulator checks.
 
 The four mockup deliverables cover populated players, complete setup (two scroll positions), live match and leaderboard. Their examples are recorded in [MOCKUP_BRIEF.md](design/experiments/south-africa-2010/MOCKUP_BRIEF.md). Remaining states are covered by the component matrix, not silently omitted from implementation.
 

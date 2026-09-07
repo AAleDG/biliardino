@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/design/brand_header.dart';
+import '../widgets/design/team_slot.dart';
+import '../widgets/design/adaptive_pair.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubits/home/home_cubit.dart';
@@ -486,35 +488,43 @@ class _Setup extends StatelessWidget {
 
     if (present.length < mode.teamSize * 2) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.group_off,
-                size: 64,
-                color: AppColors.textSecondary,
-              ),
-              const SizedBox(height: 16),
-              _MatchModeSelector(selectedMode: mode, onChanged: onModeChanged),
-              const SizedBox(height: 20),
-              Text(
-                _playersNeededMessage(mode),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.group_off,
+                  size: 64,
                   color: AppColors.textSecondary,
-                  fontSize: 15,
-                  height: 1.4,
                 ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Vai su Giocatori e segna chi è presente.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-              ),
-            ],
+                const SizedBox(height: 16),
+                _MatchModeSelector(
+                  selectedMode: mode,
+                  onChanged: isPersistingRules ? null : onModeChanged,
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  _playersNeededMessage(mode),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 15,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Vai su Giocatori e segna chi è presente.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -528,7 +538,10 @@ class _Setup extends StatelessWidget {
             children: [
               const _SectionLabel('MODALITA PARTITA'),
               const SizedBox(height: 8),
-              _MatchModeSelector(selectedMode: mode, onChanged: onModeChanged),
+              _MatchModeSelector(
+                selectedMode: mode,
+                onChanged: isPersistingRules ? null : onModeChanged,
+              ),
               const SizedBox(height: 24),
               const _SectionLabel('REGOLE PUNTEGGIO'),
               const SizedBox(height: 8),
@@ -542,54 +555,37 @@ class _Setup extends StatelessWidget {
               const SizedBox(height: 24),
               const _SectionLabel('COMPONI LE SQUADRE'),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const ValueKey('random-teams-action'),
-                      onPressed: isPersistingRules ? null : onRandomTeams,
-                      icon: const Icon(Icons.shuffle, size: 18),
-                      label: const Text('CASUALI'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      key: const ValueKey('balanced-teams-action'),
-                      onPressed: isPersistingRules ? null : onBalancedTeams,
-                      icon: const Icon(Icons.balance, size: 18),
-                      label: const Text('BILANCIATE'),
-                    ),
-                  ),
-                ],
+              AdaptivePair(
+                first: OutlinedButton.icon(
+                  key: const ValueKey('random-teams-action'),
+                  onPressed: isPersistingRules ? null : onRandomTeams,
+                  icon: const Icon(Icons.shuffle, size: 18),
+                  label: const Text('CASUALI'),
+                ),
+                second: OutlinedButton.icon(
+                  key: const ValueKey('balanced-teams-action'),
+                  onPressed: isPersistingRules ? null : onBalancedTeams,
+                  icon: const Icon(Icons.balance, size: 18),
+                  label: const Text('BILANCIATE'),
+                ),
               ),
-              const SizedBox(height: 8),
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: _SetupTeamCard(
-                        label: 'SQUADRA 1',
-                        color: AppColors.teamOne,
-                        capacity: mode.teamSize,
-                        names: team1
-                            .map((id) => StatsService.playerName(players, id))
-                            .toList(),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _SetupTeamCard(
-                        label: 'SQUADRA 2',
-                        color: AppColors.teamTwo,
-                        capacity: mode.teamSize,
-                        names: team2
-                            .map((id) => StatsService.playerName(players, id))
-                            .toList(),
-                      ),
-                    ),
-                  ],
+              const SizedBox(height: 12),
+              AdaptivePair(
+                first: _SetupTeamCard(
+                  label: 'SQUADRA 1',
+                  color: AppColors.teamOne,
+                  capacity: mode.teamSize,
+                  names: team1
+                      .map((id) => StatsService.playerName(players, id))
+                      .toList(),
+                ),
+                second: _SetupTeamCard(
+                  label: 'SQUADRA 2',
+                  color: AppColors.teamTwo,
+                  capacity: mode.teamSize,
+                  names: team2
+                      .map((id) => StatsService.playerName(players, id))
+                      .toList(),
                 ),
               ),
               if (team1.length == mode.teamSize &&
@@ -598,16 +594,20 @@ class _Setup extends StatelessWidget {
                 _RivalryToggleCard(
                   mode: mode,
                   isRivalry: isRivalry,
-                  onActivate: () async {
-                    final enabled = await _confirmRivalryActivation(
-                      context,
-                      mode: mode,
-                    );
-                    if (enabled) {
-                      onRivalryChanged(true);
-                    }
-                  },
-                  onDeactivate: () => onRivalryChanged(false),
+                  onActivate: isPersistingRules
+                      ? null
+                      : () async {
+                          final enabled = await _confirmRivalryActivation(
+                            context,
+                            mode: mode,
+                          );
+                          if (enabled) {
+                            onRivalryChanged(true);
+                          }
+                        },
+                  onDeactivate: isPersistingRules
+                      ? null
+                      : () => onRivalryChanged(false),
                 ),
               ],
               if (isRivalry) ...[
@@ -632,37 +632,28 @@ class _Setup extends StatelessWidget {
                       horizontal: 12,
                       vertical: 4,
                     ),
-                    child: Row(
-                      children: [
-                        PlayerAvatar(name: p.name),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            p.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        _TeamChip(
-                          semanticKey: ValueKey('team-chip-${p.id}-team-1'),
-                          label: 'S1',
-                          color: AppColors.teamOne,
-                          selected: a == 1,
-                          semanticLabel: '${p.name}, Squadra 1',
-                          onTap: t1Full ? null : () => onToggle(p.id, 1),
-                        ),
-                        const SizedBox(width: 6),
-                        _TeamChip(
-                          semanticKey: ValueKey('team-chip-${p.id}-team-2'),
-                          label: 'S2',
-                          color: AppColors.teamTwo,
-                          selected: a == 2,
-                          semanticLabel: '${p.name}, Squadra 2',
-                          onTap: t2Full ? null : () => onToggle(p.id, 2),
-                        ),
-                      ],
+                    child: _PlayerAssignmentRow(
+                      name: p.name,
+                      first: _TeamChip(
+                        semanticKey: ValueKey('team-chip-${p.id}-team-1'),
+                        label: 'S1',
+                        color: AppColors.teamOne,
+                        selected: a == 1,
+                        semanticLabel: '${p.name}, Squadra 1',
+                        onTap: t1Full || isPersistingRules
+                            ? null
+                            : () => onToggle(p.id, 1),
+                      ),
+                      second: _TeamChip(
+                        semanticKey: ValueKey('team-chip-${p.id}-team-2'),
+                        label: 'S2',
+                        color: AppColors.teamTwo,
+                        selected: a == 2,
+                        semanticLabel: '${p.name}, Squadra 2',
+                        onTap: t2Full || isPersistingRules
+                            ? null
+                            : () => onToggle(p.id, 2),
+                      ),
                     ),
                   ),
                 );
@@ -680,13 +671,10 @@ class _Setup extends StatelessWidget {
                 onPressed: onKickoff,
                 icon: const Icon(Icons.sports_soccer),
                 label: const Text('INIZIA PARTITA'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                  ),
+                style: AppTheme.primaryButton(
+                  background: AppColors.success,
+                  foreground: AppColors.onPrimary,
+                  pressed: AppColors.successPressed,
                 ),
               ),
             ),
@@ -1092,101 +1080,56 @@ class _SetupTeamCard extends StatelessWidget {
     required this.capacity,
     required this.names,
   });
-
   final String label;
   final Color color;
   final int capacity;
   final List<String> names;
 
   @override
-  Widget build(BuildContext context) {
-    final filled = names.length;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: filled == capacity
-              ? color
-              : Colors.white.withValues(alpha: 0.08),
-          width: filled == capacity ? 1.5 : 1,
-        ),
-      ),
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(AppRadius.panel),
+    child: ColoredBox(
+      color: AppColors.teamContainer(color),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.6),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (names.isEmpty)
-            const Text(
-              '— vuota —',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontStyle: FontStyle.italic,
-                fontSize: 13,
-              ),
-            )
-          else
-            ...names.map(
-              (n) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2),
-                child: Text(
-                  n,
-                  style: const TextStyle(
-                    color: AppColors.ink,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          if (filled < capacity)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
+          ColoredBox(
+            color: color,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Text(
-                _slotHint(capacity, filled),
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
+                label,
+                style: AppType.section.copyWith(color: AppColors.onTeam(color)),
               ),
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(6),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final name in names)
+                  TeamSlot(name: name, teamColor: color),
+                if (names.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(8),
+                    child: Text('— vuota —', style: AppType.caption),
+                  ),
+                if (names.length < capacity)
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Text(
+                      _slotHint(capacity, names.length),
+                      style: AppType.caption,
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
-    );
-  }
+    ),
+  );
 }
 
 class _MatchModeSelector extends StatelessWidget {
@@ -1194,117 +1137,100 @@ class _MatchModeSelector extends StatelessWidget {
     required this.selectedMode,
     required this.onChanged,
   });
-
   final MatchMode selectedMode;
-  final ValueChanged<MatchMode> onChanged;
+  final ValueChanged<MatchMode>? onChanged;
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxWidth < 360;
-        final children = _modeOptions
-            .asMap()
-            .entries
-            .map((entry) {
-              final index = entry.key;
-              final option = entry.value;
-              final selected = option.mode == selectedMode;
-              final card = Semantics(
-                key: ValueKey(
-                  'match-mode-${option.mode == MatchMode.oneVsOne ? 'one-vs-one' : 'two-vs-two'}',
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final stacked =
+          constraints.maxWidth < 340 ||
+          MediaQuery.textScalerOf(context).scale(1) > 1.3;
+      final cards = _modeOptions.map((option) {
+        final selected = option.mode == selectedMode;
+        final enabled = onChanged != null;
+        final foreground = !enabled
+            ? AppColors.disabledContent
+            : selected
+            ? AppColors.onPrimary
+            : AppColors.ink;
+        void select() => onChanged?.call(option.mode);
+        return Semantics(
+          key: ValueKey(
+            'match-mode-${option.mode == MatchMode.oneVsOne ? 'one-vs-one' : 'two-vs-two'}',
+          ),
+          container: true,
+          button: true,
+          enabled: enabled,
+          selected: selected,
+          label: '${option.title}: ${option.description}',
+          onTap: enabled ? select : null,
+          child: ExcludeSemantics(
+            child: Material(
+              color: !enabled
+                  ? AppColors.disabledContainer
+                  : selected
+                  ? AppColors.primary
+                  : AppColors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.control),
+                side: BorderSide(
+                  color: selected ? AppColors.primary : AppColors.outline,
                 ),
-                container: true,
-                button: true,
-                enabled: true,
-                selected: selected,
-                label: '${option.title}: ${option.description}',
-                onTap: () => onChanged(option.mode),
-                child: ExcludeSemantics(
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: () => onChanged(option.mode),
-                    child: AnimatedContainer(
-                      duration: shouldReduceMotion()
-                          ? Duration.zero
-                          : const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? AppColors.primary.withValues(alpha: 0.12)
-                            : AppColors.surface,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: selected
-                              ? AppColors.primary
-                              : Colors.white.withValues(alpha: 0.08),
-                          width: selected ? 1.5 : 1,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              child: InkWell(
+                onTap: enabled ? select : null,
+                borderRadius: BorderRadius.circular(AppRadius.control),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Text(
-                            option.title,
-                            style: TextStyle(
-                              color: selected
-                                  ? AppColors.primary
-                                  : AppColors.ink,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.2,
+                          Expanded(
+                            child: Text(
+                              option.title,
+                              style: AppType.action.copyWith(color: foreground),
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            option.description,
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                              height: 1.35,
+                          if (selected)
+                            Icon(
+                              Icons.check_circle,
+                              color: foreground,
+                              size: 20,
                             ),
-                          ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 4),
+                      Text(
+                        option.description,
+                        style: AppType.caption.copyWith(color: foreground),
+                      ),
+                    ],
                   ),
                 ),
-              );
-
-              if (compact) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    left: index == 0 ? 0 : 8,
-                    right: index == _modeOptions.length - 1 ? 0 : 0,
-                  ),
-                  child: SizedBox(width: 172, child: card),
-                );
-              }
-
-              return Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    left: index == 0 ? 0 : 6,
-                    right: index == _modeOptions.length - 1 ? 0 : 6,
-                  ),
-                  child: card,
-                ),
-              );
-            })
-            .toList(growable: false);
-
-        if (compact) {
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            clipBehavior: Clip.none,
-            child: Row(children: children),
-          );
-        }
-
-        return Row(children: children);
-      },
-    );
-  }
+              ),
+            ),
+          ),
+        );
+      }).toList();
+      if (stacked) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [cards[0], const SizedBox(height: 8), cards[1]],
+        );
+      }
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: cards[0]),
+          const SizedBox(width: 12),
+          Expanded(child: cards[1]),
+        ],
+      );
+    },
+  );
 }
 
 class _MatchRulesSelector extends StatelessWidget {
@@ -1330,7 +1256,7 @@ class _MatchRulesSelector extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1363,7 +1289,7 @@ class _MatchRulesSelector extends StatelessWidget {
                     style: TextStyle(
                       color: AppColors.ink,
                       fontSize: 14,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -1384,7 +1310,7 @@ class _MatchRulesSelector extends StatelessWidget {
                     style: const TextStyle(
                       color: AppColors.ink,
                       fontSize: 20,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -1443,7 +1369,7 @@ class _RulesScoreboardBanner extends StatelessWidget {
         style: const TextStyle(
           color: AppColors.primary,
           fontSize: 12,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w600,
           letterSpacing: 1.6,
         ),
       ),
@@ -1478,11 +1404,6 @@ class _RivalryOverviewCard extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.ink.withValues(alpha: 0.25)),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.ink.withValues(alpha: 0.12), Colors.transparent],
-        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1495,14 +1416,7 @@ class _RivalryOverviewCard extends StatelessWidget {
                 size: 18,
               ),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: AppColors.ink,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+              Expanded(child: Text(title, style: AppType.bodyStrong)),
             ],
           ),
           const SizedBox(height: 8),
@@ -1557,8 +1471,8 @@ class _RivalryToggleCard extends StatelessWidget {
 
   final MatchMode mode;
   final bool isRivalry;
-  final Future<void> Function() onActivate;
-  final VoidCallback onDeactivate;
+  final Future<void> Function()? onActivate;
+  final VoidCallback? onDeactivate;
 
   @override
   Widget build(BuildContext context) {
@@ -1572,7 +1486,7 @@ class _RivalryToggleCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1603,7 +1517,7 @@ class _RivalryToggleCard extends StatelessWidget {
                   style: const TextStyle(
                     color: AppColors.ink,
                     fontSize: 15,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -1621,7 +1535,9 @@ class _RivalryToggleCard extends StatelessWidget {
                   runSpacing: 8,
                   children: [
                     ElevatedButton.icon(
-                      onPressed: isRivalry ? null : () => onActivate(),
+                      onPressed: isRivalry || onActivate == null
+                          ? null
+                          : () => onActivate!(),
                       icon: const Icon(Icons.flash_on_outlined),
                       label: const Text('Attiva Rivalita'),
                     ),
@@ -1769,6 +1685,53 @@ Future<bool> _confirmRivalryActivation(
   );
 }
 
+class _PlayerAssignmentRow extends StatelessWidget {
+  const _PlayerAssignmentRow({
+    required this.name,
+    required this.first,
+    required this.second,
+  });
+  final String name;
+  final Widget first, second;
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final identity = Row(
+        children: [
+          PlayerAvatar(name: name),
+          const SizedBox(width: 12),
+          Expanded(child: Text(name, style: AppType.bodyStrong)),
+        ],
+      );
+      final controls = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [first, const SizedBox(width: 8), second],
+      );
+      if (constraints.maxWidth < 310 ||
+          MediaQuery.textScalerOf(context).scale(16) > 21) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              identity,
+              const SizedBox(height: 8),
+              Align(alignment: Alignment.centerRight, child: controls),
+            ],
+          ),
+        );
+      }
+      return Row(
+        children: [
+          Expanded(child: identity),
+          const SizedBox(width: 12),
+          controls,
+        ],
+      );
+    },
+  );
+}
+
 class _TeamChip extends StatelessWidget {
   const _TeamChip({
     this.semanticKey,
@@ -1778,17 +1741,20 @@ class _TeamChip extends StatelessWidget {
     required this.semanticLabel,
     required this.onTap,
   });
-
   final Key? semanticKey;
-  final String label;
+  final String label, semanticLabel;
   final Color color;
   final bool selected;
-  final String semanticLabel;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final enabled = onTap != null;
+    final foreground = !enabled
+        ? AppColors.disabledContent
+        : selected
+        ? AppColors.onTeam(color)
+        : AppColors.ink;
     return Semantics(
       key: semanticKey,
       container: true,
@@ -1797,41 +1763,44 @@ class _TeamChip extends StatelessWidget {
       selected: selected,
       label: semanticLabel,
       onTap: onTap,
-      child: SizedBox(
-        width: 48,
-        height: 48,
-        child: ExcludeSemantics(
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(10),
-            child: Center(
-              child: AnimatedContainer(
-                duration: shouldReduceMotion()
-                    ? Duration.zero
-                    : const Duration(milliseconds: 180),
-                width: 44,
-                height: 36,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: selected ? color : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: enabled
-                        ? color.withValues(alpha: selected ? 1 : 0.55)
-                        : AppColors.textSecondary.withValues(alpha: 0.3),
-                    width: 1.5,
-                  ),
+      child: ExcludeSemantics(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minWidth: 56, minHeight: 48),
+          child: Material(
+            color: !enabled
+                ? AppColors.disabledContainer
+                : selected
+                ? color
+                : AppColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.small),
+              side: BorderSide(
+                color: !enabled || selected
+                    ? Colors.transparent
+                    : AppColors.outline,
+              ),
+            ),
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(AppRadius.small),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 12,
                 ),
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: selected
-                        ? AppColors.background
-                        : (enabled ? color : AppColors.textSecondary),
-                    fontWeight: FontWeight.w900,
-                    fontSize: 13,
-                    letterSpacing: 0.8,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      label,
+                      style: AppType.utility.copyWith(color: foreground),
+                    ),
+                    if (selected) ...[
+                      const SizedBox(width: 4),
+                      Icon(Icons.check_circle, color: foreground, size: 16),
+                    ],
+                  ],
                 ),
               ),
             ),
@@ -1844,22 +1813,8 @@ class _TeamChip extends StatelessWidget {
 
 class _SectionLabel extends StatelessWidget {
   const _SectionLabel(this.text);
-
   final String text;
-
   @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      header: true,
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 3,
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) =>
+      Semantics(header: true, child: Text(text, style: AppType.section));
 }

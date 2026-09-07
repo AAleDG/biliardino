@@ -412,6 +412,42 @@ void main() {
     expect(find.textContaining('Servono'), findsNothing);
   });
 
+  testWidgets(
+    'Aggiungere un giocatore mantiene lo stato occupato e impedisce doppio invio',
+    (tester) async {
+      final sample = _sampleData();
+      final pending = Completer<void>();
+      when(
+        () => sample.playerRepo.addPlayer('Nadia'),
+      ).thenAnswer((_) => pending.future);
+      await _pumpHome(tester, home: const PlayersScreen(), repos: sample);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('NUOVO'));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Nadia');
+      await tester.tap(find.text('Aggiungi'));
+      await tester.pump();
+      final action = find.widgetWithText(ElevatedButton, 'Aggiungi');
+      expect(tester.widget<ElevatedButton>(action).onPressed, isNull);
+      await tester.tap(action);
+      expect(
+        tester
+            .widget<TextButton>(find.widgetWithText(TextButton, 'Annulla'))
+            .onPressed,
+        isNull,
+      );
+      await tester.tapAt(const Offset(4, 4));
+      await tester.pump();
+      await tester.binding.handlePopRoute();
+      await tester.pump();
+      expect(find.text('Nuovo giocatore'), findsOneWidget);
+      pending.complete();
+      await tester.pumpAndSettle();
+      verify(() => sample.playerRepo.addPlayer('Nadia')).called(1);
+      expect(find.text('Nuovo giocatore'), findsNothing);
+    },
+  );
+
   testWidgets('Archiviazione richiede conferma', (tester) async {
     final player = Player(
       id: 'p1',
