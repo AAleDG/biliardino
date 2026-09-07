@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "checks": [
+    "all fonts and reference image loaded",
+    "all links resolved",
+    "unique inline SVG IDs",
+    "1280px and 390px no horizontal overflow",
+    "blue surface reverses black marks to white",
+    "replay animates on demand and settles",
+    "runtime reduced-motion toggle cancels animation",
+    "reduced replay remains settled",
+    "OS reduced-motion preference respected"
+  ],
+  "linksChecked": 9,
+  "scope": "Browser asset review only; user approval and Flutter rendering remain pending"
+}

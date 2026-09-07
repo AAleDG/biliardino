@@ -1,0 +1,119 @@
+{
+  "revision": "R1",
+  "approval": "pending-user-review",
+  "source": "Root DESIGN.md and approved four South Africa 2010 mockups",
+  "authoring": "Original SVG path/primitive artwork authored for this repository; no ImageGen or raster tracing used for these masters. Existing mockups were generated previously.",
+  "palette": [
+    "#111111",
+    "#FFC700",
+    "#087F3E",
+    "#0057B8",
+    "#C62828"
+  ],
+  "assets": [
+    {
+      "id": "foosball-figure",
+      "file": "svg/foosball-figure.svg",
+      "role": "runtime-master",
+      "viewBox": "0 0 100 220",
+      "use": "Header/splash figure; black silhouette. Do not articulate limbs like a human mascot.",
+      "animation": {
+        "pivot": [
+          50,
+          80
+        ],
+        "layers": [
+          "figure",
+          "head",
+          "body",
+          "foot"
+        ]
+      },
+      "sha256": "2ab1810dbfb5a2a568e86586f9e39c22e264b15d38c447989da3853749a37922",
+      "approval": "pending-user-review",
+      "minimumDisplay": "48px high"
+    },
+    {
+      "id": "foosball-rod",
+      "file": "svg/foosball-rod.svg",
+      "role": "runtime-master",
+      "viewBox": "0 0 360 240",
+      "use": "Header decoration; title stays outside this artwork. The rod is separate from the rigid figure.",
+      "animation": {
+        "pivot": [
+          244,
+          92
+        ],
+        "layers": [
+          "rod",
+          "player"
+        ],
+        "figureTranslation": [
+          194,
+          12
+        ]
+      },
+      "sha256": "4176786f872bffb8bb71b7d86f6b7a8ffbbeee48705ca2ac88f6ca4def50e569",
+      "approval": "pending-user-review",
+      "minimumDisplay": "48px high"
+    },
+    {
+      "id": "football",
+      "file": "svg/football.svg",
+      "role": "runtime-master",
+      "viewBox": "0 0 120 120",
+      "use": "Splash and optional decorative goal/result accent; preserve existing functional icons.",
+      "animation": {
+        "pivot": [
+          60,
+          60
+        ],
+        "layers": [
+          "ball",
+          "outline",
+          "seams",
+          "panels"
+        ]
+      },
+      "sha256": "c8ee257849846cfb9888c883f4901cd24c1066d977781a40984db48d8c27c9e7",
+      "approval": "pending-user-review",
+      "minimumDisplay": "24px square"
+    },
+    {
+      "id": "ribbon-header",
+      "file": "svg/ribbon-header.svg",
+      "role": "geometry-reference",
+      "viewBox": "0 0 402 112",
+      "use": "Reusable geometry reference for responsive CustomPainter; transparent gaps reveal parent background.",
+      "animation": {
+        "layers": [
+          "yellow",
+          "green",
+          "blue",
+          "red"
+        ]
+      },
+      "sha256": "3c5762ed5fefa5a8b62c35dc7bdc4315d18db8010dd418d225b533d75e0d9b9b",
+      "approval": "pending-user-review",
+      "minimumDisplay": "responsive decoration"
+    },
+    {
+      "id": "ribbon-corner",
+      "file": "svg/ribbon-corner.svg",
+      "role": "geometry-reference",
+      "viewBox": "0 0 300 132",
+      "use": "Optional clipped bottom-left decoration, behind content and excluded from input/semantics.",
+      "animation": {
+        "layers": [
+          "yellow",
+          "green",
+          "blue",
+          "red"
+        ]
+      },
+      "sha256": "8f6fa03a99f5079e61f7dbcd6a826208458aaab24af45e16c5f693da3ffa4eec",
+      "approval": "pending-user-review",
+      "minimumDisplay": "responsive decoration"
+    }
+  ]
+}

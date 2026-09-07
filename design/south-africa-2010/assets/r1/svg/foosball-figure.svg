@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 220">
+<title>Reusable rigid figure</title>
+<g id="figure" fill="#111111">
+  <circle id="head" cx="50" cy="28" r="21"/>
+  <path id="body" d="M39 47 C22 50 15 63 16 79 L22 110 Q28 130 35 160 L65 160 Q72 130 78 110 L84 79 C85 63 78 50 61 47 L61 51 Q50 57 39 51 Z"/>
+  <path id="foot" d="M29 167 Q29 162 36 162 H64 Q71 162 71 167 L66 199 Q65 207 50 207 Q35 207 34 199 Z"/>
+</g>
+</svg>

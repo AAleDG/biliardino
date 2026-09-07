@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 132">
+<title>Corner ribbon sweep</title>
+<path id="yellow" fill="#FFC700" d="M0 0 C62 77 155 116 300 132 H243 C114 115 43 84 0 44 Z"/>
+<path id="green" fill="#087F3E" d="M0 53 C54 98 127 121 229 132 H153 C84 114 35 97 0 80 Z"/>
+<path id="blue" fill="#0057B8" d="M0 87 C46 107 82 122 132 132 H69 C41 123 19 113 0 104 Z"/>
+<path id="red" fill="#C62828" d="M0 111 L50 132 H0 Z"/>
+</svg>

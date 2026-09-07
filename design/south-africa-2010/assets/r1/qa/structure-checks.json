@@ -1,0 +1,47 @@
+{
+  "passed": true,
+  "approval": "pending-user-review",
+  "assets": [
+    {
+      "asset": "foosball-figure",
+      "bytes": 438,
+      "structure": "passed",
+      "hash": "matched"
+    },
+    {
+      "asset": "foosball-rod",
+      "bytes": 612,
+      "structure": "passed",
+      "hash": "matched"
+    },
+    {
+      "asset": "football",
+      "bytes": 620,
+      "structure": "passed",
+      "hash": "matched"
+    },
+    {
+      "asset": "ribbon-header",
+      "bytes": 484,
+      "structure": "passed",
+      "hash": "matched"
+    },
+    {
+      "asset": "ribbon-corner",
+      "bytes": 441,
+      "structure": "passed",
+      "hash": "matched"
+    }
+  ],
+  "checks": [
+    "allowed vector-only elements",
+    "finite viewBoxes",
+    "unique IDs",
+    "palette restrictions",
+    "no external resources or handlers",
+    "layer/pivot references",
+    "SHA-256 provenance",
+    "figure/assembly synchronized"
+  ],
+  "limitation": "Structure/provenance only; rendered inspection, user approval and Flutter validation are separate."
+}

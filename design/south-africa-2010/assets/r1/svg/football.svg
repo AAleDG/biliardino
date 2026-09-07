@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+<title>Football mark</title>
+<g id="ball" fill="none" stroke="#111111" stroke-width="4" stroke-linejoin="round">
+  <circle id="outline" cx="60" cy="60" r="52"/>
+  <g id="seams"><path d="M60 39 L80 54 L72 78 H48 L40 54 Z M60 39 V20 M80 54 L99 47 M72 78 L84 95 M48 78 L36 95 M40 54 L21 47"/></g>
+  <g id="panels" fill="#111111" stroke="none"><path d="M60 39 L80 54 L72 78 H48 L40 54 Z M46 10 Q60 6 74 10 L72 20 H48 Z M10 43 L21 40 L25 50 L9 64 Z M110 43 L99 40 L95 50 L111 64 Z M25 99 L32 87 L43 91 L45 110 Z M95 99 L88 87 L77 91 L75 110 Z"/></g>
+</g>
+</svg>

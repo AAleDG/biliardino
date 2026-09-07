@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 402 112">
+<title>Header ribbon sweep</title>
+<path id="yellow" fill="#FFC700" d="M0 10 C87 71 213 52 402 6 V15 C227 63 100 103 0 44 Z"/>
+<path id="green" fill="#087F3E" d="M0 50 C111 107 234 65 402 20 V31 C259 74 126 133 0 83 Z"/>
+<path id="blue" fill="#0057B8" d="M134 104 C243 85 326 40 402 37 V50 C337 50 302 73 254 102 Z"/>
+<path id="red" fill="#C62828" d="M274 104 C325 81 367 56 402 56 V61 C363 75 336 94 317 104 Z"/>
+</svg>
