@@ -119,6 +119,13 @@
   "approvalRecord": {
     "source": "User explicitly approved the artwork in this task on 2026-09-07.",
     "scope": "All five R1 SVG files at the recorded hashes.",
-    "motionNote": "User noted that the entrance ball felt disconnected from the figure. Browser composition corrected to start the ball beside the foot; runtime motion still requires validation."
+    "motionNote": "The user explicitly approved the corrected foot-origin replay entrance. Use it as the entrance design reference; Flutter runtime validation remains required."
+  },
+  "entranceApproval": {
+    "status": "approved",
+    "source": "User explicitly approved the new replay entrance in this task.",
+    "reference": "r1/review.html?preview=foot-origin",
+    "reviewHtmlSha256": "e464af7d213ef4be63e6b305077493d462c80b0a62dbdfcc7a51da6a28c7b07f",
+    "behavior": "Figure fixed on rod; 32px ball starts beside foot, holds 150ms, then rolls 24px outward with approximately 90 degrees rotation within a 1000ms sequence; reduced motion settles immediately."
   }
 }

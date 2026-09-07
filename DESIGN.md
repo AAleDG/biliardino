@@ -353,6 +353,8 @@ This section is a project extension. Durations and lifecycle rules are explicit 
 | Victory particles | 2000 ms | Bounded ribbon confetti burst; no particles with reduced motion |
 | Splash | 1000 ms plus up to 220 ms handoff | Brief football/ribbon/title reveal; immediate handoff with reduced motion after bootstrap is ready |
 
+The user approved the corrected [foot-origin entrance replay](design/south-africa-2010/assets/r1/review.html?preview=foot-origin): the figure stays fixed on its rod, a smaller ball starts beside its foot, holds briefly and rolls outward. The reference uses a 32px ball, 150ms initial hold, 24px travel and approximately 90° rotation within 1000ms. Preserve that spatial relationship when adapting to Flutter; use the settled composition immediately with reduced motion. The approval record and exact review-page hash live in the asset manifest. Runtime lifecycle and rendering validation remain required.
+
 Feedback should answer an event, not loop around idle content. Keep haptics at the existing meaningful goal, kickoff, undo and victory events; do not add repeated haptics to decorative frames. Loading feedback must remain understandable with reduced motion.
 
 Score data updates immediately, independent of artwork. Rapid goals must not create stacked full-screen announcements: replace/coalesce the visible visual effect while retaining correct scorer/score semantics. Goal feedback remains nonblocking. Victory isolates background interaction and semantics, but its own actions never wait for confetti. Cancel controllers/overlays on dismissal, rematch, change-team and tab changes. Entry reveals must not finish invisibly on offscreen IndexedStack pages.
