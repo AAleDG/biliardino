@@ -1,0 +1,48 @@
+{
+  "date": "2026-09-07",
+  "mode": "built-in ImageGen",
+  "appBaseCommit": "ad701db6dc49b2828696c7eee6831135508df0f9",
+  "issue": 11,
+  "approval": "Approved by user on 2026-09-07",
+  "designSpec": "../../../DESIGN.md",
+  "prompts": "prompts.json",
+  "outputs": [
+    {
+      "id": "players",
+      "source": "/Users/antonio.ruffolo/.codex/generated_images/01a07d93-1eb1-7f12-8440-6412c87f6d30/exec-f26698bd-1293-4cf5-8403-04749a634c4f.png",
+      "file": "mockups/01-players.png"
+    },
+    {
+      "id": "setup",
+      "source": "/Users/antonio.ruffolo/.codex/generated_images/01a07d93-1eb1-7f12-8440-6412c87f6d30/exec-228595d9-79bf-4c0a-8821-b9abe50554dc.png",
+      "file": "mockups/02-match-setup.png"
+    },
+    {
+      "id": "live",
+      "source": "/Users/antonio.ruffolo/.codex/generated_images/01a07d93-1eb1-7f12-8440-6412c87f6d30/exec-c9797c83-2ba2-400e-946f-c63f8d59cdfa.png",
+      "file": "mockups/03-live-match.png"
+    },
+    {
+      "id": "leaderboard",
+      "source": "/Users/antonio.ruffolo/.codex/generated_images/01a07d93-1eb1-7f12-8440-6412c87f6d30/exec-aaacc516-ab74-49a5-85e7-39729eaacf8a.png",
+      "file": "mockups/04-leaderboard.png"
+    }
+  ],
+  "iterations": [
+    {
+      "id": "live",
+      "reason": "Preserve +1 GOAL label and improve disabled action legibility; utility lettering remains approximate.",
+      "prompt": "Edit the provided live-match UI mockup with a targeted TEXT AND LEGIBILITY correction only. Preserve its entire South Africa 2010 design, ribbon silhouettes, geometry, exact 9–10 score, PRIMO A 10 · +2 rule, all five tabs, safe areas, panel colors and positions.\n\nCorrect the two score-increment controls to preserve the current app's actual label: on BOTH white buttons use exact text \"+1 GOAL\". You may remove the separate circular plus icon so \"+1 GOAL\" fits cleanly, but do NOT remove the numeral 1. Keep button sizes and positions unchanged.\nRender the four player names Andrea, Luca, Marco, Paolo in a normal-width clean Barlow Semibold-like utility typeface, not condensed display lettering; keep their current positions, readable size and original capitalization.\nImprove the disabled \"REGISTRA RISULTATO\" button text and flag icon to dark gray #5C5C55 on light gray #E5E2D9. It must still look disabled, but the words must be easy to read.\nEverything else unchanged. No new text or controls. Keep blue team with white text, orange team with black text. Return ONE complete flat portrait screen with the same aspect and framing.",
+      "originalSource": "/Users/antonio.ruffolo/.codex/generated_images/01a07d93-1eb1-7f12-8440-6412c87f6d30/exec-9c683829-77d8-4230-9fdc-d5fd2740fc00.png",
+      "finalSource": "/Users/antonio.ruffolo/.codex/generated_images/01a07d93-1eb1-7f12-8440-6412c87f6d30/exec-c9797c83-2ba2-400e-946f-c63f8d59cdfa.png"
+    }
+  ],
+  "limitations": [
+    "Static raster concepts; not an implemented app or runtime assets.",
+    "Generated text is not an exact font specimen; actual proposed fonts are embedded in gallery.html.",
+    "Generated shading and color variations are not exact design tokens.",
+    "Setup board shows two schematic scroll positions; native 402x874 layout and 48px targets still require implementation validation.",
+    "Live image preserves Annulla controls but omits their minus icons; implementation keeps source iconography and semantics."
+  ],
+  "worktreeBranch": "codex/south-africa-2010-design-implementation"
+}
