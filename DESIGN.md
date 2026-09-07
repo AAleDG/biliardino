@@ -339,7 +339,7 @@ A short screen title, player name and numeric metric are always real text widget
 
 ## Motion
 
-This section is a project extension. Durations and lifecycle rules are explicit prose because the current core format has no typed motion group. Map these roles to one Flutter motion policy when implementation starts; no animation package is required by this proposal.
+This section is a project extension. Durations and lifecycle rules are explicit prose because the current core format has no typed motion group. The runtime counterparts live in AppMotion/MotionAwareState. Goal/victory/splash and score controls consume that policy; the development-only tool/motion_preview.dart replays the actual entrance and overlays without opening storage. No animation package is required.
 
 | Role | Proposed duration | Presentation and reduced-motion equivalent |
 | --- | --- | --- |
@@ -377,10 +377,15 @@ The approved vector masters are available in the [R1 asset review](design/south-
 
 ## Review coverage and implementation sequence
 
-Implementation is in progress: shared tokens, Material theme, font registration, asset painter, navigation/header treatment and motion policy are present. Players and setup now use grouped roster rows, adaptive team and mode controls, explicit busy states and a green pinned kickoff action. Live scoring, animation migration and remaining screens still require their phase and simulator checks.
+Implementation is in progress: shared tokens, Material theme, font registration, asset painter, navigation/header treatment and motion policy are present. Players and setup now use grouped roster rows, adaptive team and mode controls, explicit busy states and a green pinned kickoff action. Live scoring now uses solid team panels and responsive controls. Goal, victory and splash share the live accessibility policy; the remaining screen migration and full integrated validation are still in progress.
 
 The four mockup deliverables cover populated players, complete setup (two scroll positions), live match and leaderboard. Their examples are recorded in [MOCKUP_BRIEF.md](design/experiments/south-africa-2010/MOCKUP_BRIEF.md). Remaining states are covered by the component matrix, not silently omitted from implementation.
 
 The visual direction and four mockups are approved. The user authorized phased execution using feature-plan-scaffold, with new assets presented for explicit approval. The sequence is discovery/baseline; artwork preparation and review; foundations and chrome; players/setup; live scoring and celebrations; history/rankings/profiles/data/bootstrap; hardening; final regression, golden, accessibility and simulator verification. Work belongs on the issue's South Africa 2010 implementation branch. This approval does not claim implementation completion or authorize merging/deployment.
 
 The final implementation must run flutter analyze and flutter test, retain existing functional tests, add representative component/state goldens, and review the complete navigation flow on iPhone. Raster mockups and DESIGN.md lint cannot establish runtime performance, font metrics, hit areas, contrast over illustrations, correct VoiceOver behavior or persistence correctness.
+
+
+### Live-score layout at constrained sizes
+
+At ordinary phone sizes the score-panel actions stay pinned below each team while long player content can scroll within the panel. When the available body is shorter than 360 logical pixels, the scoreboard scrolls as a whole so the rule summary, both score controls and registration action remain reachable. Display scores/team labels fit their bounded region; names and utility content retain the accessibility text scale. Goal feedback coalesces into one nonblocking announcement and yields to the winning-result confirmation.

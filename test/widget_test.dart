@@ -1547,7 +1547,10 @@ Future<void> _pumpHome(
       ],
       child: MultiBlocProvider(
         providers: [
-          BlocProvider<HomeCubit>(create: (_) => HomeCubit()),
+          BlocProvider<HomeCubit>(
+            create: (_) =>
+                HomeCubit()..selectTab(home is NewMatchScreen ? 1 : 0),
+          ),
           BlocProvider<PlayersCubit>(
             create: (_) => PlayersCubit(repos.playerRepo),
           ),

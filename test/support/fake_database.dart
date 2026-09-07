@@ -4,12 +4,14 @@ import 'package:biliardino/models/player.dart';
 
 class FakeDatabaseHelper implements DatabaseHelper {
   FakeDatabaseHelper({List<Player>? players, List<GameMatch>? matches})
-      : players = List<Player>.from(players ?? const []),
-        matches = List<GameMatch>.from(matches ?? const []);
+    : players = List<Player>.from(players ?? const []),
+      matches = List<GameMatch>.from(matches ?? const []);
 
   final List<Player> players;
   final List<GameMatch> matches;
   int insertMatchCalls = 0;
+  bool failNextMatchInsert = false;
+  Future<void>? matchInsertBarrier;
   int updateMatchCalls = 0;
   int deleteMatchCalls = 0;
   int insertPlayerCalls = 0;
@@ -26,6 +28,11 @@ class FakeDatabaseHelper implements DatabaseHelper {
   @override
   Future<void> insertMatch(GameMatch match) async {
     insertMatchCalls++;
+    await matchInsertBarrier;
+    if (failNextMatchInsert) {
+      failNextMatchInsert = false;
+      throw StateError('Simulated storage failure');
+    }
     matches.insert(0, match);
   }
 

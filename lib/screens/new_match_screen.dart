@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../widgets/design/brand_header.dart';
 import '../widgets/design/team_slot.dart';
+import '../widgets/design/score_panel.dart';
 import '../widgets/design/adaptive_pair.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -32,9 +34,16 @@ class _NewMatchView extends StatefulWidget {
 
 class _NewMatchViewState extends State<_NewMatchView> {
   CelebrationOverlayHandle? _victoryOverlay;
+  CelebrationOverlayHandle? _goalOverlay;
+
+  void _dismissGoalOverlay() {
+    _goalOverlay?.dismiss();
+    _goalOverlay = null;
+  }
 
   @override
   void dispose() {
+    _dismissGoalOverlay();
     _dismissVictoryOverlay();
     super.dispose();
   }
@@ -48,10 +57,24 @@ class _NewMatchViewState extends State<_NewMatchView> {
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        BlocListener<HomeCubit, int>(
+        BlocListener<NewMatchCubit, NewMatchState>(
           listenWhen: (previous, current) =>
-              previous != current && current != 1,
+              !current.kickedOff ||
+              current.score1 < previous.score1 ||
+              current.score2 < previous.score2,
+          listener: (_, _) => _dismissGoalOverlay(),
+        ),
+        BlocListener<HomeCubit, int>(
+          listenWhen: (previous, current) => previous != current,
           listener: (ctx, state) {
+            if (state == 1) {
+              final pending = ctx.read<NewMatchCubit>().state.pendingVictory;
+              if (pending != null) {
+                _confirmCompletedMatch(ctx, pending);
+              }
+              return;
+            }
+            _dismissGoalOverlay();
             _dismissVictoryOverlay();
             final cubit = ctx.read<NewMatchCubit>();
             if (cubit.state.lastVictory != null) {
@@ -63,7 +86,15 @@ class _NewMatchViewState extends State<_NewMatchView> {
           listenWhen: (p, n) => n.lastGoal != null && n.lastGoal != p.lastGoal,
           listener: (ctx, state) {
             final goal = state.lastGoal!;
-            Celebrations.showGoal(
+            if (ctx.read<HomeCubit>().state != 1) {
+              return;
+            }
+            if (state.pendingVictory != null) {
+              HapticFeedback.mediumImpact();
+              return;
+            }
+            _dismissGoalOverlay();
+            _goalOverlay = Celebrations.showGoal(
               ctx,
               color: goal.team == 1 ? AppColors.teamOne : AppColors.teamTwo,
               teamLabel: state.isRivalry
@@ -76,13 +107,20 @@ class _NewMatchViewState extends State<_NewMatchView> {
           listenWhen: (p, n) =>
               n.pendingVictory != null && n.pendingVictory != p.pendingVictory,
           listener: (ctx, state) {
-            _confirmCompletedMatch(ctx, state.pendingVictory!);
+            _dismissGoalOverlay();
+            if (ctx.read<HomeCubit>().state == 1) {
+              _confirmCompletedMatch(ctx, state.pendingVictory!);
+            }
           },
         ),
         BlocListener<NewMatchCubit, NewMatchState>(
           listenWhen: (p, n) =>
               n.lastVictory != null && n.lastVictory != p.lastVictory,
           listener: (ctx, state) {
+            if (ctx.read<HomeCubit>().state != 1) {
+              ctx.read<NewMatchCubit>().acknowledgeVictory();
+              return;
+            }
             final victory = state.lastVictory!;
             final color = victory.winningTeam == 1
                 ? AppColors.teamOne
@@ -152,7 +190,6 @@ class _NewMatchViewState extends State<_NewMatchView> {
             ),
             body: showScoreboard
                 ? _Scoreboard(
-                    mode: state.mode,
                     rules: state.rules,
                     isRivalry: state.isRivalry,
                     rivalry: state.isRivalry
@@ -687,7 +724,6 @@ class _Setup extends StatelessWidget {
 
 class _Scoreboard extends StatelessWidget {
   const _Scoreboard({
-    required this.mode,
     required this.rules,
     required this.isRivalry,
     required this.rivalry,
@@ -702,7 +738,6 @@ class _Scoreboard extends StatelessWidget {
     required this.onSave,
   });
 
-  final MatchMode mode;
   final MatchRules rules;
   final bool isRivalry;
   final RivalryOverview? rivalry;
@@ -724,351 +759,101 @@ class _Scoreboard extends StatelessWidget {
         rules.isFree &&
         score1 != score2 &&
         (score1 > 0 || score2 > 0);
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-          child: _RulesScoreboardBanner(rules: rules),
-        ),
-        if (isRivalry &&
-            rivalry != null &&
-            team1Players.isNotEmpty &&
-            team2Players.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-            child: _RivalryScoreboardBanner(
-              overview: rivalry!,
-              team1Name: team1Players.map((player) => player.name).join(' / '),
-              team2Name: team2Players.map((player) => player.name).join(' / '),
-            ),
-          ),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.06),
-                  ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: _TeamPanel(
-                        teamNumber: 1,
-                        label: 'SQUADRA 1',
-                        color: AppColors.teamOne,
-                        playerNames: team1Players
-                            .map((player) => player.name)
-                            .toList(),
-                        score: score1,
-                        enabled: !isSaving && !awaitingConfirmation,
-                        onAddGoal: () => onAddGoal(1, team1Players),
-                        onRemoveGoal: () => onRemoveGoal(1),
-                      ),
-                    ),
-                    Container(
-                      width: 1.5,
-                      color: Colors.white.withValues(alpha: 0.08),
-                    ),
-                    Expanded(
-                      child: _TeamPanel(
-                        teamNumber: 2,
-                        label: 'SQUADRA 2',
-                        color: AppColors.teamTwo,
-                        playerNames: team2Players
-                            .map((player) => player.name)
-                            .toList(),
-                        score: score2,
-                        enabled: !isSaving && !awaitingConfirmation,
-                        onAddGoal: () => onAddGoal(2, team2Players),
-                        onRemoveGoal: () => onRemoveGoal(2),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-        SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: canSave ? onSave : null,
-                icon: isSaving
-                    ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.flag),
-                label: Text(isSaving ? 'SALVATAGGIO...' : 'REGISTRA RISULTATO'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 2,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _TeamPanel extends StatefulWidget {
-  const _TeamPanel({
-    required this.teamNumber,
-    required this.label,
-    required this.color,
-    required this.playerNames,
-    required this.score,
-    required this.enabled,
-    required this.onAddGoal,
-    required this.onRemoveGoal,
-  });
-
-  final int teamNumber;
-  final String label;
-  final Color color;
-  final List<String> playerNames;
-  final int score;
-  final bool enabled;
-  final VoidCallback onAddGoal;
-  final VoidCallback onRemoveGoal;
-
-  @override
-  State<_TeamPanel> createState() => _TeamPanelState();
-}
-
-class _TeamPanelState extends State<_TeamPanel>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _flash;
-  late final bool _reduceMotion;
-
-  @override
-  void initState() {
-    super.initState();
-    _reduceMotion = shouldReduceMotion();
-    _flash = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 420),
-    );
-    if (_reduceMotion) {
-      _flash.value = 1;
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant _TeamPanel old) {
-    super.didUpdateWidget(old);
-    if (widget.score > old.score && !_reduceMotion) {
-      _flash.forward(from: 0);
-    }
-  }
-
-  @override
-  void dispose() {
-    _flash.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                widget.color.withValues(alpha: 0.20),
-                widget.color.withValues(alpha: 0.02),
-              ],
-            ),
-          ),
-        ),
-        AnimatedBuilder(
-          animation: _flash,
-          builder: (_, __) {
-            final t = 1 - _flash.value;
-            final opacity = t * t * 0.55;
-            return IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: widget.color.withValues(alpha: opacity),
-                ),
-              ),
-            );
-          },
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
-          child: Column(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxHeight < 360;
+        final panels = Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                widget.label,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: widget.color,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 3,
-                ),
-              ),
-              const SizedBox(height: 6),
-              ...widget.playerNames.map(
-                (name) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 1),
-                  child: Text(
-                    name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: AppColors.ink,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
               Expanded(
-                child: Center(
-                  child: Semantics(
-                    key: ValueKey('score-team-${widget.teamNumber}'),
-                    container: true,
-                    liveRegion: true,
-                    label: 'Punteggio ${widget.label}: ${widget.score}',
-                    child: ExcludeSemantics(
-                      child: AnimatedSwitcher(
-                        duration: shouldReduceMotion()
-                            ? Duration.zero
-                            : const Duration(milliseconds: 420),
-                        switchInCurve: Curves.elasticOut,
-                        switchOutCurve: Curves.easeOut,
-                        transitionBuilder: (child, anim) {
-                          return ScaleTransition(
-                            scale: anim,
-                            child: FadeTransition(opacity: anim, child: child),
-                          );
-                        },
-                        layoutBuilder: (currentChild, previousChildren) {
-                          return Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              ...previousChildren,
-                              if (currentChild != null) currentChild,
-                            ],
-                          );
-                        },
-                        child: FittedBox(
-                          key: ValueKey(widget.score),
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            '${widget.score}',
-                            style: TextStyle(
-                              color: AppColors.ink,
-                              fontSize: 120,
-                              fontWeight: FontWeight.w900,
-                              height: 1,
-                              letterSpacing: -3,
-                              shadows: [
-                                Shadow(
-                                  color: widget.color.withValues(alpha: 0.75),
-                                  blurRadius: 24,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                child: ScorePanel(
+                  teamNumber: 1,
+                  label: 'SQUADRA 1',
+                  color: AppColors.teamOne,
+                  playerNames: team1Players
+                      .map((player) => player.name)
+                      .toList(),
+                  score: score1,
+                  enabled: !isSaving && !awaitingConfirmation,
+                  onAddGoal: () => onAddGoal(1, team1Players),
+                  onRemoveGoal: () => onRemoveGoal(1),
                 ),
               ),
-              Semantics(
-                key: ValueKey('score-add-team-${widget.teamNumber}'),
-                container: true,
-                button: true,
-                enabled: widget.enabled,
-                label:
-                    'Aggiungi un goal a ${widget.label}. Punteggio attuale ${widget.score}.',
-                onTap: widget.enabled ? widget.onAddGoal : null,
-                child: ExcludeSemantics(
-                  child: SizedBox(
-                    height: 58,
-                    child: ElevatedButton(
-                      onPressed: widget.enabled ? widget.onAddGoal : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: widget.color,
-                        foregroundColor: AppColors.background,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 2,
-                        ),
-                        padding: EdgeInsets.zero,
-                      ),
-                      child: const Text('+1 GOAL'),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Semantics(
-                key: ValueKey('score-undo-team-${widget.teamNumber}'),
-                container: true,
-                button: true,
-                enabled: widget.enabled && widget.score > 0,
-                label: 'Annulla ultimo goal di ${widget.label}',
-                onTap: widget.enabled && widget.score > 0
-                    ? widget.onRemoveGoal
-                    : null,
-                child: ExcludeSemantics(
-                  child: SizedBox(
-                    height: 48,
-                    child: TextButton.icon(
-                      onPressed: widget.enabled && widget.score > 0
-                          ? widget.onRemoveGoal
-                          : null,
-                      icon: const Icon(Icons.remove, size: 16),
-                      label: const Text('Annulla'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: widget.color,
-                        disabledForegroundColor: AppColors.textSecondary,
-                        textStyle: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ScorePanel(
+                  teamNumber: 2,
+                  label: 'SQUADRA 2',
+                  color: AppColors.teamTwo,
+                  playerNames: team2Players
+                      .map((player) => player.name)
+                      .toList(),
+                  score: score2,
+                  enabled: !isSaving && !awaitingConfirmation,
+                  onAddGoal: () => onAddGoal(2, team2Players),
+                  onRemoveGoal: () => onRemoveGoal(2),
                 ),
               ),
             ],
           ),
-        ),
-      ],
+        );
+        final content = Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: _RulesScoreboardBanner(rules: rules),
+            ),
+            if (isRivalry &&
+                rivalry != null &&
+                team1Players.isNotEmpty &&
+                team2Players.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                child: _RivalryScoreboardBanner(
+                  overview: rivalry!,
+                  team1Name: team1Players
+                      .map((player) => player.name)
+                      .join(' / '),
+                  team2Name: team2Players
+                      .map((player) => player.name)
+                      .join(' / '),
+                ),
+              ),
+            if (compact)
+              SizedBox(height: 360, child: panels)
+            else
+              Expanded(child: panels),
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: canSave ? onSave : null,
+                    icon: isSaving
+                        ? const SizedBox.square(
+                            dimension: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.flag),
+                    label: Text(
+                      isSaving ? 'SALVATAGGIO...' : 'REGISTRA RISULTATO',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      textStyle: AppType.action,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+        return compact ? SingleChildScrollView(child: content) : content;
+      },
     );
   }
 }

@@ -1,31 +1,36 @@
+import 'dart:async';
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import '../theme/app_theme.dart';
+import 'design/south_africa_artwork.dart';
 
 class Celebrations {
   Celebrations._();
+  static final _goals = Expando<CelebrationOverlayHandle>();
 
-  static void showGoal(
+  static CelebrationOverlayHandle showGoal(
     BuildContext context, {
     required Color color,
     required String teamLabel,
   }) {
     final overlay = Overlay.of(context, rootOverlay: true);
-    late OverlayEntry entry;
-    entry = OverlayEntry(
+    _goals[overlay]?.dismiss();
+    late final CelebrationOverlayHandle handle;
+    final entry = OverlayEntry(
       builder: (_) => _GoalOverlay(
         color: color,
         teamLabel: teamLabel,
-        onComplete: () {
-          if (entry.mounted) entry.remove();
-        },
+        onComplete: () => handle.dismiss(),
       ),
     );
+    handle = CelebrationOverlayHandle._(entry, () {
+      if (identical(_goals[overlay], handle)) _goals[overlay] = null;
+    });
+    _goals[overlay] = handle;
     overlay.insert(entry);
     HapticFeedback.mediumImpact();
+    return handle;
   }
 
   static CelebrationOverlayHandle showVictory(
@@ -39,8 +44,9 @@ class Celebrations {
     required VoidCallback onRematch,
   }) {
     final overlay = Overlay.of(context, rootOverlay: true);
-    late OverlayEntry entry;
-    entry = OverlayEntry(
+    _goals[overlay]?.dismiss();
+    late final CelebrationOverlayHandle handle;
+    final entry = OverlayEntry(
       builder: (_) => _VictoryOverlay(
         color: color,
         teamLabel: teamLabel,
@@ -48,30 +54,34 @@ class Celebrations {
         winnerScore: winnerScore,
         loserScore: loserScore,
         onChangeTeams: () {
-          if (entry.mounted) entry.remove();
+          handle.dismiss();
           onChangeTeams();
         },
         onRematch: () {
-          if (entry.mounted) entry.remove();
+          handle.dismiss();
           onRematch();
         },
       ),
     );
+    handle = CelebrationOverlayHandle._(entry);
     overlay.insert(entry);
     HapticFeedback.heavyImpact();
-    return CelebrationOverlayHandle._(entry);
+    return handle;
   }
 }
 
+/// Owns the inserted entry even before its first frame; dismissal is idempotent.
 class CelebrationOverlayHandle {
-  CelebrationOverlayHandle._(this._entry);
-
-  final OverlayEntry _entry;
-
+  CelebrationOverlayHandle._(this._entry, [this._onDismiss]);
+  OverlayEntry? _entry;
+  final VoidCallback? _onDismiss;
   void dismiss() {
-    if (_entry.mounted) {
-      _entry.remove();
-    }
+    final entry = _entry;
+    if (entry == null) return;
+    _entry = null;
+    entry.remove();
+    entry.dispose();
+    _onDismiss?.call();
   }
 }
 
@@ -81,203 +91,136 @@ class _GoalOverlay extends StatefulWidget {
     required this.teamLabel,
     required this.onComplete,
   });
-
   final Color color;
   final String teamLabel;
   final VoidCallback onComplete;
-
   @override
   State<_GoalOverlay> createState() => _GoalOverlayState();
 }
 
 class _GoalOverlayState extends State<_GoalOverlay>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-  late final bool _reduceMotion;
-  late final Animation<double> _scale;
-  late final Animation<double> _fade;
-  late final Animation<double> _tint;
-  late final Animation<double> _flash;
-
+    with SingleTickerProviderStateMixin, MotionAwareState {
+  late final AnimationController _controller;
+  late final Timer _hold;
   @override
   void initState() {
     super.initState();
-    _reduceMotion = shouldReduceMotion();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1100),
-    );
+    _controller = AnimationController(vsync: this, duration: AppMotion.goal);
+    _hold = Timer(AppMotion.goal, widget.onComplete);
+  }
 
-    _scale = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween(
-          begin: 0.4,
-          end: 1.15,
-        ).chain(CurveTween(curve: Curves.easeOutBack)),
-        weight: 25,
-      ),
-      TweenSequenceItem(
-        tween: Tween(
-          begin: 1.15,
-          end: 1.0,
-        ).chain(CurveTween(curve: Curves.easeOut)),
-        weight: 15,
-      ),
-      TweenSequenceItem(tween: ConstantTween(1.0), weight: 35),
-      TweenSequenceItem(
-        tween: Tween(
-          begin: 1.0,
-          end: 0.85,
-        ).chain(CurveTween(curve: Curves.easeIn)),
-        weight: 25,
-      ),
-    ]).animate(_ctrl);
-
-    _fade = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 15),
-      TweenSequenceItem(tween: ConstantTween(1.0), weight: 60),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 25),
-    ]).animate(_ctrl);
-
-    _tint = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.45), weight: 12),
-      TweenSequenceItem(tween: Tween(begin: 0.45, end: 0.0), weight: 88),
-    ]).animate(_ctrl);
-
-    _flash = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.35), weight: 6),
-      TweenSequenceItem(tween: Tween(begin: 0.35, end: 0.0), weight: 14),
-      TweenSequenceItem(tween: ConstantTween(0.0), weight: 80),
-    ]).animate(_ctrl);
-
-    if (_reduceMotion) {
-      // Keep the announcement visible briefly without animating it.
-      _ctrl.value = 0.5;
-      Future<void>.delayed(const Duration(milliseconds: 1100), () {
-        if (mounted) widget.onComplete();
-      });
-    } else {
-      _ctrl.forward().whenComplete(widget.onComplete);
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!reduceMotion && !_controller.isAnimating && _controller.value == 0) {
+      _controller.forward();
     }
   }
 
   @override
+  void settleMotion() {
+    _controller.stop();
+    _controller.value = .5;
+  }
+
+  @override
   void dispose() {
-    _ctrl.dispose();
+    _hold.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      key: const ValueKey('goal-overlay'),
-      container: true,
-      liveRegion: true,
-      label: 'Goal. ${widget.teamLabel}',
-      child: IgnorePointer(
+  Widget build(BuildContext context) => Semantics(
+    key: const ValueKey('goal-overlay'),
+    container: true,
+    liveRegion: true,
+    label: 'Goal. ${widget.teamLabel}',
+    child: IgnorePointer(
+      child: ExcludeSemantics(
         child: AnimatedBuilder(
-          animation: _ctrl,
-          builder: (_, __) {
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(
-                      center: Alignment.center,
-                      radius: 1.0,
-                      colors: [
-                        widget.color.withValues(alpha: _tint.value),
-                        widget.color.withValues(alpha: _tint.value * 0.2),
-                      ],
-                    ),
+          animation: _controller,
+          builder: (_, child) {
+            final t = _controller.value;
+            final opacity = reduceMotion
+                ? 1.0
+                : t < .164
+                ? (t / .164).clamp(0.0, 1.0)
+                : t > .8
+                ? ((1 - t) / .2).clamp(0.0, 1.0)
+                : 1.0;
+            return Center(
+              child: Opacity(
+                opacity: opacity,
+                child: Transform.translate(
+                  offset: Offset(
+                    reduceMotion
+                        ? 0
+                        : -16 *
+                              (1 -
+                                  Curves.easeOutCubic.transform(
+                                    (t / .164).clamp(0.0, 1.0),
+                                  )),
+                    0,
                   ),
+                  child: child,
                 ),
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: _flash.value),
-                  ),
-                ),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Center(
-                      child: Opacity(
-                        opacity: _fade.value,
-                        child: Transform.scale(
-                          scale: _scale.value,
-                          child: SizedBox(
-                            width: constraints.maxWidth - 40,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    'GOAL!',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 108,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 8,
-                                      height: 1,
-                                      shadows: [
-                                        Shadow(
-                                          color: widget.color,
-                                          blurRadius: 28,
-                                        ),
-                                        Shadow(
-                                          color: widget.color.withValues(
-                                            alpha: 0.7,
-                                          ),
-                                          blurRadius: 60,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 14),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 7,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: widget.color,
-                                    borderRadius: BorderRadius.circular(8),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: widget.color.withValues(
-                                          alpha: 0.6,
-                                        ),
-                                        blurRadius: 20,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Text(
-                                    widget.teamLabel,
-                                    style: const TextStyle(
-                                      color: AppColors.background,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 3,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ],
+              ),
             );
           },
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 360),
+              margin: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: widget.color,
+                borderRadius: BorderRadius.circular(AppRadius.panel),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadius.panel),
+                child: Stack(
+                  children: [
+                    const Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      height: 32,
+                      child: SouthAfricaArtwork(
+                        mark: ArtworkMark.headerRibbon,
+                        fit: BoxFit.fill,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'GOAL!',
+                            style: AppType.event.copyWith(
+                              color: AppColors.onTeam(widget.color),
+                            ),
+                          ),
+                          Text(
+                            widget.teamLabel,
+                            textAlign: TextAlign.center,
+                            style: AppType.bodyStrong.copyWith(
+                              color: AppColors.onTeam(widget.color),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
 
 class _VictoryOverlay extends StatefulWidget {
@@ -290,59 +233,44 @@ class _VictoryOverlay extends StatefulWidget {
     required this.onChangeTeams,
     required this.onRematch,
   });
-
   final Color color;
   final String teamLabel;
   final List<String> playerNames;
-  final int winnerScore;
-  final int loserScore;
-  final VoidCallback onChangeTeams;
-  final VoidCallback onRematch;
-
+  final int winnerScore, loserScore;
+  final VoidCallback onChangeTeams, onRematch;
   @override
   State<_VictoryOverlay> createState() => _VictoryOverlayState();
 }
 
 class _VictoryOverlayState extends State<_VictoryOverlay>
-    with TickerProviderStateMixin {
-  late final AnimationController _entry;
-  late final AnimationController _confetti;
-  late final List<_ConfettiSpec> _specs;
-  late final bool _reduceMotion;
-
+    with TickerProviderStateMixin, MotionAwareState {
+  late final AnimationController _entry, _confetti;
+  bool _started = false;
   @override
   void initState() {
     super.initState();
-    _reduceMotion = shouldReduceMotion();
-    _entry = AnimationController(
-      vsync: this,
-      duration: _reduceMotion
-          ? Duration.zero
-          : const Duration(milliseconds: 1300),
-    );
-    _confetti = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 6),
-    );
-    if (_reduceMotion) {
-      _entry.value = 1;
-    } else {
-      _entry.forward();
-      _confetti.forward();
-    }
-    final rng = math.Random();
-    _specs = List.generate(90, (_) => _ConfettiSpec.random(rng, widget.color));
+    _entry = AnimationController(vsync: this, duration: AppMotion.victory);
+    _confetti = AnimationController(vsync: this, duration: AppMotion.confetti);
   }
 
-  Animation<double> _interval(
-    double begin,
-    double end, [
-    Curve curve = Curves.easeOutBack,
-  ]) {
-    return CurvedAnimation(
-      parent: _entry,
-      curve: Interval(begin, end, curve: curve),
-    );
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_started) {
+      _started = true;
+      if (!reduceMotion) {
+        _entry.forward();
+        _confetti.forward();
+      }
+    }
+  }
+
+  @override
+  void settleMotion() {
+    _entry.stop();
+    _entry.value = 1;
+    _confetti.stop();
+    _confetti.value = 1;
   }
 
   @override
@@ -353,363 +281,184 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
   }
 
   @override
-  Widget build(BuildContext context) {
-    final trophyAnim = _interval(0.0, 0.40);
-    final titleAnim = _interval(0.18, 0.50);
-    final teamAnim = _interval(0.38, 0.68);
-    final scoreAnim = _interval(0.55, 0.82);
-    final buttonAnim = _interval(0.78, 1.0, Curves.easeOut);
-
-    return Semantics(
-      key: const ValueKey('victory-overlay'),
-      container: true,
-      liveRegion: true,
-      namesRoute: true,
-      scopesRoute: true,
-      explicitChildNodes: true,
-      label:
-          'Vittoria: ${widget.teamLabel}. ${widget.playerNames.join(' e ')}. '
-          'Punteggio ${widget.winnerScore} a ${widget.loserScore}.',
-      child: BlockSemantics(
-        child: Material(
-          color: Colors.transparent,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              const ModalBarrier(
-                color: Colors.transparent,
-                dismissible: false,
-                barrierSemanticsDismissible: false,
+  Widget build(BuildContext context) => Semantics(
+    key: const ValueKey('victory-overlay'),
+    container: true,
+    liveRegion: true,
+    namesRoute: true,
+    scopesRoute: true,
+    explicitChildNodes: true,
+    label:
+        'Vittoria: ${widget.teamLabel}. ${widget.playerNames.join(' e ')}. Punteggio ${widget.winnerScore} a ${widget.loserScore}.',
+    child: BlockSemantics(
+      child: Material(
+        color: AppColors.background,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            const ModalBarrier(
+              dismissible: false,
+              barrierSemanticsDismissible: false,
+              color: Colors.transparent,
+            ),
+            const Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: 120,
+              child: SouthAfricaArtwork(
+                mark: ArtworkMark.headerRibbon,
+                fit: BoxFit.fill,
               ),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: Alignment.topCenter,
-                    radius: 1.3,
-                    colors: [
-                      widget.color.withValues(alpha: 0.30),
-                      AppColors.background.withValues(alpha: 0.97),
-                    ],
-                  ),
-                ),
-              ),
-              if (!_reduceMotion)
-                AnimatedBuilder(
-                  animation: _confetti,
-                  builder: (_, __) => CustomPaint(
-                    painter: _ConfettiPainter(
-                      specs: _specs,
-                      t: _confetti.value * 6,
+            ),
+            if (!reduceMotion)
+              IgnorePointer(
+                child: ExcludeSemantics(
+                  child: RepaintBoundary(
+                    child: CustomPaint(
+                      painter: _ConfettiPainter(_confetti),
+                      size: Size.infinite,
                     ),
-                    size: Size.infinite,
                   ),
                 ),
-              SafeArea(
-                child: LayoutBuilder(
-                  builder: (context, constraints) => Center(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 24,
-                      ),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: constraints.maxWidth - 48,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            _staggered(
-                              trophyAnim,
-                              scale: true,
-                              child: Icon(
+              ),
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        AnimatedBuilder(
+                          animation: _entry,
+                          builder: (_, child) => Transform.translate(
+                            offset: Offset(
+                              0,
+                              16 *
+                                  (1 -
+                                      Curves.easeOutCubic.transform(
+                                        _entry.value,
+                                      )),
+                            ),
+                            child: child,
+                          ),
+                          child: Column(
+                            children: [
+                              const Icon(
                                 Icons.emoji_events,
-                                size: 116,
-                                color: widget.color,
-                                shadows: [
-                                  Shadow(color: widget.color, blurRadius: 36),
-                                ],
+                                color: AppColors.ink,
+                                size: 72,
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            _staggered(
-                              titleAnim,
-                              slideUp: true,
-                              child: const FittedBox(
+                              const FittedBox(
                                 fit: BoxFit.scaleDown,
-                                child: Text(
-                                  'VITTORIA',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 44,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 8,
-                                  ),
-                                ),
+                                child: Text('VITTORIA', style: AppType.event),
                               ),
-                            ),
-                            const SizedBox(height: 28),
-                            _staggered(
-                              teamAnim,
-                              slideUp: true,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 22,
-                                  vertical: 12,
-                                ),
+                              const SizedBox(height: 16),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(20),
                                 decoration: BoxDecoration(
                                   color: widget.color,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: widget.color.withValues(
-                                        alpha: 0.55,
-                                      ),
-                                      blurRadius: 26,
-                                    ),
-                                  ],
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.panel,
+                                  ),
                                 ),
-                                child: Text(
-                                  widget.teamLabel,
-                                  style: const TextStyle(
-                                    color: AppColors.background,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 4,
-                                    fontSize: 17,
+                                child: DefaultTextStyle(
+                                  style: AppType.bodyStrong.copyWith(
+                                    color: AppColors.onTeam(widget.color),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        widget.teamLabel,
+                                        style: AppType.section.copyWith(
+                                          color: AppColors.onTeam(widget.color),
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        widget.playerNames.join('  &  '),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          '${widget.winnerScore} — ${widget.loserScore}',
+                                          style: AppType.score.copyWith(
+                                            fontSize: 80,
+                                            color: AppColors.onTeam(
+                                              widget.color,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 12),
-                            _staggered(
-                              teamAnim,
-                              child: Text(
-                                widget.playerNames.join('  &  '),
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            _staggered(
-                              scoreAnim,
-                              scale: true,
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  '${widget.winnerScore} — ${widget.loserScore}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 60,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 2,
-                                    height: 1,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 40),
-                            _staggered(
-                              buttonAnim,
-                              slideUp: true,
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 360,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        onPressed: widget.onChangeTeams,
-                                        style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          backgroundColor: AppColors.background
-                                              .withValues(alpha: 0.78),
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 16,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              18,
-                                            ),
-                                            side: BorderSide(
-                                              color: Colors.white.withValues(
-                                                alpha: 0.28,
-                                              ),
-                                            ),
-                                          ),
-                                          textStyle: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w900,
-                                            letterSpacing: 1.8,
-                                          ),
-                                        ),
-                                        child: const Text('CAMBIA SQUADRE'),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        onPressed: widget.onRematch,
-                                        style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          padding: const EdgeInsets.symmetric(
-                                            vertical: 16,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              18,
-                                            ),
-                                          ),
-                                          textStyle: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w900,
-                                            letterSpacing: 1.8,
-                                          ),
-                                        ),
-                                        child: const Text('RIVINCITA'),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          autofocus: true,
+                          onPressed: widget.onRematch,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('RIVINCITA'),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: widget.onChangeTeams,
+                          icon: const Icon(Icons.groups),
+                          label: const Text('CAMBIA SQUADRE'),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
-
-  Widget _staggered(
-    Animation<double> anim, {
-    bool slideUp = false,
-    bool scale = false,
-    required Widget child,
-  }) {
-    return AnimatedBuilder(
-      animation: anim,
-      builder: (_, c) {
-        final v = anim.value.clamp(0.0, 1.0);
-        Widget out = Opacity(opacity: v, child: c);
-        if (slideUp) {
-          out = Transform.translate(
-            offset: Offset(0, 28 * (1 - v)),
-            child: out,
-          );
-        }
-        if (scale) {
-          out = Transform.scale(scale: 0.6 + 0.4 * v, child: out);
-        }
-        return out;
-      },
-      child: child,
-    );
-  }
+    ),
+  );
 }
 
-class _ConfettiSpec {
-  _ConfettiSpec({
-    required this.startXNorm,
-    required this.startYOffset,
-    required this.velocity,
-    required this.rotationSpeed,
-    required this.initialRotation,
-    required this.color,
-    required this.size,
-    required this.isRect,
-    required this.startDelay,
-  });
-
-  final double startXNorm;
-  final double startYOffset;
-  final Offset velocity;
-  final double rotationSpeed;
-  final double initialRotation;
-  final Color color;
-  final double size;
-  final bool isRect;
-  final double startDelay;
-
-  factory _ConfettiSpec.random(math.Random rng, Color teamColor) {
-    const palette = [
-      AppColors.primary,
-      AppColors.success,
-      AppColors.ink,
-      Colors.white,
-    ];
-    final colors = <Color>[teamColor, teamColor, ...palette, Colors.white];
-    return _ConfettiSpec(
-      startXNorm: rng.nextDouble(),
-      startYOffset: -30 - rng.nextDouble() * 160,
-      velocity: Offset(
-        (rng.nextDouble() - 0.5) * 220,
-        160 + rng.nextDouble() * 220,
-      ),
-      rotationSpeed: (rng.nextDouble() - 0.5) * 10,
-      initialRotation: rng.nextDouble() * math.pi * 2,
-      color: colors[rng.nextInt(colors.length)],
-      size: 5 + rng.nextDouble() * 9,
-      isRect: rng.nextBool(),
-      startDelay: rng.nextDouble() * 1.2,
-    );
-  }
-
-  Offset positionAt(double t, Size canvasSize) {
-    final effT = math.max(0.0, t - startDelay);
-    final dx = startXNorm * canvasSize.width + velocity.dx * effT;
-    final dy = startYOffset + velocity.dy * effT + 420 * effT * effT * 0.5;
-    return Offset(dx, dy);
-  }
-
-  double rotationAt(double t) =>
-      initialRotation + rotationSpeed * math.max(0.0, t - startDelay);
-}
-
+/// Fixed bounded ribbon burst; repaint only while the two-second clock runs.
 class _ConfettiPainter extends CustomPainter {
-  _ConfettiPainter({required this.specs, required this.t});
-
-  final List<_ConfettiSpec> specs;
-  final double t;
-
+  _ConfettiPainter(this.clock) : super(repaint: clock);
+  final Animation<double> clock;
+  static const colors = [
+    AppColors.yellow,
+    AppColors.success,
+    AppColors.primary,
+    AppColors.error,
+  ];
   @override
   void paint(Canvas canvas, Size size) {
+    if (clock.value >= 1) return;
+    final random = math.Random(2010);
     final paint = Paint();
-    for (final s in specs) {
-      final pos = s.positionAt(t, size);
-      if (pos.dy > size.height + 40 || pos.dy < -60) continue;
+    for (var i = 0; i < 36; i++) {
+      final x = random.nextDouble() * size.width;
+      final drift = (random.nextDouble() - .5) * 100;
+      final delay = random.nextDouble() * .25;
+      final t = math.max(0.0, clock.value - delay);
       canvas.save();
-      canvas.translate(pos.dx, pos.dy);
-      canvas.rotate(s.rotationAt(t));
-      paint.color = s.color;
-      if (s.isRect) {
-        canvas.drawRect(
-          Rect.fromCenter(
-            center: Offset.zero,
-            width: s.size,
-            height: s.size * 0.55,
-          ),
-          paint,
-        );
-      } else {
-        canvas.drawCircle(Offset.zero, s.size / 2, paint);
-      }
+      canvas.translate(x + drift * t, -20 + size.height * 1.6 * t * t);
+      canvas.rotate(i + t * 4);
+      paint.color = colors[i % colors.length];
+      canvas.drawRect(const Rect.fromLTWH(-3, -6, 6, 12), paint);
       canvas.restore();
     }
   }
 
   @override
-  bool shouldRepaint(covariant _ConfettiPainter old) => old.t != t;
+  bool shouldRepaint(_ConfettiPainter old) => old.clock != clock;
 }
