@@ -1,6 +1,6 @@
 # South Africa 2010 artwork
 
-R1 is **pending user approval**. Open [the review](r1/review.html) or inspect [the manifest](r1/manifest.json). The root DESIGN.md remains the design authority. This folder contains editable SVG candidates and review geometry, not a new approved visual direction.
+R1 artwork was **approved by the user on 2026-09-07** at the five SVG hashes recorded in the manifest. Open [the review](r1/review.html) or inspect [the manifest](r1/manifest.json). The root DESIGN.md remains the design authority. This folder contains approved editable SVG masters and review geometry, not a new approved visual direction.
 
 ## Inventory
 
@@ -25,3 +25,5 @@ These are original vector shapes authored for this repository, informed by the a
 Every new or materially revised illustration must be presented to the user before integration. Record explicit approval against the exact revision and hashes; do not infer approval from passing structural QA. If changes are requested, keep R1 as the reviewed reference and produce R2; update the manifest and design references accordingly. The PNG contact sheet is a review export, not a runtime asset requiring a raster pipeline.
 
 No shaded hero PNG or stadium master is required by the approved four layouts. Add one only for a concrete layout need and present it for approval. Functional icons, avatars, scores, badges, buttons and confetti remain widgets/painter geometry.
+
+The approved SVG geometry is frozen. The entrance study was adjusted after review to place the smaller football at the mounted figure’s foot before its short outward roll; this changes only browser composition/timing, not the approved assets. Final Flutter motion remains subject to runtime validation. The authoring script refuses to overwrite approved R1 masters; future changes need a new revision.

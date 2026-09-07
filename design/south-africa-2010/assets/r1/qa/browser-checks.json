@@ -6,6 +6,7 @@
     "unique inline SVG IDs",
     "1280px and 390px no horizontal overflow",
     "blue surface reverses black marks to white",
+    "ball starts within 6px of foot with overlapping vertical extent",
     "replay animates on demand and settles",
     "runtime reduced-motion toggle cancels animation",
     "reduced replay remains settled",

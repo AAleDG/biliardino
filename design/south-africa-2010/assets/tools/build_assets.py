@@ -2,6 +2,8 @@ from pathlib import Path
 import json, hashlib
 root=Path(__file__).resolve().parents[4]
 out=root/'design/south-africa-2010/assets/r1'
+if (out/'manifest.json').exists() and json.loads((out/'manifest.json').read_text()).get('approval') == 'approved':
+ raise SystemExit('R1 is approved and frozen. Create a new revision for changed artwork; do not overwrite its approval record.')
 ink='#111111'
 figure='''<g id="figure" fill="#111111">
   <circle id="head" cx="50" cy="28" r="21"/>

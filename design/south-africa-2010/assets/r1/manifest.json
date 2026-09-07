@@ -1,6 +1,6 @@
 {
   "revision": "R1",
-  "approval": "pending-user-review",
+  "approval": "approved",
   "source": "Root DESIGN.md and approved four South Africa 2010 mockups",
   "authoring": "Original SVG path/primitive artwork authored for this repository; no ImageGen or raster tracing used for these masters. Existing mockups were generated previously.",
   "palette": [
@@ -30,7 +30,7 @@
         ]
       },
       "sha256": "2ab1810dbfb5a2a568e86586f9e39c22e264b15d38c447989da3853749a37922",
-      "approval": "pending-user-review",
+      "approval": "approved",
       "minimumDisplay": "48px high"
     },
     {
@@ -54,7 +54,7 @@
         ]
       },
       "sha256": "4176786f872bffb8bb71b7d86f6b7a8ffbbeee48705ca2ac88f6ca4def50e569",
-      "approval": "pending-user-review",
+      "approval": "approved",
       "minimumDisplay": "48px high"
     },
     {
@@ -76,7 +76,7 @@
         ]
       },
       "sha256": "c8ee257849846cfb9888c883f4901cd24c1066d977781a40984db48d8c27c9e7",
-      "approval": "pending-user-review",
+      "approval": "approved",
       "minimumDisplay": "24px square"
     },
     {
@@ -94,7 +94,7 @@
         ]
       },
       "sha256": "3c5762ed5fefa5a8b62c35dc7bdc4315d18db8010dd418d225b533d75e0d9b9b",
-      "approval": "pending-user-review",
+      "approval": "approved",
       "minimumDisplay": "responsive decoration"
     },
     {
@@ -112,8 +112,13 @@
         ]
       },
       "sha256": "8f6fa03a99f5079e61f7dbcd6a826208458aaab24af45e16c5f693da3ffa4eec",
-      "approval": "pending-user-review",
+      "approval": "approved",
       "minimumDisplay": "responsive decoration"
     }
-  ]
+  ],
+  "approvalRecord": {
+    "source": "User explicitly approved the artwork in this task on 2026-09-07.",
+    "scope": "All five R1 SVG files at the recorded hashes.",
+    "motionNote": "User noted that the entrance ball felt disconnected from the figure. Browser composition corrected to start the ball beside the foot; runtime motion still requires validation."
+  }
 }
