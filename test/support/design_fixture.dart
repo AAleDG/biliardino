@@ -50,7 +50,7 @@ class DesignFixture {
           : [
               GameMatch(
                 id: 'm1',
-                playedAt: DateTime(2026, 9, 7, 13, 30),
+                playedAt: DateTime(2026, 1, 7, 13, 30),
                 mode: MatchMode.twoVsTwo,
                 isRivalry: false,
                 t1p1: 'p0',

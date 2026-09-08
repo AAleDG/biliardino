@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../data/database_helper.dart';
+import '../theme/app_theme.dart';
 import '../repositories/match_repository.dart';
 import '../repositories/player_repository.dart';
 import '../services/backup_file_picker.dart';
@@ -30,10 +31,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
-            'Backup e ripristino',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-          ),
+          const Text('Backup e ripristino', style: AppType.section),
           const SizedBox(height: 8),
           const Text(
             'Esporta tutti i giocatori e le partite, oppure ripristina un backup verificato.',
@@ -137,6 +135,10 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(dialogContext, true),
+              style: AppTheme.primaryButton(
+                background: AppColors.error,
+                pressed: AppColors.error,
+              ),
               child: const Text('Ripristina'),
             ),
           ],

@@ -8,6 +8,42 @@ import '../support/design_fixture.dart';
 
 void main() {
   setUpAll(loadDesignFonts);
+  testWidgets('Landscape large-text goal announcement remains legible', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(568, 320);
+    tester.view.devicePixelRatio = 1;
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    final fixture = DesignFixture();
+    await fixture.load();
+    await tester.pumpWidget(
+      RepaintBoundary(key: const ValueKey('capture'), child: fixture.home),
+    );
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await fixture.dispose();
+    });
+    final context = tester.element(find.byType(HomeScreen));
+    context.read<HomeCubit>().selectTab(1);
+    final match = context.read<NewMatchCubit>();
+    match.setTeam('p0', 1);
+    match.setTeam('p2', 1);
+    match.setTeam('p3', 2);
+    match.setTeam('p4', 2);
+    match.kickoff();
+    await tester.pumpAndSettle();
+    match.addGoal(1, 'p2');
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(tester.takeException(), isNull);
+    await expectLater(
+      find.byKey(const ValueKey('capture')),
+      matchesGoldenFile('south-africa-goal-landscape.png'),
+    );
+  });
   testWidgets('Live score and goal/victory frames use actual app state', (
     tester,
   ) async {

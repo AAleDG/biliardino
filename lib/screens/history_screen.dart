@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import '../widgets/design/brand_header.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,6 +13,7 @@ import '../repositories/match_repository.dart';
 import '../repositories/player_repository.dart';
 import '../services/stats_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/design/adaptive_pair.dart';
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
@@ -31,39 +30,8 @@ class HistoryScreen extends StatelessWidget {
   }
 }
 
-class _HistoryView extends StatefulWidget {
+class _HistoryView extends StatelessWidget {
   const _HistoryView();
-
-  @override
-  State<_HistoryView> createState() => _HistoryViewState();
-}
-
-class _HistoryViewState extends State<_HistoryView>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
-
-  @override
-  void initState() {
-    super.initState();
-    final reduceMotion = shouldReduceMotion();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: reduceMotion
-          ? Duration.zero
-          : const Duration(milliseconds: 700),
-    );
-    if (reduceMotion) {
-      _ctrl.value = 1;
-    } else {
-      _ctrl.forward();
-    }
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,8 +68,6 @@ class _HistoryViewState extends State<_HistoryView>
                         itemBuilder: (_, i) => _MatchDaySection(
                           group: groups[i],
                           players: state.players,
-                          anim: _ctrl,
-                          delay: math.min(i, 8) * 0.08,
                           onOpen: (match) => _openMatchDetails(context, match),
                           onEdit: (match) =>
                               _openEditMatchDialog(context, match),
@@ -181,6 +147,10 @@ Future<void> _confirmDeleteMatch(
         ),
         ElevatedButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
+          style: AppTheme.primaryButton(
+            background: AppColors.error,
+            pressed: AppColors.error,
+          ),
           child: const Text('Elimina'),
         ),
       ],
@@ -714,7 +684,7 @@ class _FilterSummaryBar extends StatelessWidget {
                 border: Border.all(
                   color: hasActiveFilters
                       ? AppColors.primary.withValues(alpha: 0.55)
-                      : Colors.white.withValues(alpha: 0.06),
+                      : AppColors.outline,
                 ),
               ),
               child: Row(
@@ -859,7 +829,9 @@ class _HistoryFilterSheetState extends State<_HistoryFilterSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final bottomInset =
+        MediaQuery.viewInsetsOf(context).bottom +
+        MediaQuery.paddingOf(context).bottom;
 
     return SingleChildScrollView(
       child: Padding(
@@ -873,7 +845,7 @@ class _HistoryFilterSheetState extends State<_HistoryFilterSheet> {
                 width: 42,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
+                  color: AppColors.outline,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -963,54 +935,16 @@ class _HistoryFilterSheetState extends State<_HistoryFilterSheet> {
               ),
             ),
             const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 56,
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.primary,
-                        side: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.45),
-                          width: 1.5,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(22),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                      child: const Text('Annulla'),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SizedBox(
-                    height: 56,
-                    child: ElevatedButton(
-                      key: const ValueKey('history-apply-filters'),
-                      onPressed: () => Navigator.of(context).pop(_draftFilters),
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(22),
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                      child: const Text('Applica'),
-                    ),
-                  ),
-                ),
-              ],
+            AdaptivePair(
+              first: OutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Annulla'),
+              ),
+              second: ElevatedButton(
+                key: const ValueKey('history-apply-filters'),
+                onPressed: () => Navigator.of(context).pop(_draftFilters),
+                child: const Text('Applica'),
+              ),
             ),
           ],
         ),
@@ -1069,24 +1003,6 @@ class _SegmentedFilter<T> extends StatelessWidget {
           label: Text(labelForValue(value)),
           selected: selected,
           onSelected: enabled ? (_) => onSelected(value) : null,
-          labelStyle: TextStyle(
-            color: selected && enabled ? AppColors.background : AppColors.ink,
-            fontSize: 13,
-            fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
-          ),
-          selectedColor: enabled
-              ? AppColors.primary
-              : AppColors.disabledContainer,
-          backgroundColor: AppColors.disabledContainer,
-          disabledColor: AppColors.disabledContainer.withValues(alpha: 0.45),
-          side: BorderSide(
-            color: selected && enabled
-                ? AppColors.primary
-                : Colors.white.withValues(alpha: 0.06),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
         );
       }).toList(),
     );
@@ -1118,25 +1034,6 @@ class _PlayerSelector extends StatelessWidget {
               label: const Text('Tutti'),
               selected: selectedPlayerId == null,
               onSelected: (_) => onSelected(null),
-              labelStyle: TextStyle(
-                color: selectedPlayerId == null
-                    ? AppColors.background
-                    : AppColors.ink,
-                fontSize: 13,
-                fontWeight: selectedPlayerId == null
-                    ? FontWeight.w900
-                    : FontWeight.w600,
-              ),
-              selectedColor: AppColors.primary,
-              backgroundColor: AppColors.disabledContainer,
-              side: BorderSide(
-                color: selectedPlayerId == null
-                    ? AppColors.primary
-                    : Colors.white.withValues(alpha: 0.06),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
             ),
             ...players.map((player) {
               final selected = selectedPlayerId == player.id;
@@ -1145,21 +1042,6 @@ class _PlayerSelector extends StatelessWidget {
                 label: Text(player.name),
                 selected: selected,
                 onSelected: (_) => onSelected(player.id),
-                labelStyle: TextStyle(
-                  color: selected ? AppColors.background : AppColors.ink,
-                  fontSize: 13,
-                  fontWeight: selected ? FontWeight.w900 : FontWeight.w600,
-                ),
-                selectedColor: AppColors.primary,
-                backgroundColor: AppColors.disabledContainer,
-                side: BorderSide(
-                  color: selected
-                      ? AppColors.primary
-                      : Colors.white.withValues(alpha: 0.06),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
               );
             }),
           ],
@@ -1173,8 +1055,6 @@ class _MatchDaySection extends StatelessWidget {
   const _MatchDaySection({
     required this.group,
     required this.players,
-    required this.anim,
-    required this.delay,
     required this.onOpen,
     required this.onEdit,
     required this.onDelete,
@@ -1182,53 +1062,29 @@ class _MatchDaySection extends StatelessWidget {
 
   final MatchDayGroup group;
   final List<Player> players;
-  final Animation<double> anim;
-  final double delay;
   final ValueChanged<GameMatch> onOpen;
   final ValueChanged<GameMatch> onEdit;
   final ValueChanged<GameMatch> onDelete;
 
   @override
   Widget build(BuildContext context) {
-    final sectionAnim = CurvedAnimation(
-      parent: anim,
-      curve: Interval(
-        delay,
-        math.min(delay + 0.35, 1.0),
-        curve: Curves.easeOutCubic,
-      ),
-    );
-
-    return AnimatedBuilder(
-      animation: sectionAnim,
-      builder: (_, child) {
-        final t = sectionAnim.value;
-        return Opacity(
-          opacity: t,
-          child: Transform.translate(
-            offset: Offset(0, 16 * (1 - t)),
-            child: child,
-          ),
-        );
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(top: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _SectionLabel(dayLabel(group.day, DateTime.now())),
-            const SizedBox(height: 6),
-            ...group.matches.map(
-              (match) => _MatchCard(
-                match: match,
-                players: players,
-                onOpen: () => onOpen(match),
-                onEdit: () => onEdit(match),
-                onDelete: () => onDelete(match),
-              ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _SectionLabel(dayLabel(group.day, DateTime.now())),
+          const SizedBox(height: 6),
+          ...group.matches.map(
+            (match) => _MatchCard(
+              match: match,
+              players: players,
+              onOpen: () => onOpen(match),
+              onEdit: () => onEdit(match),
+              onDelete: () => onDelete(match),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -1245,12 +1101,7 @@ class _SectionLabel extends StatelessWidget {
       header: true,
       child: Text(
         text,
-        style: const TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 2.2,
-        ),
+        style: AppType.utility.copyWith(color: AppColors.textSecondary),
       ),
     );
   }
@@ -1288,7 +1139,7 @@ class _MatchCard extends StatelessWidget {
         ? AppColors.teamOne
         : AppColors.teamTwo;
     final modeColor = match.isRivalry
-        ? AppColors.teamTwo
+        ? AppColors.ink
         : (match.mode == MatchMode.oneVsOne
               ? AppColors.ink
               : AppColors.primary);
@@ -1364,9 +1215,7 @@ class _MatchCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: AppColors.disabledContainer,
                           borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.08),
-                          ),
+                          border: Border.all(color: AppColors.divider),
                         ),
                         child: Text(
                           modeLabel,
@@ -1429,7 +1278,12 @@ class _MatchDetailsSheet extends StatelessWidget {
     final mode = match.mode == MatchMode.oneVsOne ? '1v1' : '2v2';
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+      padding: EdgeInsets.fromLTRB(
+        20,
+        12,
+        20,
+        24 + MediaQuery.paddingOf(context).bottom,
+      ),
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1575,6 +1429,8 @@ class _TeamResultLine extends StatelessWidget {
                 ),
               ),
             ),
+            if (isWinner)
+              const Icon(Icons.emoji_events, size: 18, color: AppColors.ink),
             const SizedBox(width: 8),
             SizedBox(
               width: 40,
@@ -1586,7 +1442,7 @@ class _TeamResultLine extends StatelessWidget {
                   maxLines: 1,
                   softWrap: false,
                   style: TextStyle(
-                    color: isWinner ? color : AppColors.textSecondary,
+                    color: isWinner ? AppColors.ink : AppColors.textSecondary,
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
                   ),

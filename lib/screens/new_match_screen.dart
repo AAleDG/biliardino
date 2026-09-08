@@ -316,13 +316,11 @@ Future<void> _handleAddGoal(
       ? players.first
       : await showModalBottomSheet<_MatchPlayer>(
           context: context,
-          backgroundColor: AppColors.surface,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-          ),
+          isScrollControlled: true,
+          useSafeArea: true,
           builder: (ctx) => SafeArea(
             top: false,
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -330,11 +328,7 @@ Future<void> _handleAddGoal(
                 children: [
                   Text(
                     'Chi ha segnato per la squadra $team?',
-                    style: const TextStyle(
-                      color: AppColors.ink,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: AppType.player,
                   ),
                   const SizedBox(height: 6),
                   const Text(
@@ -427,6 +421,7 @@ Future<void> _confirmExit(BuildContext context, NewMatchCubit cubit) async {
     title: 'Abbandona la partita?',
     message: 'Tornerai alla composizione squadre e perderai il punteggio.',
     confirmLabel: 'Abbandona',
+    destructive: true,
   );
   if (ok) cubit.abortMatch();
 }
@@ -440,6 +435,7 @@ Future<void> _confirmResetScore(
     title: 'Azzera il punteggio?',
     message: 'Le squadre restano invariate.',
     confirmLabel: 'Azzera',
+    destructive: true,
   );
   if (ok) cubit.resetScore();
 }
@@ -449,6 +445,7 @@ Future<bool> _confirmDialog(
   required String title,
   required String message,
   required String confirmLabel,
+  bool destructive = false,
 }) async {
   final result = await showDialog<bool>(
     context: context,
@@ -462,6 +459,12 @@ Future<bool> _confirmDialog(
         ),
         ElevatedButton(
           onPressed: () => Navigator.pop(ctx, true),
+          style: destructive
+              ? AppTheme.primaryButton(
+                  background: AppColors.error,
+                  pressed: AppColors.error,
+                )
+              : null,
           child: Text(confirmLabel),
         ),
       ],

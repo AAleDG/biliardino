@@ -107,6 +107,10 @@ Future<bool> _confirmLeaveStartedMatch(BuildContext context) async {
         ),
         ElevatedButton(
           onPressed: () => Navigator.of(dialogContext).pop(true),
+          style: AppTheme.primaryButton(
+            background: AppColors.error,
+            pressed: AppColors.error,
+          ),
           child: const Text('Esci'),
         ),
       ],

@@ -13,6 +13,7 @@ import '../repositories/match_repository.dart';
 import '../repositories/player_repository.dart';
 import '../services/stats_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/design/adaptive_pair.dart';
 import '../widgets/avatar.dart';
 
 class PlayerProfileScreen extends StatefulWidget {
@@ -192,30 +193,23 @@ class _Relationships extends StatelessWidget {
         'Servono partite in squadra o contro altri giocatori.',
       );
     }
-    return Row(
-      children: [
-        Expanded(
-          child: _RelationshipCard(
-            icon: Icons.group,
-            label: 'Compagno abituale',
-            value: teammate == null
-                ? 'Non disponibile'
-                : relationshipNames(teammate),
-            matches: teammate?.matches,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _RelationshipCard(
-            icon: Icons.sports_martial_arts,
-            label: 'Avversario abituale',
-            value: opponent == null
-                ? 'Non disponibile'
-                : relationshipNames(opponent),
-            matches: opponent?.matches,
-          ),
-        ),
-      ],
+    return AdaptivePair(
+      first: _RelationshipCard(
+        icon: Icons.group,
+        label: 'Compagno abituale',
+        value: teammate == null
+            ? 'Non disponibile'
+            : relationshipNames(teammate),
+        matches: teammate?.matches,
+      ),
+      second: _RelationshipCard(
+        icon: Icons.sports_martial_arts,
+        label: 'Avversario abituale',
+        value: opponent == null
+            ? 'Non disponibile'
+            : relationshipNames(opponent),
+        matches: opponent?.matches,
+      ),
     );
   }
 }
@@ -332,14 +326,7 @@ class _Header extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    player.name,
-                    style: const TextStyle(
-                      color: AppColors.ink,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
+                  Text(player.name, style: AppType.section),
                   const SizedBox(height: 6),
                   Text(
                     player.isArchived
@@ -361,11 +348,7 @@ class _Header extends StatelessWidget {
             ),
             Text(
               '${stats.points} pt',
-              style: const TextStyle(
-                color: AppColors.primary,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-              ),
+              style: AppType.section.copyWith(color: AppColors.primary),
             ),
           ],
         ),
@@ -381,21 +364,20 @@ class _StatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
-    return GridView.count(
-      crossAxisCount: 2,
-      childAspectRatio: largeText ? 1.8 : 2.8,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 10,
-      crossAxisSpacing: 10,
+    final metrics = [
+      _Metric(label: 'Partite', value: '${stats.games}'),
+      _Metric(label: 'Vittorie', value: '${stats.wins}'),
+      _Metric(label: 'Sconfitte', value: '${stats.losses}'),
+      _Metric(label: 'Gol', value: '${stats.goalsScored}'),
+      _Metric(label: 'Win rate', value: '${(stats.winRate * 100).round()}%'),
+      _Metric(label: 'Serie', value: '${stats.currentWinStreak}'),
+    ];
+    return Column(
       children: [
-        _Metric(label: 'Partite', value: '${stats.games}'),
-        _Metric(label: 'Vittorie', value: '${stats.wins}'),
-        _Metric(label: 'Sconfitte', value: '${stats.losses}'),
-        _Metric(label: 'Gol', value: '${stats.goalsScored}'),
-        _Metric(label: 'Win rate', value: '${(stats.winRate * 100).round()}%'),
-        _Metric(label: 'Serie', value: '${stats.currentWinStreak}'),
+        for (var i = 0; i < metrics.length; i += 2) ...[
+          AdaptivePair(first: metrics[i], second: metrics[i + 1]),
+          if (i < metrics.length - 2) const SizedBox(height: 12),
+        ],
       ],
     );
   }
@@ -409,11 +391,12 @@ class _Metric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: AppColors.divider),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -421,21 +404,10 @@ class _Metric extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              value,
-              style: const TextStyle(
-                color: AppColors.ink,
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
+            Text(value, style: AppType.section),
             Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-              ),
+              style: AppType.utility.copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),

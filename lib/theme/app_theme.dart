@@ -213,6 +213,13 @@ abstract final class AppTheme {
         contentPadding: const EdgeInsets.all(AppSpace.medium),
       ),
       chipTheme: ChipThemeData(
+        color: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.disabled)
+              ? AppColors.disabledContainer
+              : states.contains(WidgetState.selected)
+              ? AppColors.primary
+              : AppColors.surface,
+        ),
         backgroundColor: AppColors.surface,
         selectedColor: AppColors.primary,
         disabledColor: AppColors.disabledContainer,

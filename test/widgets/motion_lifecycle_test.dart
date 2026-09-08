@@ -13,6 +13,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  testWidgets(
+    'Two-player scorer sheet stays reachable in compact landscape at 200 percent',
+    (tester) async {
+      tester.view.physicalSize = const Size(568, 320);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.view.reset);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final fixture = DesignFixture();
+      await fixture.load();
+      await tester.pumpWidget(fixture.home);
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await fixture.dispose();
+      });
+      final context = tester.element(find.byType(HomeScreen));
+      context.read<HomeCubit>().selectTab(1);
+      final match = context.read<NewMatchCubit>();
+      match.setTeam('p0', 1);
+      match.setTeam('p2', 1);
+      match.setTeam('p3', 2);
+      match.setTeam('p4', 2);
+      match.kickoff();
+      await tester.pumpAndSettle();
+      final score = find.byKey(const ValueKey('score-add-team-1'));
+      await tester.ensureVisible(score);
+      await tester.pumpAndSettle();
+      await tester.tap(score);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      final scorer = find.widgetWithText(ListTile, 'Luca');
+      await tester.ensureVisible(scorer);
+      await tester.pumpAndSettle();
+      await tester.tap(scorer);
+      await tester.pumpAndSettle();
+      expect(match.state.scorerIds, ['p2']);
+      expect(match.state.score1, 1);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets('Rapid goals coalesce and pending handles dismiss before paint', (
     tester,
   ) async {

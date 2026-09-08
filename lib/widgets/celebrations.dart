@@ -131,96 +131,103 @@ class _GoalOverlayState extends State<_GoalOverlay>
   }
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    key: const ValueKey('goal-overlay'),
-    container: true,
-    liveRegion: true,
-    label: 'Goal. ${widget.teamLabel}',
-    child: IgnorePointer(
-      child: ExcludeSemantics(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (_, child) {
-            final t = _controller.value;
-            final opacity = reduceMotion
-                ? 1.0
-                : t < .164
-                ? (t / .164).clamp(0.0, 1.0)
-                : t > .8
-                ? ((1 - t) / .2).clamp(0.0, 1.0)
-                : 1.0;
-            return Center(
-              child: Opacity(
-                opacity: opacity,
-                child: Transform.translate(
-                  offset: Offset(
-                    reduceMotion
-                        ? 0
-                        : -16 *
-                              (1 -
-                                  Curves.easeOutCubic.transform(
-                                    (t / .164).clamp(0.0, 1.0),
-                                  )),
-                    0,
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).height < 400;
+    final heading = Text(
+      'GOAL!',
+      textScaler: compact ? TextScaler.noScaling : null,
+      style: AppType.event.copyWith(color: AppColors.onTeam(widget.color)),
+    );
+    final label = Text(
+      widget.teamLabel,
+      textAlign: TextAlign.center,
+      style: AppType.bodyStrong.copyWith(color: AppColors.onTeam(widget.color)),
+    );
+    return Semantics(
+      key: const ValueKey('goal-overlay'),
+      container: true,
+      liveRegion: true,
+      label: 'Goal. ${widget.teamLabel}',
+      child: IgnorePointer(
+        child: ExcludeSemantics(
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (_, child) {
+              final t = _controller.value;
+              final opacity = reduceMotion
+                  ? 1.0
+                  : t < .164
+                  ? (t / .164).clamp(0.0, 1.0)
+                  : t > .8
+                  ? ((1 - t) / .2).clamp(0.0, 1.0)
+                  : 1.0;
+              return Center(
+                child: Opacity(
+                  opacity: opacity,
+                  child: Transform.translate(
+                    offset: Offset(
+                      reduceMotion
+                          ? 0
+                          : -16 *
+                                (1 -
+                                    Curves.easeOutCubic.transform(
+                                      (t / .164).clamp(0.0, 1.0),
+                                    )),
+                      0,
+                    ),
+                    child: child,
                   ),
-                  child: child,
                 ),
-              ),
-            );
-          },
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 360),
-              margin: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: widget.color,
-                borderRadius: BorderRadius.circular(AppRadius.panel),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.panel),
-                child: Stack(
-                  children: [
-                    const Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      height: 32,
-                      child: SouthAfricaArtwork(
-                        mark: ArtworkMark.headerRibbon,
-                        fit: BoxFit.fill,
+              );
+            },
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                constraints: BoxConstraints(maxWidth: compact ? 560 : 360),
+                margin: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: widget.color,
+                  borderRadius: BorderRadius.circular(AppRadius.panel),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.panel),
+                  child: Stack(
+                    children: [
+                      const Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        height: 32,
+                        child: SouthAfricaArtwork(
+                          mark: ArtworkMark.headerRibbon,
+                          fit: BoxFit.fill,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'GOAL!',
-                            style: AppType.event.copyWith(
-                              color: AppColors.onTeam(widget.color),
-                            ),
-                          ),
-                          Text(
-                            widget.teamLabel,
-                            textAlign: TextAlign.center,
-                            style: AppType.bodyStrong.copyWith(
-                              color: AppColors.onTeam(widget.color),
-                            ),
-                          ),
-                        ],
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+                        child: compact
+                            ? Row(
+                                children: [
+                                  heading,
+                                  const SizedBox(width: 16),
+                                  Expanded(child: label),
+                                ],
+                              )
+                            : Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [heading, label],
+                              ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _VictoryOverlay extends StatefulWidget {
