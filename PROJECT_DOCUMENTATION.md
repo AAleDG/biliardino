@@ -6,12 +6,12 @@ Biliardino e' una app Flutter pensata per tracciare le partite di biliardino in 
 
 - gestire i giocatori disponibili;
 - segnare chi e' presente in ufficio;
-- comporre squadre 2 vs 2;
+- comporre squadre 1 vs 1 o 2 vs 2;
 - registrare il punteggio di una partita;
 - salvare lo storico dei risultati;
 - consultare classifica e statistiche base.
 
-Il tono dell'app e' volutamente interno e operativo: interfaccia dark, colori ispirati a NTT, navigazione semplice a tab e focus sull'uso quotidiano durante le pause.
+Il tono dell'app resta interno e operativo. Il tema South Africa 2010 usa fondo avorio, titoli Barlow Condensed, nastri colorati e sagome di biliardino. La specifica approvata e' in [DESIGN.md](DESIGN.md); la navigazione e i comportamenti esistenti sono preservati.
 
 ## Come e' stato creato
 
@@ -45,12 +45,13 @@ La persistenza locale usa due tabelle:
 
 ## Flusso applicativo
 
-La home usa una bottom navigation con quattro sezioni:
+La home usa una bottom navigation con cinque sezioni:
 
 - **Giocatori**: elenco giocatori, stato presenza, aggiunta nuovo giocatore.
 - **Partita**: composizione squadre, avvio partita, scoreboard, modifica punteggio, salvataggio risultato.
 - **Storico**: registro partite con riepilogo, filtri, gruppi per data e card risultato.
-- **Classifica**: ranking calcolato dalle partite salvate.
+- **Classifica**: ranking generale e marcatori, calcolati dalle partite salvate.
+- **Dati**: esportazione JSON/CSV e ripristino verificato tramite i selettori nativi.
 
 All'avvio `main.dart` carica `PlayerRepository` e `MatchRepository`, poi espone i repository tramite `MultiRepositoryProvider` e crea i Cubit globali principali.
 
@@ -294,3 +295,20 @@ Comandi di riferimento:
 - `flutter test` puo' mostrare warning relativi a Swift Package Manager e `sqflite`; al momento sono warning del tooling/plugin, non errori funzionali della suite.
 - Alcuni file del progetto usano ancora `withOpacity`, che le versioni recenti di Flutter segnalano come deprecato a favore di `withValues(alpha: ...)`.
 - La documentazione dei prompt e' accurata per la conversazione recente, ma non sostituisce una cronologia completa di tutti i prompt eventualmente usati in sessioni precedenti.
+
+
+## Tema South Africa 2010 e componenti
+
+`lib/theme/design_tokens.dart` contiene colori semantici, tipografia, spazi e raggi; `app_theme.dart` li applica a Material, inclusi gli stati selezionato, disabilitato, premuto e focus. I font Barlow 400/600 e Barlow Condensed 800/900 sono locali in `assets/fonts/`, con licenze OFL. Non occorrono richieste di rete o pacchetti grafici aggiuntivi.
+
+I componenti in `lib/widgets/design/` ricevono valori e callback. `BrandHeader`/`brandAppBar` e `RibbonBackdrop` gestiscono la decorazione; `AdaptivePair` impila due contenuti quando spazio o scala testo lo richiedono; `TeamSlot` presenta assegnazioni; `ScorePanel` mantiene score e controlli accessibili; `RankingPodium`/`RankingBadges` condividono la presentazione tra Generale e Marcatori. Avatar, titoli, punteggi e controlli restano widget, non immagini.
+
+I cinque SVG approvati in `design/south-africa-2010/assets/r1/svg/` sono i master. `python3 tool/generate_south_africa_artwork.py` verifica approvazione e SHA-256, quindi compila le primitive consentite in `artwork_paths.dart`. Non modificare quel file generato a mano; modifiche sostanziali all'arte richiedono una nuova revisione approvata. Il painter comune usa le stesse geometrie per intestazioni, splash e celebrazioni.
+
+`motion_policy.dart` centralizza tempi e curve. `MotionAwareState` osserva cambiamenti MediaQuery e accessibilita' di piattaforma anche a runtime. La home limita i ticker alla pagina visibile. Il podium parte alla prima visualizzazione; storico e righe ordinarie non hanno animazioni a cascata. Le celebrazioni restituiscono un handle cancellabile: gol rapidi si sostituiscono, undo/reset/cambio tab/disposal rimuovono gli overlay. Il risultato e le sue azioni non attendono la fine degli effetti. Con movimento ridotto il gol conserva una pausa leggibile statica e coriandoli/traslazioni sono rimossi. Lo splash passa alla home una sola volta quando il bootstrap e' pronto.
+
+Per riprodurre splash/gol/vittoria senza aprire il database, usare `tool/motion_preview.dart` come entry point di sviluppo. Ogni comando verso il simulatore di questa feature deve usare il dispositivo esatto in AGENTS.md. Le schermate compatte e il testo al 200% sono coperti da widget test e goldens con i font reali; queste prove non sostituiscono la verifica di VoiceOver o dei picker/share sheet nativi.
+
+La logica Cubit, le regole, lo schema SQLite, i repository, i calcoli e i servizi di import/export restano i proprietari dei comportamenti. Questa migrazione non introduce un nuovo modello dati, una selezione di temi o il timer della mood board.
+
+Stato della consegna e limiti delle verifiche: [ricevuta South Africa 2010](design/south-africa-2010/IMPLEMENTATION.md). I test automatici coprono il cambio di movimento ridotto a runtime; la verifica nativa e la navigazione VoiceOver restano da completare sul dispositivo autorizzato.

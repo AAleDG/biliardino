@@ -1,6 +1,6 @@
 # South Africa 2010 design work
 
-Read the root `DESIGN.md` before changing UI, themes, assets or motion. It is the canonical, user-approved South Africa 2010 design baseline for issue #11. The four mockups were approved on 2026-09-07; shared Flutter foundation implementation is in progress; consult the active packet for current phase evidence.
+Read the root `DESIGN.md` before changing UI, themes, assets or motion. It is the canonical, user-approved South Africa 2010 design baseline for issue #11. The four mockups were approved on 2026-09-07; all screen migrations are implemented; consult the active packet and implementation receipt for verification status.
 
 The review packet is in `design/experiments/south-africa-2010/`. Read its `MOCKUP_BRIEF.md` for example states and `README.md` for provenance, validation and known raster limitations. The packet's nested `DESIGN.md` is only a pointer to the canonical root file.
 

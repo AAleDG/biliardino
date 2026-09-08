@@ -27,3 +27,5 @@ Every new or materially revised illustration must be presented to the user befor
 No shaded hero PNG or stadium master is required by the approved four layouts. Add one only for a concrete layout need and present it for approval. Functional icons, avatars, scores, badges, buttons and confetti remain widgets/painter geometry.
 
 The approved SVG geometry is frozen. The entrance study was adjusted after review to place the smaller football at the mounted figure’s foot before its short outward roll; this changes only browser composition/timing, not the approved assets. The user explicitly approved this corrected entrance replay. It is the implementation reference; final Flutter motion remains subject to runtime validation. The authoring script refuses to overwrite approved R1 masters; future changes need a new revision.
+
+Runtime mapping: the approved hashes are checked by `tool/generate_south_africa_artwork.py` before compiling paths into Dart. `SouthAfricaArtwork` paints those paths; `FootOriginEntrance` supplies the reviewed ball composition. Fonts are also bundled in `assets/fonts/` with their OFL licenses. No generated mockup PNG is a production background.
