@@ -176,6 +176,40 @@ void main() {
       expect(match.state.score2, 0);
     },
   );
+
+  testWidgets('system back preserves the active-match confirmation guard', (
+    tester,
+  ) async {
+    await _pumpFixture(tester);
+    final context = tester.element(find.byType(HomeScreen));
+    final home = context.read<HomeCubit>();
+    final match = context.read<NewMatchCubit>();
+    home.select(HomeDestination.match);
+    match.setMatchMode(MatchMode.oneVsOne);
+    match.setTeam('p0', 1);
+    match.setTeam('p3', 2);
+    match.kickoff();
+    final guardedRoute = MaterialPageRoute<void>(
+      builder: (_) => const HomeScreen(),
+    );
+    Navigator.of(context).push(guardedRoute);
+    await tester.pumpAndSettle();
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.text('Uscire dalla partita?'), findsOneWidget);
+    await tester.tap(find.text('Resta'));
+    await tester.pumpAndSettle();
+    expect(guardedRoute.isActive, isTrue);
+    expect(match.state.kickedOff, isTrue);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Esci'));
+    await tester.pumpAndSettle();
+    expect(guardedRoute.isActive, isFalse);
+    expect(match.state.kickedOff, isFalse);
+  });
 }
 
 Future<DesignFixture> _pumpFixture(WidgetTester tester) async {
