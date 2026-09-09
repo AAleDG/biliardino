@@ -321,4 +321,4 @@ Per riprodurre splash/gol/vittoria senza aprire il database, usare `tool/motion_
 
 La logica Cubit, le regole, lo schema SQLite, i repository, i calcoli e i servizi di import/export restano i proprietari dei comportamenti. Questa migrazione non introduce un nuovo modello dati, una selezione di temi o il timer della mood board.
 
-Stato della consegna e limiti delle verifiche: [ricevuta South Africa 2010](design/south-africa-2010/IMPLEMENTATION.md). I test automatici coprono il cambio di movimento ridotto a runtime; la verifica nativa e la navigazione VoiceOver restano da completare sul dispositivo autorizzato.
+Stato della consegna e limiti delle verifiche: [ricevuta South Africa 2010](design/south-africa-2010/IMPLEMENTATION.md). I test automatici coprono il cambio di movimento ridotto a runtime; la verifica nativa e la navigazione VoiceOver restano non verificate e sono state esplicitamente rinviate dall'utente a un successivo hardening di rilascio, senza bloccare il completamento di questo branch.
