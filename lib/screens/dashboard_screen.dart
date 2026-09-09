@@ -143,14 +143,16 @@ class _StartMatchAction extends StatelessWidget {
       selector: (state) => state.kickedOff && state.lastVictory == null,
       builder: (context, isActive) {
         final label = isActive ? 'RIPRENDI PARTITA' : 'INIZIA PARTITA';
+        void openMatch() =>
+            context.read<HomeCubit>().select(HomeDestination.match);
         return Semantics(
           button: true,
           label: label.toLowerCase(),
+          onTap: openMatch,
           excludeSemantics: true,
           child: ElevatedButton(
             key: const ValueKey('dashboard-start-match'),
-            onPressed: () =>
-                context.read<HomeCubit>().select(HomeDestination.match),
+            onPressed: openMatch,
             style:
                 AppTheme.primaryButton(
                   background: AppColors.homeAction,
@@ -405,10 +407,12 @@ class _RecentMatchRow extends StatelessWidget {
     final winnerColor = match.winningTeam == 1
         ? AppColors.teamOne
         : AppColors.teamTwo;
+    final usesStackedDetails = MediaQuery.textScalerOf(context).scale(1) > 1.3;
     return Semantics(
       key: ValueKey('dashboard-match-${match.id}'),
       button: true,
       label: '$matchup, $score, $date. Apri lo storico.',
+      onTap: onTap,
       child: ExcludeSemantics(
         child: InkWell(
           onTap: onTap,
@@ -428,27 +432,60 @@ class _RecentMatchRow extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      matchup,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppType.utility.copyWith(color: AppColors.ink),
-                    ),
+                    child: usesStackedDetails
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                matchup,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppType.utility.copyWith(
+                                  color: AppColors.ink,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpace.micro),
+                              Wrap(
+                                spacing: 12,
+                                runSpacing: AppSpace.micro,
+                                children: [
+                                  Text(score, style: AppType.bodyStrong),
+                                  Text(
+                                    date,
+                                    maxLines: 1,
+                                    style: AppType.caption.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          )
+                        : Text(
+                            matchup,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppType.utility.copyWith(
+                              color: AppColors.ink,
+                            ),
+                          ),
                   ),
-                  const SizedBox(width: 8),
-                  Text(score, style: AppType.bodyStrong),
-                  const SizedBox(width: 12),
-                  SizedBox(
-                    width: 44,
-                    child: Text(
-                      date,
-                      textAlign: TextAlign.right,
-                      maxLines: 1,
-                      style: AppType.caption.copyWith(
-                        color: AppColors.textSecondary,
+                  if (!usesStackedDetails) ...[
+                    const SizedBox(width: 8),
+                    Text(score, style: AppType.bodyStrong),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: 44,
+                      child: Text(
+                        date,
+                        textAlign: TextAlign.right,
+                        maxLines: 1,
+                        style: AppType.caption.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -477,6 +514,7 @@ class _RankingRow extends StatelessWidget {
       button: true,
       label:
           'Posizione $rank, ${stats.player.name}, ${stats.points} punti. Apri il profilo.',
+      onTap: onTap,
       child: ExcludeSemantics(
         child: InkWell(
           onTap: onTap,

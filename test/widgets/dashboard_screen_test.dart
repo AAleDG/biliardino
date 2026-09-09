@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/models/game_match.dart';
@@ -218,6 +220,19 @@ void main() {
         ),
         findsOneWidget,
       );
+      for (final finder in [
+        find.bySemanticsLabel(RegExp('inizia partita', caseSensitive: false)),
+        find.byKey(const ValueKey('dashboard-match-dashboard-5')),
+        find.byKey(const ValueKey('dashboard-ranking-p0')).first,
+      ]) {
+        expect(
+          tester
+              .getSemantics(finder)
+              .getSemanticsData()
+              .hasAction(ui.SemanticsAction.tap),
+          isTrue,
+        );
+      }
       semantics.dispose();
     },
   );
@@ -249,6 +264,31 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('large-text result details give dates their intrinsic width', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    tester.view.padding = const FakeViewPadding(top: 44, bottom: 20);
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await _pumpFixture(
+      tester,
+      populatedDashboard: true,
+      preserveViewport: true,
+    );
+
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('dashboard-match-dashboard-5')),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    final date = find.text('8 set').first;
+    expect(tester.getSize(date).width, greaterThan(44));
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('dashboard actions preserve minimum touch target dimensions', (
     tester,
