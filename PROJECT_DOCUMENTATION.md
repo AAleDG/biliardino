@@ -11,7 +11,7 @@ Biliardino e' una app Flutter pensata per tracciare le partite di biliardino in 
 - salvare lo storico dei risultati;
 - consultare classifica e statistiche base.
 
-Il tono dell'app resta interno e operativo. Il tema South Africa 2010 usa fondo avorio, titoli Barlow Condensed, nastri colorati e sagome di biliardino. La specifica approvata e' in [DESIGN.md](DESIGN.md); la navigazione e i comportamenti esistenti sono preservati.
+Il tono dell'app resta interno e operativo. Il tema South Africa 2010 usa fondo avorio, titoli Barlow Condensed, nastri colorati e sagome di biliardino. La specifica approvata e' in [DESIGN.md](DESIGN.md). L'estensione Home approvata cambia l'organizzazione della navigazione, ma mantiene raggiungibili tutti i comportamenti esistenti.
 
 ## Come e' stato creato
 
@@ -45,7 +45,7 @@ La persistenza locale usa due tabelle:
 
 ## Flusso applicativo
 
-La home usa una bottom navigation con cinque sezioni:
+Lo stato implementato prima dell'estensione Home usa una bottom navigation con cinque sezioni:
 
 - **Giocatori**: elenco giocatori, stato presenza, aggiunta nuovo giocatore.
 - **Partita**: composizione squadre, avvio partita, scoreboard, modifica punteggio, salvataggio risultato.
@@ -53,7 +53,17 @@ La home usa una bottom navigation con cinque sezioni:
 - **Classifica**: ranking generale e marcatori, calcolati dalle partite salvate.
 - **Dati**: esportazione JSON/CSV e ripristino verificato tramite i selettori nativi.
 
-All'avvio `main.dart` carica `PlayerRepository` e `MatchRepository`, poi espone i repository tramite `MultiRepositoryProvider` e crea i Cubit globali principali.
+La fondazione implementata per l'estensione Home usa cinque voci primarie tipizzate:
+
+- **Home**: dashboard iniziale con azione avvia/riprendi, cinque risultati recenti non filtrati e quattro posizioni della classifica.
+- **Giocatori**: gestione completa dei giocatori e della presenza.
+- **Partita**: setup e partita attiva esistenti.
+- **Classifica**: classifica completa e profili.
+- **Altro**: accesso tramite route complete a **Storico** e **Dati**, mantenendo filtri e comportamenti esistenti.
+
+`HomeCubit` espone `HomeDestination` invece di indici numerici. `HistoryCubit` vive sopra le route, cosi' i filtri sopravvivono alle visite da **Altro**. `DashboardCubit` e' alimentato direttamente dagli stream di `PlayerRepository` e `MatchRepository`: riusa `StatsService.sortedByMostRecent` e `StatsService.computeLeaderboard`, limita i risultati a cinque e le posizioni giocate a quattro, e non possiede persistenza, filtri dello storico o una nuova formula punti. La Home usa l'hero H2 approvato come PNG trasparente decorativo: e' l'unico elemento a tutta larghezza, conserva il rapporto intrinseco 1516:1038 e non usa crop. Wordmark, tagline, azione avvia/riprendi, righe, link e navigazione restano widget Flutter. L'azione Home e' una variante locale a capsula da 72dp con bordo bianco, ombra contenuta e lockup Barlow Condensed; non modifica i pulsanti condivisi delle altre schermate. Le righe hanno target da almeno 48dp, quindi la pagina scorre invece di comprimere la classifica sotto i risultati; con testo ingrandito le intestazioni si impilano e la barra primaria mantiene cinque destinazioni stabili.
+
+All'avvio `main.dart` carica `PlayerRepository` e `MatchRepository`, poi espone i repository tramite `MultiRepositoryProvider` e crea i Cubit globali principali, inclusi `DashboardCubit` e il `HistoryCubit` condiviso dalle route.
 
 ## Motivazioni delle scelte tecniche
 

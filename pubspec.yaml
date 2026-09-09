@@ -83,6 +83,7 @@ flutter:
   assets:
     - assets/fonts/Barlow-OFL.txt
     - assets/fonts/BarlowCondensed-OFL.txt
+    - design/south-africa-2010/assets/home-h2/png/home-hero-transparent.png
   fonts:
     - family: Barlow
       fonts:

@@ -1,21 +1,30 @@
 # South Africa 2010 implementation receipt
 
-Updated 8 September 2026. Issue #11. Branch: `codex/south-africa-2010-design-implementation`.
+Updated 9 September 2026. Issue #11. Branch: `codex/south-africa-2010-design-implementation`.
 
-All planned screens and motion are implemented. Automated regression, static analysis, design checks and iOS simulator build pass. Final accessibility acceptance remains open: actual VoiceOver traversal and native reduced-motion on/off/runtime replay could not be completed on the exclusively authorized simulator. This is a local implementation checkpoint, not release or merge approval.
+## Home dashboard extension checkpoint — 9 September 2026
+
+The user approved the exact transparent H2 Home hero at SHA-256 `44530a3c4f352a2cb2a413c529c3b002b125a345045fd2e874bf386158dd73de`. Approval covers only the decorative PNG recorded in the [H2 manifest](assets/home-h2/manifest.json); wordmark, tagline, controls, rows and navigation remain live Flutter UI. P9 artwork review, P10 foundation and P11 Home integration are complete. P10 adds typed Home/Giocatori/Partita/Classifica/Altro navigation, full Storico/Dati routes with persistent History filters, preserved match visibility/leave behavior and a reactive dashboard data owner. P11 bundles the approved PNG unchanged and adds the live wordmark/tagline, start-or-resume action, recent results, ranking, empty/sparse/long-name states, destination links and row semantics.
+
+P11 validation adds nine Home widget cases and eight inspected real-font Home goldens across 402×874, 320×568 at 200% text, 568×320 at 200% text, populated/empty and scrolled content states. The complete suite passes 177 tests. The established screen goldens were regenerated for the typed navigation shell and inspected; a stale Players test was corrected to select Giocatori explicitly rather than accepting an accidental Home capture. `flutter analyze --no-pub`, the simulator debug build, the approved H2 hash and `git diff --check` pass at this checkpoint.
+
+The corrected Home presentation gives the approved 1516×1038 hero the full safe-area width and its intrinsic ratio with contain behavior; the top and bottom are no longer clipped by a mismatched cover frame. The wordmark, action and data retain 16dp gutters. The Home-only action now uses the reference's 72dp capsule, white perimeter, restrained shadow, larger Barlow Condensed lockup and brighter blue without changing shared controls. At 402×874 the full hero means the fifth result and four-entry ranking require scrolling; on the authorized Pro Max all five latest results remain visible in the captured first fold. This is the deliberate approved-token divergence from the poster: 48dp interactive rows and the substantial uncropped hero are not compressed merely to force every row above the fold. Enlarged text stacks section headings and links; navigation label rendering is bounded to keep all five fixed destinations stable while their full accessibility labels remain exposed.
+
+For the original R2 scope, all planned screens and motion are implemented. Automated regression, static analysis, design checks and iOS simulator build pass. Final accessibility acceptance remains open: actual VoiceOver traversal and native reduced-motion on/off/runtime replay could not be completed on the exclusively authorized simulator. This is a historical local implementation checkpoint, not validation of the later Home extension or release/merge approval.
 
 ## Delivered scope
 
 | Surface | Implementation and evidence |
 | --- | --- |
 | Shared foundation | Bundled Barlow/Barlow Condensed with OFL licenses, semantic colors/type/spacing, Material interaction states, approved vector painter, headers and five-tab navigation. Actual-font component goldens and contrast/state tests. |
+| Home dashboard | Exact approved transparent H2 hero at full safe-area width and intrinsic ratio, live wordmark/tagline, reference-specific capsule start/resume action, five unfiltered latest results, four existing-points rankings, full-history/leaderboard/profile actions, empty/sparse/long-name/reflow states and concise semantics. |
 | Players and setup | Grouped roster, separate profile/presence/menu controls, busy dialogs, adaptive team assignment and rules, persistent kickoff. Existing player/rules/rivalry tests and compact/large-text goldens. |
 | Live scoring | Solid team panels, scorer sheet, undo/reset/leave/save/correction behavior preserved. Compact landscape scoring and scroll reachability regression. |
 | Motion | Approved foot-origin entrance, coalesced nonblocking goal feedback, immediate victory actions, bounded 36-particle burst, runtime motion policy, cancellation on hidden tab/disposal and safe late-save delivery. Lifecycle tests and inspected simulator frame sequences. |
 | History and rankings | Calm history rows, adaptive safe-area filters/details, compact first-visible podium, General/Scorers and real ranking badges, CSV actions. Existing filtering/editing/legacy-scorer tests, podium lifecycle and screen goldens. |
 | Profile, data and bootstrap | Adaptive metrics/relationships, existing import/export/retry behavior. Profile/data goldens plus existing backup/database/bootstrap tests. |
 
-Models, Cubits, repositories, database schema and services have no diff from application baseline `ad701db6dc49b2828696c7eee6831135508df0f9`. No timer, theme selector or data migration was added.
+At the original R2 source checkpoint, models, Cubits, repositories, database schema and services had no diff from application baseline `ad701db6dc49b2828696c7eee6831135508df0f9`. The current extension adds only navigation/derived-state Cubit ownership around the unchanged models, repositories, database schema, scoring and persistence services. No timer, theme selector or data migration was added.
 
 ## Validation
 
@@ -39,7 +48,9 @@ Only **iPhone 17 Pro Max 26.0 AppStore**, iOS 26.0, UDID `293A02E2-FC2D-4D72-93E
 
 Observed flows include populated/empty screens, player add/archive/reactivate/profile, assignments/kickoff, successive goals, saved result/rematch, both rankings, history filtering/reset, edit and deletion. JSON export reached Save to Files. Real picker cancellation and restore-confirmation cancellation returned normally. An unsupported backup was rejected with all database rows unchanged. Valid restore removed a temporary player and restored the exact exported six-player/one-match fixture. CSV sharing opened the native sheet and cancellation returned normally; nothing was sent to an external recipient.
 
-Large-text profile/ranking/history/filter layouts were inspected on the device, then the original content-size category `large` was restored. The latest build is installed and left on Players with six synthetic players. History is empty following the tested deletion; the valid export is retained only in the review app/local evidence.
+The P11 spot check installed the current source under the same isolated review bundle, first observed the empty Home, then added five synthetic matches only to its verified six-player database. Device captures cover the populated first fold and the scrolled four-entry ranking. A later fidelity capture verifies the unchanged approved PNG at full safe-area width without upper/lower crop and the corrected Home-only capsule action. Accessibility inspection confirmed one Home CTA node, five 48dp result rows, four ranking actions, live section links and five primary tab labels; the decorative H2 is excluded from traversal. Device-scoped taps opened Classifica, setup, Storico and the selected player profile from Home.
+
+Large-text profile/ranking/history/filter layouts were inspected on the device. P11 also switched the authorized simulator temporarily from its recorded `large` category to `accessibility-extra-extra-extra-large`, observed the scrolling/reflowing Home, and restored `large`. The latest review build is installed with six synthetic players and five synthetic matches, isolated from the production bundle. Local P11 captures remain under ignored `qa/`; the valid prior export remains only in the review app/local evidence.
 
 Retained images: [current Players](verification/players-pro-max.png), [corrected entrance frame review](verification/entrance-review.png), [available Accessibility settings](verification/accessibility-settings.png). Entrance frames are from the P4 corrected-motion build; later checks did not modify entrance geometry. Detailed command logs, native captures, data comparisons and replay videos remain in the ignored local execution packet until landing; reviewed regression goldens are tracked under `test/goldens/`.
 
@@ -53,4 +64,4 @@ No required scope was waived. P6/P7 remain open for these runtime gates; the imp
 
 ## Ownership and provenance
 
-[Root DESIGN.md](../../DESIGN.md) owns visuals and motion. [PROJECT_DOCUMENTATION.md](../../PROJECT_DOCUMENTATION.md) owns architecture. [Asset inventory](assets/README.md) and [R1 manifest](assets/r1/manifest.json) own approval, hashes and entrance provenance. All five SVGs and corrected foot-origin entrance were explicitly approved; no unseen artwork is accepted by this receipt.
+[Root DESIGN.md](../../DESIGN.md) owns visuals and motion. [PROJECT_DOCUMENTATION.md](../../PROJECT_DOCUMENTATION.md) owns architecture. [Asset inventory](assets/README.md), [R1 manifest](assets/r1/manifest.json) and [H2 manifest](assets/home-h2/manifest.json) own approval, hashes and artwork provenance. All five SVGs, the corrected foot-origin entrance and the exact H2 Home PNG were explicitly approved; no unseen artwork is accepted by this receipt.

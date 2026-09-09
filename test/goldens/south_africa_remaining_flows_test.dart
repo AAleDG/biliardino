@@ -45,7 +45,9 @@ void main() {
           );
         }
 
-        home.selectTab(2);
+        home.select(HomeDestination.more);
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('more-history')));
         await capture('history');
         await tester.tap(find.byKey(const ValueKey('history-open-filters')));
         await capture('filters');
@@ -59,13 +61,22 @@ void main() {
         if (compact) await capture('filters-actions');
         Navigator.of(context).pop();
         await tester.pumpAndSettle();
-        home.selectTab(3);
+        Navigator.of(context).pop();
+        await tester.pumpAndSettle();
+        home.select(HomeDestination.leaderboard);
         await capture('standings');
         await tester.tap(find.text('Marcatori'));
         await capture('scorers');
-        home.selectTab(4);
+        home.select(HomeDestination.more);
+        await tester.pumpAndSettle();
+        final data = find.byKey(const ValueKey('more-data'));
+        await tester.ensureVisible(data);
+        await tester.pumpAndSettle();
+        await tester.tap(data);
         await capture('data');
-        home.selectTab(0);
+        Navigator.of(context).pop();
+        await tester.pumpAndSettle();
+        home.select(HomeDestination.players);
         await tester.pumpAndSettle();
         await tester.tap(find.text('Andrea').first);
         await capture('profile');

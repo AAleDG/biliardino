@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "approval": "pending-user-review",
+  "assets": [
+    {
+      "asset": "home-hero",
+      "bytes": 3066,
+      "structure": "passed",
+      "hash": "matched"
+    },
+    {
+      "asset": "home-brand-flare",
+      "bytes": 416,
+      "structure": "passed",
+      "hash": "matched"
+    }
+  ],
+  "checks": [
+    "finite viewBoxes",
+    "unique IDs",
+    "approved palette only",
+    "no text, scripts, handlers, filters, bitmaps or external resources",
+    "internal fragment reuse only",
+    "approved R1 input hashes matched",
+    "approved R1 primitive geometry retained",
+    "asset and review SHA-256 provenance matched",
+    "exact supplied reference SHA-256 matched"
+  ],
+  "limitation": "Structural and provenance checks do not imply visual or user approval."
+}

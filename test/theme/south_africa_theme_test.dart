@@ -9,6 +9,8 @@ void main() {
       (AppColors.textSecondary, AppColors.background),
       (AppColors.onPrimary, AppColors.primary),
       (AppColors.onPrimary, AppColors.primaryPressed),
+      (AppColors.onPrimary, AppColors.homeAction),
+      (AppColors.onPrimary, AppColors.homeActionPressed),
       (AppColors.onPrimary, AppColors.success),
       (AppColors.successPressed, AppColors.successContainer),
       (AppColors.onPrimary, AppColors.error),

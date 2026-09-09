@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'cubits/dashboard/dashboard_cubit.dart';
+import 'cubits/history/history_cubit.dart';
 import 'cubits/home/home_cubit.dart';
 import 'cubits/leaderboard/leaderboard_cubit.dart';
 import 'cubits/new_match/new_match_cubit.dart';
@@ -137,6 +139,18 @@ class BiliardinoApp extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [
           BlocProvider<HomeCubit>(create: (_) => HomeCubit()),
+          BlocProvider<DashboardCubit>(
+            create: (ctx) => DashboardCubit(
+              playerRepository: ctx.read<PlayerRepository>(),
+              matchRepository: ctx.read<MatchRepository>(),
+            ),
+          ),
+          BlocProvider<HistoryCubit>(
+            create: (ctx) => HistoryCubit(
+              playerRepository: ctx.read<PlayerRepository>(),
+              matchRepository: ctx.read<MatchRepository>(),
+            ),
+          ),
           BlocProvider<PlayersCubit>(
             create: (ctx) => PlayersCubit(ctx.read<PlayerRepository>()),
           ),

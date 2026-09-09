@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "approval": "approved-by-user",
+  "asset": {
+    "file": "png/home-hero-transparent.png",
+    "sha256": "44530a3c4f352a2cb2a413c529c3b002b125a345045fd2e874bf386158dd73de",
+    "bytes": 1067044,
+    "pixels": "1516x1038",
+    "mode": "RGBA",
+    "alphaMin": 0,
+    "alphaMax": 255,
+    "transparentPixels": 836762,
+    "partiallyTransparentPixels": 21399,
+    "opaquePixels": 715447,
+    "cornerAlpha": 0
+  },
+  "checks": [
+    "candidate hash and byte count matched",
+    "1516x1038 RGBA image decoded",
+    "real alpha spans 0 through 255",
+    "transparent and partial-alpha counts matched manifest",
+    "top-left corner is fully transparent",
+    "retained opaque source hash matched",
+    "review SHA-256 provenance matched",
+    "exact supplied reference SHA-256 matched"
+  ],
+  "limitation": "File structure and provenance checks do not imply visual or user approval. The built-in image tool did not expose its execution model."
+}

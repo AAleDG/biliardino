@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="58" viewBox="0 0 64 58">
+<title>Home wordmark ribbon flare</title>
+<g id="brand-flare">
+  <path id="green" fill="#087F3E" d="M3 56 C8 31 21 12 43 2 C26 20 17 38 14 58 Z"/>
+  <path id="yellow" fill="#FFC700" d="M18 58 C27 34 42 17 62 8 C45 26 35 43 31 58 Z"/>
+  <path id="blue" fill="#0057B8" d="M36 58 C43 43 52 32 64 26 C55 38 49 49 47 58 Z"/>
+</g>
+</svg>

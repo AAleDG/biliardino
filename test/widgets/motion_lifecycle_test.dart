@@ -29,7 +29,7 @@ void main() {
         await fixture.dispose();
       });
       final context = tester.element(find.byType(HomeScreen));
-      context.read<HomeCubit>().selectTab(1);
+      context.read<HomeCubit>().select(HomeDestination.match);
       final match = context.read<NewMatchCubit>();
       match.setTeam('p0', 1);
       match.setTeam('p2', 1);
@@ -157,7 +157,7 @@ void main() {
       final context = tester.element(find.byType(HomeScreen));
       final home = context.read<HomeCubit>();
       final match = context.read<NewMatchCubit>();
-      home.selectTab(1);
+      home.select(HomeDestination.match);
       match.setMatchMode(MatchMode.oneVsOne);
       match.setTeam('p0', 1);
       match.setTeam('p3', 2);
@@ -206,10 +206,10 @@ void main() {
       expect(match.state.score1, 0);
       match.addGoal(1, 'p0');
       await tester.pump();
-      home.selectTab(0);
+      home.select(HomeDestination.home);
       await tester.pump();
       expect(find.byKey(const ValueKey('goal-overlay')), findsNothing);
-      home.selectTab(1);
+      home.select(HomeDestination.match);
       match.addGoal(1, 'p0');
       await tester.pump();
       await tester.pumpWidget(const SizedBox.shrink());
@@ -276,7 +276,7 @@ void main() {
       final context = tester.element(find.byType(HomeScreen));
       final home = context.read<HomeCubit>();
       final match = context.read<NewMatchCubit>();
-      home.selectTab(1);
+      home.select(HomeDestination.match);
       match.setMatchMode(MatchMode.oneVsOne);
       match.setTeam('p0', 1);
       match.setTeam('p3', 2);
@@ -288,7 +288,7 @@ void main() {
       final saving = match.save();
       await tester.pump();
       expect(match.state.isSaving, isTrue);
-      home.selectTab(0);
+      home.select(HomeDestination.home);
       await tester.pump();
       barrier.complete();
       await saving;
@@ -296,7 +296,7 @@ void main() {
       expect(fixture.database.matches.length, 2);
       expect(find.byKey(const ValueKey('victory-overlay')), findsNothing);
       expect(find.byKey(const ValueKey('goal-overlay')), findsNothing);
-      expect(home.state, 0);
+      expect(home.state, HomeDestination.home);
       await tester.pumpWidget(const SizedBox.shrink());
       await fixture.dispose();
       expect(tester.takeException(), isNull);

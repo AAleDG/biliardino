@@ -22,6 +22,10 @@ void main() {
     final fixture = DesignFixture(empty: empty, longRoster: longRoster);
     await fixture.load();
     await tester.pumpWidget(fixture.home);
+    tester
+        .element(find.byType(HomeScreen))
+        .read<HomeCubit>()
+        .select(HomeDestination.players);
     await tester.pumpAndSettle();
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox.shrink());
@@ -55,7 +59,7 @@ void main() {
     (tester) async {
       await mount(tester, scale: 2, longRoster: true);
       final context = tester.element(find.byType(HomeScreen));
-      context.read<HomeCubit>().selectTab(1);
+      context.read<HomeCubit>().select(HomeDestination.match);
       await tester.pumpAndSettle();
       final row = find.byKey(const ValueKey('present-player-p7'));
       await tester.scrollUntilVisible(
@@ -82,7 +86,10 @@ void main() {
     tester,
   ) async {
     await mount(tester, empty: true, scale: 2, size: const Size(568, 320));
-    tester.element(find.byType(HomeScreen)).read<HomeCubit>().selectTab(1);
+    tester
+        .element(find.byType(HomeScreen))
+        .read<HomeCubit>()
+        .select(HomeDestination.match);
     await tester.pumpAndSettle();
     final guidance = find.text('Vai su Giocatori e segna chi è presente.');
     await tester.ensureVisible(guidance);

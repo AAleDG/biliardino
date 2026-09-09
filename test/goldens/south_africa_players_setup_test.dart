@@ -36,9 +36,11 @@ void main() {
         );
       }
 
-      await capture('south-africa-players');
       final context = tester.element(find.byType(HomeScreen));
-      context.read<HomeCubit>().selectTab(1);
+      context.read<HomeCubit>().select(HomeDestination.players);
+      await tester.pumpAndSettle();
+      await capture('south-africa-players');
+      context.read<HomeCubit>().select(HomeDestination.match);
       final match = context.read<NewMatchCubit>();
       match.setTeam('p0', 1);
       match.setTeam('p2', 1);

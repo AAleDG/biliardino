@@ -1,0 +1,61 @@
+{
+  "revision": "H2-transparent-approved",
+  "approval": "approved-by-user",
+  "integrationStatus": "approved-for-scoped-home-integration",
+  "source": {
+    "reference": "Leftmost phone in 726F3069-E269-4985-8BE7-CBA5848724ED.PNG",
+    "referenceSha256": "a5b2c1415025746a3dbe688fe4873043c6823424e01d862fd20d7e1d38b67492",
+    "h1Alternative": "../home-r1/manifest.json"
+  },
+  "generation": {
+    "tool": "Built-in image_gen plus deterministic local alpha extraction",
+    "mode": "generate with reference, targeted flat-key background edit, chroma-key to alpha, lossless PNG optimization",
+    "requestedModel": "GPT-Image-2.5 Sunburst",
+    "executionModel": "Not exposed by the built-in image_gen tool; cannot be certified or selected in this run",
+    "officialModelNote": "OpenAI documents gpt-image-2.5-sunburst as the precision-editing model released 2026-09-08. Direct API selection was unavailable because OPENAI_API_KEY was not configured.",
+    "creativePrompt": "Use case: stylized-concept\nAsset type: transparent PNG hero illustration for the Home screen of the Biliardino Flutter app\nInput images: Image 1 is the exact visual reference. Use only the artwork inside the LEFTMOST phone as the composition and style reference; do not reproduce the phone or interface.\nPrimary request: Create a polished raster alternative to the Home hero artwork, matching the leftmost phone's energetic foosball composition more closely than the flat SVG version.\nScene/backdrop: genuinely transparent background with clean alpha; transparent negative-space gaps between the illustrated elements\nSubject: exactly four rigid black table-football figures mounted on diagonal black rods, with the largest foreground figure on the left and three progressively smaller figures receding toward the right; one football near the lower center-right; broad sweeping yellow, green, blue, and red ribbons weaving behind and around the figures\nStyle/medium: crisp premium sports-poster illustration, flat graphic foundation with restrained dimensional shading and subtle warm/yellow rim highlights on the black figures and football, faithful to the leftmost reference; sharp clean edges suitable for a mobile UI asset\nComposition/framing: wide approximately 402:276 aspect ratio; edge-to-edge ribbon energy; preserve the left-to-right scale progression, strong foreground silhouette, visible diagonal rods, and prominent football; the illustration must work directly below a separate live wordmark\nColor palette: warm black #111111, yellow #FFC700, green #087F3E, blue #0057B8, red #C62828, with small warm ivory highlights only where needed\nText: none\nConstraints: actual transparent alpha; illustration only; no wordmark, no letters, no tagline, no button, no icon, no scores, no rows, no navigation, no UI chrome, no phone hardware, no poster footer, no timer, no people, no loose human figures, no stadium, no tournament marks, no official logos, no watermark; do not crop the football; keep each figure visibly attached to a rod",
+    "finalBackgroundPrompt": "Use case: precision background replacement for later chroma-key extraction.\n\nImage 1 is the edit target. Replace ONLY the warm ivory background with a perfectly flat, uniform, solid pure magenta background (#FF00FF). The magenta must be continuous behind and between every foreground shape, with no checkerboard, pattern, texture, gradient, vignette, lighting, cast shadow, or variation.\n\nPreserve the foreground artwork exactly: all four black foosball figures, the complete diagonal rod, football, every red/yellow/green/blue ribbon, highlights, shadows, edges, proportions, composition, crop, and small details. Do not redraw, restyle, reposition, resize, simplify, add, or remove any foreground element. Change no foreground detail. The only permitted visual change is ivory background to flat pure magenta.\n\nOutput PNG. No text, letters, logo, watermark, UI, button, or device frame.",
+    "directTransparencyResult": "The built-in direct-transparency edit returned a fully opaque 3-channel PNG with a painted checkerboard (1516x1038, corner RGB 230/233/235) and was rejected.",
+    "alphaExtraction": {
+      "tool": "imagegen skill scripts/remove_chroma_key.py",
+      "sampledKey": "#FA06FA",
+      "arguments": "--auto-key corners --soft-matte --transparent-threshold 8 --opaque-threshold 72 --spill-cleanup",
+      "transparentPixels": 836762,
+      "partiallyTransparentPixels": 21399,
+      "totalPixels": 1573608,
+      "losslessOptimization": "ImageMagick metadata strip and PNG compression level 9/filter 5; pixel comparison AE 0"
+    },
+    "foregroundComparison": "Against the retained opaque H2 resized by one pixel to 1516x1038 and restricted to the candidate's >=99% opaque mask, ImageMagick RMSE was 0.0139482. This is evidence of close preservation, not pixel identity or user approval."
+  },
+  "asset": {
+    "id": "home-hero-png-transparent",
+    "file": "png/home-hero-transparent.png",
+    "sha256": "44530a3c4f352a2cb2a413c529c3b002b125a345045fd2e874bf386158dd73de",
+    "pixels": "1516x1038",
+    "aspectRatio": 1.4605009634,
+    "colorSpace": "sRGBA",
+    "alpha": true,
+    "bytes": 1067044,
+    "contentBoundary": "Decorative hero only: four mounted figures and rods, football and ribbons. No wordmark, label, control or data.",
+    "backgroundObservation": "Actual non-opaque alpha channel; corner is RGBA 0/0/0/0. Review on canonical #F8F5EB and contrast #0057B8 before approval."
+  },
+  "approvalRecord": {
+    "approvedAt": "2026-09-09",
+    "approvedBy": "user",
+    "approvedSha256": "44530a3c4f352a2cb2a413c529c3b002b125a345045fd2e874bf386158dd73de",
+    "scope": "Decorative transparent Home hero only: four mounted foosball figures and rod, football and ribbons. Wordmark, tagline, controls, data rows and navigation remain live Flutter widgets.",
+    "changeRule": "Any pixel, alpha, dimension or encoding change produces a new hash and requires renewed artwork review."
+  },
+  "retainedSource": {
+    "file": "png/home-hero.png",
+    "sha256": "7205aa232e9ba004b59e16159e1403f6f0888805cdd0f01b7c0e322a8a26522e",
+    "pixels": "1515x1038",
+    "role": "Opaque H2 direction source retained for provenance; not the integration candidate"
+  },
+  "review": {
+    "file": "review.html",
+    "sha256": "1e01b1675cbe226271710af6cc1f0aee3119684803d1ad1ec22cb88bcdbce33c",
+    "context": "402x874 live-font HTML context plus exact candidate on canonical ivory and contrast blue; H1 flare shown only for shared context",
+    "fixtureDisclaimer": "All visible wordmark, labels, icons, names, dates, scores, rows and navigation are HTML context and must remain Flutter widgets."
+  }
+}

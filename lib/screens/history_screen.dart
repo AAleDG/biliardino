@@ -9,8 +9,6 @@ import '../cubits/history/history_logic.dart';
 import '../cubits/history/history_state.dart';
 import '../models/game_match.dart';
 import '../models/player.dart';
-import '../repositories/match_repository.dart';
-import '../repositories/player_repository.dart';
 import '../services/stats_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/design/adaptive_pair.dart';
@@ -19,15 +17,7 @@ class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider<HistoryCubit>(
-      create: (ctx) => HistoryCubit(
-        playerRepository: ctx.read<PlayerRepository>(),
-        matchRepository: ctx.read<MatchRepository>(),
-      ),
-      child: const _HistoryView(),
-    );
-  }
+  Widget build(BuildContext context) => const _HistoryView();
 }
 
 class _HistoryView extends StatelessWidget {

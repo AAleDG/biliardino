@@ -1,0 +1,76 @@
+{
+  "revision": "H1",
+  "approval": "pending-user-review",
+  "source": {
+    "reference": "Leftmost phone in 726F3069-E269-4985-8BE7-CBA5848724ED.PNG",
+    "referenceSha256": "a5b2c1415025746a3dbe688fe4873043c6823424e01d862fd20d7e1d38b67492",
+    "canonicalDesign": "Root DESIGN.md — South Africa 2010"
+  },
+  "authoring": "Original flat vector composition authored for this repository. The Home hero reuses the approved R1 figure, rod and football primitives and adds a new arrangement and ribbon sweep. The flare is a new three-path mark. No ImageGen, raster tracing, official tournament logo or third-party artwork is included.",
+  "palette": [
+    "#111111",
+    "#F8F5EB",
+    "#FFC700",
+    "#087F3E",
+    "#0057B8",
+    "#C62828"
+  ],
+  "approvedInputs": [
+    {
+      "id": "foosball-figure",
+      "revision": "R1",
+      "sha256": "2ab1810dbfb5a2a568e86586f9e39c22e264b15d38c447989da3853749a37922"
+    },
+    {
+      "id": "foosball-rod",
+      "revision": "R1",
+      "sha256": "4176786f872bffb8bb71b7d86f6b7a8ffbbeee48705ca2ac88f6ca4def50e569"
+    },
+    {
+      "id": "football",
+      "revision": "R1",
+      "sha256": "c8ee257849846cfb9888c883f4901cd24c1066d977781a40984db48d8c27c9e7"
+    },
+    {
+      "id": "ribbon-header",
+      "revision": "R1",
+      "sha256": "3c5762ed5fefa5a8b62c35dc7bdc4315d18db8010dd418d225b533d75e0d9b9b"
+    },
+    {
+      "id": "ribbon-corner",
+      "revision": "R1",
+      "sha256": "8f6fa03a99f5079e61f7dbcd6a826208458aaab24af45e16c5f693da3ffa4eec"
+    }
+  ],
+  "assets": [
+    {
+      "id": "home-hero",
+      "file": "svg/home-hero.svg",
+      "role": "review-composition",
+      "viewBox": "0 0 402 276",
+      "sha256": "1e9cb634f14c4cac77e1f3f23005789c3a6d3e35a4af8e9f4e2a50f02a0fa56a",
+      "approval": "pending-user-review",
+      "runtimeIntent": "Recompose with the existing approved painter primitives and transforms after approval; do not ship the review SVG by default.",
+      "contentBoundary": "Decorative figures, rods, football and ribbons only. No wordmark, data, labels or controls."
+    },
+    {
+      "id": "home-brand-flare",
+      "file": "svg/home-brand-flare.svg",
+      "role": "review-composition",
+      "viewBox": "0 0 64 58",
+      "sha256": "41c90b6d9f0bda9d69af6bba5b57d2fc345e480fcd65b16b5d9f18835c629b50",
+      "approval": "pending-user-review",
+      "runtimeIntent": "Compile the three paths into the shared painter after approval; render BILIARDINO and its tagline as live Flutter text.",
+      "contentBoundary": "Decorative three-color flare only. No text."
+    }
+  ],
+  "review": {
+    "file": "review.html",
+    "sha256": "a0ace2f75f9d6c0f65ea820dfc492f1bb641455bc5ae3eb1c48d712e771ea431",
+    "viewports": [
+      "402x874 logical context",
+      "320x568 compact crop"
+    ],
+    "fixtureDisclaimer": "Names, dates, scores, ranking values and navigation glyphs are illustrative context only, not asset content or product requirements."
+  }
+}

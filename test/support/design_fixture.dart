@@ -8,6 +8,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:biliardino/cubits/home/home_cubit.dart';
+import 'package:biliardino/cubits/dashboard/dashboard_cubit.dart';
+import 'package:biliardino/cubits/history/history_cubit.dart';
 import 'package:biliardino/cubits/players/players_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/cubits/leaderboard/leaderboard_cubit.dart';
@@ -19,7 +21,12 @@ import 'fake_database.dart';
 /// Deterministic visual fixtures through the real repositories and app widgets.
 /// These in-memory captures do not establish native storage/share correctness.
 class DesignFixture {
-  DesignFixture({bool empty = false, bool longRoster = false}) {
+  DesignFixture({
+    bool empty = false,
+    bool longRoster = false,
+    bool populatedDashboard = false,
+    bool sparseDashboard = false,
+  }) {
     final names = [
       'Andrea',
       'Giulia',
@@ -47,6 +54,10 @@ class DesignFixture {
       players: players,
       matches: empty
           ? []
+          : populatedDashboard
+          ? _dashboardMatches(longRoster: longRoster)
+          : sparseDashboard
+          ? [_dashboardMatches(longRoster: longRoster).first]
           : [
               GameMatch(
                 id: 'm1',
@@ -103,6 +114,18 @@ class DesignFixture {
     child: MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => HomeCubit()),
+        BlocProvider(
+          create: (_) => DashboardCubit(
+            playerRepository: playersRepository,
+            matchRepository: matchesRepository,
+          ),
+        ),
+        BlocProvider(
+          create: (_) => HistoryCubit(
+            playerRepository: playersRepository,
+            matchRepository: matchesRepository,
+          ),
+        ),
         BlocProvider(create: (_) => PlayersCubit(playersRepository)),
         BlocProvider(
           create: (_) => NewMatchCubit(
@@ -119,6 +142,7 @@ class DesignFixture {
         ),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         theme: AppTheme.southAfrica(),
         home: const HomeScreen(),
       ),
@@ -128,6 +152,78 @@ class DesignFixture {
     await playersRepository.dispose();
     await matchesRepository.dispose();
   }
+}
+
+List<GameMatch> _dashboardMatches({required bool longRoster}) {
+  GameMatch match({
+    required String id,
+    required DateTime playedAt,
+    required String teamOne,
+    required String teamTwo,
+    required int scoreOne,
+    required int scoreTwo,
+  }) {
+    return GameMatch(
+      id: id,
+      playedAt: playedAt,
+      mode: MatchMode.oneVsOne,
+      isRivalry: false,
+      t1p1: teamOne,
+      t1p2: '',
+      t2p1: teamTwo,
+      t2p2: '',
+      t1Score: scoreOne,
+      t2Score: scoreTwo,
+      winningTeam: scoreOne > scoreTwo ? 1 : 2,
+      scorerIds: [
+        ...List.filled(scoreOne, teamOne),
+        ...List.filled(scoreTwo, teamTwo),
+      ],
+    );
+  }
+
+  return [
+    match(
+      id: 'dashboard-5',
+      playedAt: DateTime(2026, 9, 8, 18, 30),
+      teamOne: 'p0',
+      teamTwo: 'p1',
+      scoreOne: 5,
+      scoreTwo: 3,
+    ),
+    match(
+      id: 'dashboard-4',
+      playedAt: DateTime(2026, 9, 8, 17, 15),
+      teamOne: 'p2',
+      teamTwo: 'p3',
+      scoreOne: 2,
+      scoreTwo: 5,
+    ),
+    match(
+      id: 'dashboard-3',
+      playedAt: DateTime(2026, 9, 7, 16, 20),
+      teamOne: 'p4',
+      teamTwo: 'p5',
+      scoreOne: 5,
+      scoreTwo: 4,
+    ),
+    match(
+      id: 'dashboard-2',
+      playedAt: DateTime(2026, 9, 6, 14, 45),
+      teamOne: 'p1',
+      teamTwo: 'p2',
+      scoreOne: 5,
+      scoreTwo: 1,
+    ),
+    match(
+      id: 'dashboard-1',
+      playedAt: DateTime(2026, 9, 5, 12, 10),
+      teamOne: longRoster ? 'p6' : 'p3',
+      teamTwo: longRoster ? 'p7' : 'p4',
+      scoreOne: 3,
+      scoreTwo: 5,
+    ),
+  ];
 }
 
 Future<void> loadDesignFonts() async {

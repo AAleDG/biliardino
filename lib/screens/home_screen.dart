@@ -5,33 +5,37 @@ import '../cubits/home/home_cubit.dart';
 import '../cubits/new_match/new_match_cubit.dart';
 import '../cubits/new_match/new_match_state.dart';
 import '../theme/app_theme.dart';
-import 'data_management_screen.dart';
-import 'history_screen.dart';
+import 'dashboard_screen.dart';
 import 'leaderboard_screen.dart';
+import 'more_screen.dart';
 import 'new_match_screen.dart';
 import 'players_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  static const _pages = [
-    PlayersScreen(),
-    NewMatchScreen(),
-    HistoryScreen(),
-    LeaderboardScreen(),
-    DataManagementScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeCubit, int>(
-      builder: (context, index) {
-        return BlocBuilder<NewMatchCubit, NewMatchState>(
-          builder: (context, matchState) {
+    return BlocBuilder<HomeCubit, HomeDestination>(
+      builder: (context, destination) {
+        final index = _homeEntries.indexWhere(
+          (entry) => entry.destination == destination,
+        );
+        return BlocSelector<
+          NewMatchCubit,
+          NewMatchState,
+          ({bool isStarted, bool isSaving})
+        >(
+          selector: (state) =>
+              (isStarted: _isStartedMatch(state), isSaving: state.isSaving),
+          builder: (context, matchGate) {
             return PopScope(
-              canPop: !_isStartedMatch(matchState),
+              canPop: !matchGate.isStarted,
               onPopInvokedWithResult: (didPop, result) async {
                 if (didPop) {
+                  return;
+                }
+                if (matchGate.isSaving) {
                   return;
                 }
                 final canLeave = await _confirmLeaveStartedMatch(context);
@@ -45,16 +49,19 @@ class HomeScreen extends StatelessWidget {
                 body: IndexedStack(
                   index: index,
                   children: [
-                    for (var page = 0; page < _pages.length; page++)
-                      TickerMode(enabled: page == index, child: _pages[page]),
+                    for (var page = 0; page < _homeEntries.length; page++)
+                      TickerMode(
+                        enabled: page == index,
+                        child: _homeEntries[page].page,
+                      ),
                   ],
                 ),
                 bottomNavigationBar: _BottomNav(
-                  index: index,
-                  onSelected: (selectedIndex) => _selectTab(
+                  destination: destination,
+                  onSelected: (selected) => _selectDestination(
                     context,
-                    currentIndex: index,
-                    selectedIndex: selectedIndex,
+                    current: destination,
+                    selected: selected,
                   ),
                 ),
               ),
@@ -66,23 +73,24 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-bool _hasStartedMatch(BuildContext context) {
-  return _isStartedMatch(context.read<NewMatchCubit>().state);
-}
-
 bool _isStartedMatch(NewMatchState state) =>
     state.kickedOff && state.lastVictory == null;
 
-Future<void> _selectTab(
+Future<void> _selectDestination(
   BuildContext context, {
-  required int currentIndex,
-  required int selectedIndex,
+  required HomeDestination current,
+  required HomeDestination selected,
 }) async {
-  if (currentIndex == selectedIndex) {
+  if (current == selected) {
     return;
   }
-  final leavingMatchTab = currentIndex == 1 && selectedIndex != 1;
-  if (leavingMatchTab && _hasStartedMatch(context)) {
+  final leavingMatchTab =
+      current == HomeDestination.match && selected != HomeDestination.match;
+  final matchState = context.read<NewMatchCubit>().state;
+  if (leavingMatchTab && matchState.isSaving) {
+    return;
+  }
+  if (leavingMatchTab && _isStartedMatch(matchState)) {
     final canLeave = await _confirmLeaveStartedMatch(context);
     if (!context.mounted || !canLeave) {
       return;
@@ -90,7 +98,7 @@ Future<void> _selectTab(
     context.read<NewMatchCubit>().abortMatch();
   }
   if (context.mounted) {
-    context.read<HomeCubit>().selectTab(selectedIndex);
+    context.read<HomeCubit>().select(selected);
   }
 }
 
@@ -120,73 +128,125 @@ Future<bool> _confirmLeaveStartedMatch(BuildContext context) async {
 }
 
 class _BottomNav extends StatelessWidget {
-  const _BottomNav({required this.index, required this.onSelected});
+  const _BottomNav({required this.destination, required this.onSelected});
 
-  final int index;
-  final ValueChanged<int> onSelected;
+  final HomeDestination destination;
+  final ValueChanged<HomeDestination> onSelected;
 
   @override
-  Widget build(BuildContext context) => Material(
-    color: AppColors.surface,
-    elevation: 0,
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final tabWidth = constraints.maxWidth / 5;
-            return SizedBox(
-              height: 3,
-              child: Stack(
-                children: [
-                  AnimatedPositioned(
-                    duration: shouldReduceMotion(context)
-                        ? Duration.zero
-                        : AppMotion.navigation,
-                    curve: Curves.easeOutCubic,
-                    left: tabWidth * index + tabWidth * 0.30,
-                    width: tabWidth * 0.40,
-                    height: 3,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(2),
+  Widget build(BuildContext context) {
+    final selectedIndex = _homeEntries.indexWhere(
+      (entry) => entry.destination == destination,
+    );
+    return Material(
+      color: AppColors.surface,
+      elevation: 0,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final tabWidth = constraints.maxWidth / _homeEntries.length;
+              return SizedBox(
+                height: 3,
+                child: Stack(
+                  children: [
+                    AnimatedPositioned(
+                      duration: shouldReduceMotion(context)
+                          ? Duration.zero
+                          : AppMotion.navigation,
+                      curve: Curves.easeOutCubic,
+                      left: tabWidth * selectedIndex + tabWidth * 0.30,
+                      width: tabWidth * 0.40,
+                      height: 3,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        NavigationBar(
-          selectedIndex: index,
-          onDestinationSelected: onSelected,
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.people_outline),
-              selectedIcon: Icon(Icons.people),
-              label: 'Giocatori',
+                  ],
+                ),
+              );
+            },
+          ),
+          MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: MediaQuery.textScalerOf(
+                context,
+              ).clamp(maxScaleFactor: 1.3),
             ),
-            NavigationDestination(
-              icon: Icon(Icons.sports_soccer_outlined),
-              selectedIcon: Icon(Icons.sports_soccer),
-              label: 'Partita',
+            child: NavigationBar(
+              selectedIndex: selectedIndex,
+              onDestinationSelected: (index) =>
+                  onSelected(_homeEntries[index].destination),
+              destinations: [
+                for (final entry in _homeEntries) entry.navigation,
+              ],
             ),
-            NavigationDestination(icon: Icon(Icons.history), label: 'Storico'),
-            NavigationDestination(
-              icon: Icon(Icons.leaderboard_outlined),
-              selectedIcon: Icon(Icons.leaderboard),
-              label: 'Classifica',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.storage_outlined),
-              selectedIcon: Icon(Icons.storage),
-              label: 'Dati',
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+class _HomeEntry {
+  const _HomeEntry({
+    required this.destination,
+    required this.page,
+    required this.navigation,
+  });
+
+  final HomeDestination destination;
+  final Widget page;
+  final NavigationDestination navigation;
+}
+
+const _homeEntries = [
+  _HomeEntry(
+    destination: HomeDestination.home,
+    page: DashboardScreen(),
+    navigation: NavigationDestination(
+      icon: Icon(Icons.home_outlined),
+      selectedIcon: Icon(Icons.home),
+      label: 'Home',
+    ),
+  ),
+  _HomeEntry(
+    destination: HomeDestination.players,
+    page: PlayersScreen(),
+    navigation: NavigationDestination(
+      icon: Icon(Icons.people_outline),
+      selectedIcon: Icon(Icons.people),
+      label: 'Giocatori',
+    ),
+  ),
+  _HomeEntry(
+    destination: HomeDestination.match,
+    page: NewMatchScreen(),
+    navigation: NavigationDestination(
+      icon: Icon(Icons.sports_soccer_outlined),
+      selectedIcon: Icon(Icons.sports_soccer),
+      label: 'Partita',
+    ),
+  ),
+  _HomeEntry(
+    destination: HomeDestination.leaderboard,
+    page: LeaderboardScreen(),
+    navigation: NavigationDestination(
+      icon: Icon(Icons.leaderboard_outlined),
+      selectedIcon: Icon(Icons.leaderboard),
+      label: 'Classifica',
+    ),
+  ),
+  _HomeEntry(
+    destination: HomeDestination.more,
+    page: MoreScreen(),
+    navigation: NavigationDestination(
+      icon: Icon(Icons.more_horiz),
+      label: 'Altro',
+    ),
+  ),
+];

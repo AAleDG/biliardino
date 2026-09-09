@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "checks": [
+    "Barlow and Barlow Condensed loaded",
+    "all SVG images decoded",
+    "1280px and 390px pages have no horizontal overflow",
+    "402x874 and 320x568 context frames retained",
+    "hero intrinsic size is 402x276",
+    "primary action spans the intended context width"
+  ],
+  "scope": "Browser artwork review only; H1 remains pending explicit user approval and is not Flutter runtime evidence."
+}

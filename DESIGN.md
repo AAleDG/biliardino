@@ -1,11 +1,13 @@
 ---
 version: alpha
 name: Biliardino — South Africa 2010
-description: Approved visual baseline for issue 11. User approved the four mockups and direction on 2026-09-07. Application behavior remains unchanged.
+description: Approved visual baseline for issue 11 plus the approved 2026-09-09 Home dashboard extension and transparent H2 hero.
 colors:
   primary: "#0057B8"
   on-primary: "#FFFFFF"
   primary-pressed: "#00428D"
+  home-action: "#005ECB"
+  home-action-pressed: "#004A9F"
   background: "#F8F5EB"
   surface: "#FFFFFF"
   ink: "#111111"
@@ -74,6 +76,12 @@ typography:
     fontWeight: 800
     lineHeight: 1.1
     letterSpacing: 0.2px
+  label-home-action:
+    fontFamily: Barlow Condensed
+    fontSize: 26px
+    fontWeight: 900
+    lineHeight: 1
+    letterSpacing: 0.2px
   label-utility:
     fontFamily: Barlow
     fontSize: 14px
@@ -127,6 +135,15 @@ components:
     padding: "{spacing.page}"
   button-primary-pressed:
     backgroundColor: "{colors.primary-pressed}"
+    textColor: "{colors.on-primary}"
+  button-home-action:
+    backgroundColor: "{colors.home-action}"
+    textColor: "{colors.on-primary}"
+    typography: "{typography.label-home-action}"
+    rounded: "{rounded.full}"
+    height: 72px
+  button-home-action-pressed:
+    backgroundColor: "{colors.home-action-pressed}"
     textColor: "{colors.on-primary}"
   button-start:
     backgroundColor: "{colors.success}"
@@ -249,11 +266,11 @@ components:
 
 ## Overview
 
-**Status: approved design baseline, 2026-09-07.** This specification accompanies four raster mockups for GitLab issue 11. The user approved the four mockups and this direction before requesting this dedicated worktree. It is the canonical baseline for the Flutter implementation on this feature branch. Final verification status is recorded in the implementation receipt. Generated pixels do not override the exact tokens or product rules written here.
+**Status: approved design baseline, 2026-09-07; Home extension and H2 artwork approved, 2026-09-09.** This specification accompanies four raster mockups for GitLab issue 11 and the later leftmost-phone Home dashboard request. It is the canonical baseline for the Flutter implementation on this feature branch. Final verification status is recorded in the implementation receipt. Generated pixels do not override the exact tokens or product rules written here; the one approved generated asset is identified by its exact manifest hash below.
 
 The app tracks office table-football players, presence, matches and statistics. Its identity should feel like an energetic South Africa 2010 football poster translated into a useful mobile tool: warm white, confident black condensed titles, sweeping ribbons, deliberate blocks of color and black foosball silhouettes. The header carries the character; the working content stays calm and legible.
 
-The issue mood board is the direction source. Its sample dashboard, timer, English team names and navigation are not product requirements. Preserve Giocatori, Partita, Storico, Classifica and Dati in that order, player management, 1v1/2v2, rules, rivalry, scoring, confirmations, historical corrections, statistics and backups. This experiment has no style switcher or Italia '90 design vocabulary.
+The issue mood board remains the source for the original four-screen direction. The user's new 2026-09-09 request deliberately supersedes the earlier dashboard/navigation exclusion only for the leftmost-phone Home screen. Primary navigation becomes Home, Giocatori, Partita, Classifica and Altro; Altro keeps Storico and Dati reachable as full routes. Preserve player management, 1v1/2v2, rules, rivalry, scoring, confirmations, historical corrections, statistics and backups. The timer, English team names, style switcher and Italia '90 vocabulary remain out of scope.
 
 Source format: [Google DESIGN.md specification](https://github.com/google-labs-code/design.md/blob/9bf8eae67128b6cc55ad9bf86665767deb4c11cd/docs/spec.md), read 2026-09-07. The file uses its canonical section order and adds project-specific sections afterward. See [RESEARCH.md](design/experiments/south-africa-2010/RESEARCH.md) for tooling and limitations.
 
@@ -279,9 +296,9 @@ Keep the application's existing label casing. Major display headings may remain 
 
 The reference viewport is 402 × 874 logical pixels, including system safe areas. Token dimensions written as px map to Flutter logical pixels, not physical screenshot pixels. Respect the actual device's insets; never hard-code a Dynamic Island into the application.
 
-Use 16-pixel page gutters, a 4-pixel base rhythm, 24-pixel section gaps and at least 48 × 48 logical pixels for interactive targets. Primary bottom actions start at 56 pixels high and grow with text. Labels and overflow menus remain separate tappable areas.
+Use 16-pixel page gutters, a 4-pixel base rhythm, 24-pixel section gaps and at least 48 × 48 logical pixels for interactive targets. The approved Home hero is the deliberate exception to the page gutter: it spans the safe-area width at its intrinsic 1516:1038 ratio with contain/fit-width behavior, so no upper or lower artwork is cropped. Its wordmark, action and data sections retain the standard gutters. Primary bottom actions start at 56 pixels high and grow with text. Labels and overflow menus remain separate tappable areas.
 
-Screen mastheads are compact. The players header decoration should consume at most about 100 pixels beneath the top safe area. Six ordinary roster rows should fit at the reference size; larger rosters and accessibility sizes scroll. Do not add a dashboard ahead of the roster.
+Home is the initial post-splash destination. Preserve the leftmost-phone hierarchy: live wordmark and tagline, substantial approved H2 hero, prominent blue start/resume action, recent results and ranking summaries. The page scrolls when five match rows plus four ranking rows do not safely fit; do not shrink the hero or interactive targets merely to force all data above the fold. Players remains a separate primary destination. Its masthead stays compact, and larger rosters and accessibility sizes scroll.
 
 Match setup is one scrolling screen with a pinned kickoff action above the existing bottom navigation. Mode, rules, team composition, rivalry and player selection remain available in the existing order. A mockup showing two scroll positions is not a new multi-step wizard. Never squeeze the entire setup into an unreadably dense phone.
 
@@ -293,11 +310,11 @@ Leaderboard and profile use compact headers and readable rows. Preserve the podi
 
 Use solid fills, spacing and subtle dividers for hierarchy. Ordinary list panels have no drop shadow. Interactive secondary controls use a visible outline. Bottom sheets may use a standard restrained shadow and dim scrim to separate modal content. No neon, scanlines, glow, glass panels or decorative gradients.
 
-If a dimensional foosball illustration is approved later, its shading belongs inside the artwork. It must not introduce a separate gradient system into buttons or cards.
+The approved dimensional Home illustration keeps its shading inside the PNG. It does not introduce a separate gradient system into buttons or cards.
 
 ## Shapes
 
-Use 8-pixel radii for small slots, 12 for buttons and inputs, 16 for grouped panels and 24 for sheet top corners. Avatars, rank medallions and presence switches are circular or pill shaped because of their roles.
+Use 8-pixel radii for small slots, 12 for buttons and inputs, 16 for grouped panels and 24 for sheet top corners. The prominent Home action follows the reference with a full capsule, four-pixel white perimeter and restrained shadow; this does not change ordinary application buttons. Avatars, rank medallions and presence switches are circular or pill shaped because of their roles.
 
 The distinctive graphic is an asymmetric ribbon sweep: broad yellow, green and blue arcs with a narrow red accent and warm-white separation. Use a small shared set of normalized paths for header, corner and celebration compositions. Avoid a generic repeated rainbow stripe on every row. Black foosball figures should be simple recognizable silhouettes on a rod, not the Italia '90 Ciao mascot.
 
@@ -307,7 +324,8 @@ The frontmatter provides core colors, typography and dimensions. Component varia
 
 | Component family | Required treatment and states |
 | --- | --- |
-| App shell/header/navigation | Five existing destinations, selected indicator, opaque navigation surface, safe areas, keyboard/focus support; retained leave-match confirmation |
+| App shell/header/navigation | Home, Giocatori, Partita, Classifica and Altro; selected indicator, opaque navigation surface, safe areas, keyboard/focus support; Storico/Dati routes and retained leave-match confirmation |
+| Home dashboard | Live wordmark/tagline, approved decorative H2 hero, start/resume state, up to five unfiltered recent matches and four played ranking entries, empty/sparse/long-name/reflow states and repository-driven updates |
 | Primary/start/secondary/destructive buttons | Normal, pressed, focused, disabled and busy; progress replaces an icon without changing the action's meaning; no duplicate submission |
 | Player row/avatar/presence | Active, present, absent, archived and mutating; name/profile target, presence semantics, overflow actions; archived status replaces switch |
 | Input/dialog/sheet | Label, helper/error, focus, keyboard, cancellation, confirmation and operation failure; use the same surfaces for add/rename/archive, scorer selection, filters and corrections |
@@ -326,12 +344,12 @@ A short screen title, player name and numeric metric are always real text widget
 ## Do's and Don'ts
 
 - Do use consistent shared components and semantic tokens across every state.
-- Do keep all five tabs, existing content, persistence, calculations and confirmation rules.
+- Do keep all existing content reachable through the five approved primary destinations, preserving persistence, calculations and confirmation rules.
 - Do preserve Italian labels; proposed copy changes require explicit review.
 - Do use the mockups to review composition and character, and this file for exact implementation values.
 - Do accommodate text scaling, VoiceOver, reduced motion and small/landscape layouts.
 - Do keep first-to-N result registration gated by the existing victory condition and confirmation.
-- Do not add the mood board's timer, dashboard home, alternate navigation or English team names.
+- Do not add the mood board's timer, English team names or any navigation beyond the approved Home/Giocatori/Partita/Classifica/Altro arrangement.
 - Do not turn screenshots into runtime backgrounds or rasterize controls/text.
 - Do not create a new illustration or unique component for every screen.
 - Do not combine this direction with Italia '90 or introduce a runtime theme selector.
@@ -367,21 +385,21 @@ Score data updates immediately, independent of artwork. Rapid goals must not cre
 | Controls and data surfaces | Reusable Flutter widgets, retaining existing Cubit events and repository contracts |
 | Ribbons/arcs/pitch lines | Shared CustomPainter/clip geometry; normalized paths scale with layout |
 | Foosball figure/football/stadium | A small local versioned SVG set, with separate layers when motion needs them |
-| Optional shaded hero | Transparent PNG only if the dimensional art treatment is approved |
+| Home shaded hero | Approved transparent PNG `home-hero-transparent.png`; decorative and excluded from semantics |
 | Confetti | Bounded programmatic ribbon particles, deterministic seed for golden tests |
 | Fonts | Local Barlow and Barlow Condensed files plus licenses |
 
 The approved SVG masters use restricted paths/circles/translations. `tool/generate_south_africa_artwork.py` verifies their approved hashes and compiles the geometry into `lib/widgets/design/artwork_paths.dart`; the shared painter renders it without an SVG runtime dependency. Regenerate from reviewed masters rather than hand-editing generated paths. No runtime reference may point to the issue upload or a generated-image cache path.
 
-The approved vector masters are available in the [R1 asset review](design/south-africa-2010/assets/r1/review.html), with an [inventory and usage guide](design/south-africa-2010/assets/README.md) and [hashed manifest](design/south-africa-2010/assets/r1/manifest.json). These include a rigid foosball figure, its rod assembly, a football and two ribbon geometry references. **All five R1 SVG assets were explicitly approved by the user on 2026-09-07 at the manifest hashes.** The user still requires review of newly created or materially revised artwork before integration. Ribbon SVGs are reference geometry for a shared painter; the review PNG is not a runtime asset. A shaded PNG or stadium silhouette is conditional on a concrete composition need and would require its own review.
+The approved vector masters are available in the [R1 asset review](design/south-africa-2010/assets/r1/review.html), with an [inventory and usage guide](design/south-africa-2010/assets/README.md) and [hashed manifest](design/south-africa-2010/assets/r1/manifest.json). These include a rigid foosball figure, its rod assembly, a football and two ribbon geometry references. **All five R1 SVG assets were explicitly approved by the user on 2026-09-07 at the manifest hashes.** The Home dashboard uses the separately approved [H2 transparent PNG](design/south-africa-2010/assets/home-h2/png/home-hero-transparent.png), approved on 2026-09-09 at SHA-256 `44530a3c4f352a2cb2a413c529c3b002b125a345045fd2e874bf386158dd73de`; its [manifest](design/south-africa-2010/assets/home-h2/manifest.json) owns generation, alpha and approval provenance. Any material artwork change still requires explicit review. Ribbon SVGs remain reference geometry for the shared painter; review screenshots are not runtime assets.
 
 ## Review coverage and implementation sequence
 
-Screen migration is implemented: shared tokens, Material theme, font registration, asset painter, navigation/header treatment and motion policy are present. Players and setup now use grouped roster rows, adaptive team and mode controls, explicit busy states and a green pinned kickoff action. Live scoring now uses solid team panels and responsive controls. Goal, victory and splash share the live accessibility policy; history uses calm grouped rows and shared filter controls; rankings use a compact first-visible podium with real badges; profiles reflow metrics and relationships; data actions retain the native picker/share flow. Full regression and iOS simulator checks pass within the documented coverage. Actual VoiceOver traversal and native reduced-motion toggling remain manual validation gaps on the selected simulator; see the [implementation receipt](design/south-africa-2010/IMPLEMENTATION.md).
+The original screen migration is implemented: shared tokens, Material theme, font registration, asset painter, navigation/header treatment and motion policy are present. Players and setup use grouped roster rows, adaptive team and mode controls, explicit busy states and a green pinned kickoff action. Live scoring uses solid team panels and responsive controls. Goal, victory and splash share the live accessibility policy; history uses calm grouped rows and shared filter controls; rankings use a compact first-visible podium with real badges; profiles reflow metrics and relationships; data actions retain the native picker/share flow. The later extension now has its typed Home/Giocatori/Partita/Classifica/Altro shell, full Storico/Dati routes with retained History filters, repository-derived dashboard state and reference-aligned Home composition. The exact approved H2 is bundled unchanged; wordmark, tagline, start/resume action, results, ranking and links remain live Flutter widgets. Historical iOS simulator results cover only the original migration; the P11 receipt adds targeted Home evidence. Actual VoiceOver traversal and native reduced-motion toggling remain manual gaps. See the [implementation receipt](design/south-africa-2010/IMPLEMENTATION.md).
 
 The four mockup deliverables cover populated players, complete setup (two scroll positions), live match and leaderboard. Their examples are recorded in [MOCKUP_BRIEF.md](design/experiments/south-africa-2010/MOCKUP_BRIEF.md). Remaining states are covered by the component matrix, not silently omitted from implementation.
 
-The visual direction and four mockups are approved. The user authorized phased execution using feature-plan-scaffold, with new assets presented for explicit approval. The sequence is discovery/baseline; artwork preparation and review; foundations and chrome; players/setup; live scoring and celebrations; history/rankings/profiles/data/bootstrap; hardening; final regression, golden, accessibility and simulator verification. Work belongs on the issue's South Africa 2010 implementation branch. This approval does not claim implementation completion or authorize merging/deployment.
+The visual direction, four original mockups and exact H2 Home hero are approved. The user authorized phased execution using feature-plan-scaffold, with new assets presented for explicit approval. For the Home extension, P9 artwork review, P10 navigation/data foundation and P11 Home UI integration are complete; hardening and final verification remain. Work belongs on the issue's South Africa 2010 implementation branch. Artwork approval does not claim final implementation acceptance or authorize merging/deployment.
 
 The final implementation must run flutter analyze and flutter test, retain existing functional tests, add representative component/state goldens, and review the complete navigation flow on iPhone. Raster mockups and DESIGN.md lint cannot establish runtime performance, font metrics, hit areas, contrast over illustrations, correct VoiceOver behavior or persistence correctness.
 

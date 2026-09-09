@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:biliardino/cubits/dashboard/dashboard_cubit.dart';
+import 'package:biliardino/cubits/history/history_cubit.dart';
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/cubits/leaderboard/leaderboard_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
@@ -74,7 +76,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
-      for (final label in ['Partita', 'Storico', 'Classifica', 'Giocatori']) {
+      for (final label in [
+        'Giocatori',
+        'Partita',
+        'Classifica',
+        'Altro',
+        'Home',
+      ]) {
         await tester.tap(find.text(label));
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
@@ -708,7 +716,10 @@ void main() {
 
     expect(find.text('VITTORIA'), findsOneWidget);
 
-    tester.element(find.byType(HomeScreen)).read<HomeCubit>().selectTab(3);
+    tester
+        .element(find.byType(HomeScreen))
+        .read<HomeCubit>()
+        .select(HomeDestination.leaderboard);
     await tester.pumpAndSettle();
 
     expect(find.text('VITTORIA'), findsNothing);
@@ -731,7 +742,7 @@ void main() {
     final cubit = tester.element(find.byType(HomeScreen)).read<NewMatchCubit>();
     expect(cubit.state.assignment, {'p1': 1, 'p2': 1});
 
-    await tester.tap(find.text('Storico'));
+    await tester.tap(find.text('Altro'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Partita'));
     await tester.pumpAndSettle();
@@ -1351,7 +1362,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
-      for (final label in ['Partita', 'Storico', 'Classifica', 'Giocatori']) {
+      for (final label in [
+        'Giocatori',
+        'Partita',
+        'Classifica',
+        'Altro',
+        'Home',
+      ]) {
         await tester.tap(find.text(label).last);
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
@@ -1548,8 +1565,24 @@ Future<void> _pumpHome(
       child: MultiBlocProvider(
         providers: [
           BlocProvider<HomeCubit>(
-            create: (_) =>
-                HomeCubit()..selectTab(home is NewMatchScreen ? 1 : 0),
+            create: (_) => HomeCubit()
+              ..select(
+                home is NewMatchScreen
+                    ? HomeDestination.match
+                    : HomeDestination.home,
+              ),
+          ),
+          BlocProvider<DashboardCubit>(
+            create: (_) => DashboardCubit(
+              playerRepository: repos.playerRepo,
+              matchRepository: repos.matchRepo,
+            ),
+          ),
+          BlocProvider<HistoryCubit>(
+            create: (_) => HistoryCubit(
+              playerRepository: repos.playerRepo,
+              matchRepository: repos.matchRepo,
+            ),
           ),
           BlocProvider<PlayersCubit>(
             create: (_) => PlayersCubit(repos.playerRepo),

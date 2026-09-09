@@ -1,10 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class HomeCubit extends Cubit<int> {
-  HomeCubit() : super(0);
+enum HomeDestination { home, players, match, leaderboard, more }
 
-  void selectTab(int index) {
-    if (index < 0 || index == state) return;
-    emit(index);
+class HomeCubit extends Cubit<HomeDestination> {
+  HomeCubit() : super(HomeDestination.home);
+
+  void select(HomeDestination destination) {
+    if (destination == state) return;
+    emit(destination);
   }
 }

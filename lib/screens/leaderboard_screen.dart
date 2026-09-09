@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/leaderboard/leaderboard_cubit.dart';
 import '../cubits/leaderboard/leaderboard_state.dart';
 import '../models/player_stats.dart';
+import '../navigation/app_navigation.dart';
 import '../services/csv_share_service.dart';
 import '../services/leaderboard_csv_service.dart';
 import '../theme/app_theme.dart';
@@ -10,15 +11,6 @@ import '../widgets/avatar.dart';
 import '../widgets/design/brand_header.dart';
 import '../widgets/design/ranking_podium.dart';
 import '../widgets/design/ranking_badges.dart';
-import 'player_profile_screen.dart';
-
-void _openPlayerProfile(BuildContext context, String playerId) {
-  Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => PlayerProfileScreen(playerId: playerId),
-    ),
-  );
-}
 
 class LeaderboardScreen extends StatelessWidget {
   const LeaderboardScreen({super.key});
@@ -223,7 +215,7 @@ class _LeaderboardPane extends StatelessWidget {
         RankingPodium(
           top: ranked.take(3).toList(),
           metricLabel: podiumMetric,
-          onOpen: (id) => _openPlayerProfile(context, id),
+          onOpen: (id) => openPlayerProfile(context, id),
         ),
         if (ranked.length > 3) ...[
           const SizedBox(height: 24),
@@ -265,13 +257,13 @@ class _LeaderRow extends StatelessWidget {
     button: true,
     enabled: true,
     label: 'Posizione $rank: ${stats.player.name}. $metric. $detail.',
-    onTap: () => _openPlayerProfile(context, stats.player.id),
+    onTap: () => openPlayerProfile(context, stats.player.id),
     child: ExcludeSemantics(
       child: Material(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.panel),
         child: InkWell(
-          onTap: () => _openPlayerProfile(context, stats.player.id),
+          onTap: () => openPlayerProfile(context, stats.player.id),
           borderRadius: BorderRadius.circular(AppRadius.panel),
           child: Padding(
             padding: const EdgeInsets.all(12),

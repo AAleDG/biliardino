@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="402" height="276" viewBox="0 0 402 276">
+<title>Biliardino Home foosball hero</title>
+<defs>
+  <g id="figure-master" fill="#111111">
+    <circle cx="50" cy="28" r="21"/>
+    <path d="M39 47 C22 50 15 63 16 79 L22 110 Q28 130 35 160 L65 160 Q72 130 78 110 L84 79 C85 63 78 50 61 47 L61 51 Q50 57 39 51 Z"/>
+    <path d="M29 167 Q29 162 36 162 H64 Q71 162 71 167 L66 199 Q65 207 50 207 Q35 207 34 199 Z"/>
+  </g>
+  <g id="assembly-master">
+    <path fill="#111111" d="M8 104 L352 70 Q357 70 358 76 Q358 82 352 83 L9 117 Q3 117 2 111 Q2 105 8 104 Z"/>
+    <g transform="translate(194 12)">
+      <use href="#figure-master"/>
+    </g>
+  </g>
+  <g id="football-master" fill="none" stroke="#111111" stroke-width="4" stroke-linejoin="round">
+    <circle cx="60" cy="60" r="52" fill="#F8F5EB"/>
+    <path d="M60 39 L80 54 L72 78 H48 L40 54 Z M60 39 V20 M80 54 L99 47 M72 78 L84 95 M48 78 L36 95 M40 54 L21 47"/>
+    <g fill="#111111" stroke="none">
+      <path d="M60 39 L80 54 L72 78 H48 L40 54 Z M46 10 Q60 6 74 10 L72 20 H48 Z M10 43 L21 40 L25 50 L9 64 Z M110 43 L99 40 L95 50 L111 64 Z M25 99 L32 87 L43 91 L45 110 Z M95 99 L88 87 L77 91 L75 110 Z"/>
+    </g>
+  </g>
+</defs>
+
+<g id="background-ribbons">
+  <path id="yellow-lower" fill="#FFC700" d="M-24 19 C44 54 74 154 164 218 C229 264 322 264 426 237 L426 276 H130 C63 233 22 154 -24 96 Z"/>
+  <path id="green-lower" fill="#087F3E" d="M-24 89 C45 129 91 205 175 242 C244 272 330 270 426 248 V266 C329 291 239 294 163 261 C78 225 27 158 -24 126 Z"/>
+  <path id="blue-lower" fill="#0057B8" d="M-24 132 C40 166 90 225 159 258 C227 291 318 289 426 266 V276 H91 C38 241 2 190 -24 174 Z"/>
+  <path id="red-lower" fill="#C62828" d="M-24 178 C33 204 90 239 151 271 L106 276 H-24 Z"/>
+
+  <path id="red-cross" fill="#C62828" d="M426 52 C342 69 276 103 211 137 C133 178 55 186 -24 169 V187 C55 202 143 192 223 153 C294 119 356 91 426 74 Z"/>
+  <path id="green-cross" fill="#087F3E" d="M426 91 C350 113 294 149 235 181 C159 222 73 218 -24 193 V211 C78 235 166 236 247 195 C308 164 366 126 426 112 Z"/>
+  <path id="yellow-cross" fill="#FFC700" d="M426 121 C367 143 316 178 265 210 C197 252 116 248 25 222 L51 243 C132 264 209 263 278 222 C329 192 377 155 426 142 Z"/>
+</g>
+
+<g id="foosball-procession">
+  <use id="front-assembly" href="#assembly-master" transform="translate(-83 1) scale(.78)"/>
+  <use id="middle-assembly" href="#assembly-master" transform="translate(76 54) scale(.55)"/>
+  <use id="rear-assembly" href="#assembly-master" transform="translate(187 91) scale(.40)"/>
+  <use id="far-assembly" href="#assembly-master" transform="translate(287 117) scale(.30)"/>
+</g>
+
+<g id="football" transform="translate(215 190) scale(.64)">
+  <use href="#football-master"/>
+  <path fill="#FFC700" stroke="none" d="M46 10 Q60 6 74 10 L72 20 H48 Z"/>
+  <path fill="#0057B8" stroke="none" d="M10 43 L21 40 L25 50 L9 64 Z"/>
+  <path fill="#C62828" stroke="none" d="M110 43 L99 40 L95 50 L111 64 Z"/>
+  <path fill="#087F3E" stroke="none" d="M25 99 L32 87 L43 91 L45 110 Z"/>
+</g>
+</svg>

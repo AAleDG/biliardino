@@ -5,6 +5,8 @@ abstract final class AppColors {
   static const primary = Color(0xFF0057B8);
   static const onPrimary = Color(0xFFFFFFFF);
   static const primaryPressed = Color(0xFF00428D);
+  static const homeAction = Color(0xFF005ECB);
+  static const homeActionPressed = Color(0xFF004A9F);
   static const background = Color(0xFFF8F5EB);
   static const surface = Color(0xFFFFFFFF);
   static const ink = Color(0xFF111111);
@@ -106,6 +108,13 @@ abstract final class AppType {
     fontSize: 20,
     fontWeight: FontWeight.w800,
     height: 1.1,
+    letterSpacing: .2,
+  );
+  static const homeAction = TextStyle(
+    fontFamily: displayFamily,
+    fontSize: 26,
+    fontWeight: FontWeight.w900,
+    height: 1,
     letterSpacing: .2,
   );
   static const utility = TextStyle(
