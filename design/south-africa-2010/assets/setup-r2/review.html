@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nuova Partita · setup-r2 combined review</title>
+  <style>
+    @font-face{font-family:Barlow;src:url('../../../experiments/south-africa-2010/type/Barlow-Regular.ttf')}@font-face{font-family:Barlow;font-weight:600;src:url('../../../experiments/south-africa-2010/type/Barlow-SemiBold.ttf')}@font-face{font-family:'Barlow Condensed';font-weight:800;src:url('../../../experiments/south-africa-2010/type/BarlowCondensed-ExtraBold.ttf')}@font-face{font-family:'Barlow Condensed';font-weight:900;src:url('../../../experiments/south-africa-2010/type/BarlowCondensed-Black.ttf')}
+    :root{--ivory:#f8f5eb;--surface:#fff;--ink:#111;--secondary:#5c5c55;--line:#ddd9ce;--outline:#a6a49c;--blue:#0057b8;--blue-soft:#e8f0fa;--orange:#ff7900;--orange-soft:#fff0e1;--green:#087f3e;--disabled:#e5e2d9}
+    *{box-sizing:border-box}html,body{margin:0;min-width:320px;background:#eeece4;color:var(--ink);font-family:Barlow,Arial,sans-serif}.review{max-width:1480px;margin:auto;padding:36px}.intro{display:flex;justify-content:space-between;align-items:end;gap:32px;margin-bottom:26px}.eyebrow{margin:0 0 8px;color:var(--green);font-weight:600}.intro h1{margin:0;max-width:720px;font:900 52px/.94 'Barlow Condensed',Impact,sans-serif}.intro-copy{max-width:500px;margin:0;color:var(--secondary);font-size:16px;line-height:1.45}.board{display:grid;grid-template-columns:minmax(390px,1fr) 402px minmax(390px,1fr);gap:24px;align-items:start}.panel{min-width:0;padding:16px;border:1px solid var(--line);border-radius:22px;background:var(--surface)}.panel h2{margin:0 0 5px;font:900 27px/1 'Barlow Condensed',Impact,sans-serif}.panel>p{margin:0 0 12px;color:var(--secondary);font-size:13px;line-height:1.4}.reference-crop{position:relative;height:874px;overflow:hidden;border:1px solid var(--line);border-radius:18px;background:var(--ivory)}.reference-crop img{position:absolute;left:50%;height:100%;width:auto;transform:translateX(-50%)}
+    .app{position:relative;width:402px;height:874px;max-width:100vw;overflow:hidden;border:1px solid #b7b5ad;border-radius:28px;background:var(--ivory)}.scroll-window{position:absolute;inset:0 0 144px;overflow:hidden}.scroll-body{position:relative;min-height:710px;padding:36px 16px 0;transition:transform .2s}.screen-head{height:64px;text-align:center}.screen-head h3{margin:0;font:900 32px/1 'Barlow Condensed',Impact,sans-serif}.screen-head p{margin:6px 0 0;color:var(--secondary);font-size:11px;letter-spacing:1.05px}.mode{display:flex;height:54px;overflow:hidden;border:1px solid var(--line);border-radius:27px;background:rgba(255,255,255,.76)}.mode span{display:grid;flex:1;place-items:center;font:900 26px/1 'Barlow Condensed',Impact,sans-serif}.mode .selected{border-radius:25px;background:var(--blue);color:#fff}.options{display:flex;height:39px;margin:8px 0 7px;padding:0 12px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.82);font-size:11px;font-weight:600}.section-title{display:flex;height:27px;align-items:center;justify-content:space-between;font:900 18px/1 'Barlow Condensed',Impact,sans-serif}.section-title small{color:var(--blue);font:600 10px/1 Barlow,Arial,sans-serif}.players{position:relative;z-index:4;overflow:hidden;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.94)}.player{display:flex;height:39px;padding:0 10px;align-items:center;border-bottom:1px solid var(--line);font-size:14px;font-weight:600}.player:last-child{border-bottom:0}.avatar{display:grid;width:28px;height:28px;margin-right:9px;flex:0 0 auto;place-items:center;border-radius:50%;background:var(--ink);color:#fff;font-size:12px}.player-name{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.assignment{width:24px;height:24px;border:2px solid var(--outline);border-radius:7px}.player.blue .avatar,.player.blue .assignment{border-color:var(--blue);background:var(--blue)}.player.orange .avatar,.player.orange .assignment{border-color:var(--orange);background:var(--orange)}.assignment:after{content:'✓';display:block;color:#fff;font-size:15px;font-weight:600;line-height:20px;text-align:center}
+    .team-zone{position:relative;height:242px;margin:12px -16px 0;overflow:hidden}.team-art{position:absolute;z-index:0;left:0;top:-28px;width:100%;height:auto;pointer-events:none;user-select:none}.team-cards{position:absolute;z-index:2;left:16px;right:16px;top:18px;display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);align-items:center}.versus{text-align:center;font:900 27px/1 'Barlow Condensed',Impact,sans-serif}.team{height:210px;min-width:0;overflow:hidden;border:2px solid;border-radius:28px 28px 18px 18px;background:#fff}.team.blue-team{border-color:var(--blue)}.team.orange-team{border-color:var(--orange)}.team-head{display:grid;height:43px;place-items:center;color:#fff;font:900 20px/1 'Barlow Condensed',Impact,sans-serif;white-space:nowrap}.blue-team .team-head{background:var(--blue)}.orange-team .team-head{background:var(--orange)}.slots{padding:7px 7px 0}.slot{display:flex;height:48px;margin-bottom:5px;padding:0 9px;min-width:0;align-items:center;border-radius:12px;background:var(--blue-soft);font:800 16px/1 'Barlow Condensed',Impact,sans-serif}.orange-team .slot{background:var(--orange-soft)}.slot .avatar{width:28px;height:28px;margin-right:7px;background:var(--blue)}.orange-team .slot .avatar{background:var(--orange)}.add{display:flex;height:46px;margin:2px 7px 7px;align-items:center;justify-content:center;gap:4px;border:1.5px dashed;border-radius:12px;color:var(--blue);font-size:10px;font-weight:600}.orange-team .add{color:var(--orange)}.add strong{font:900 24px/1 'Barlow Condensed',Impact,sans-serif}
+    .lower-art{position:absolute;z-index:1;left:0;top:570px;width:100%;height:auto;pointer-events:none;user-select:none}.kickoff{position:absolute;z-index:6;left:20px;right:20px;bottom:82px;height:62px;border:5px solid var(--ivory);border-radius:32px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;gap:11px;font:900 27px/1 'Barlow Condensed',Impact,sans-serif}.kickoff i{font-style:normal;font-size:22px}.nav{position:absolute;z-index:8;left:0;right:0;bottom:0;height:78px;display:flex;padding:10px 5px 0;align-items:flex-start;border-top:1px solid var(--line);background:#fff}.nav-item{min-width:0;flex:1;color:#3f4145;text-align:center;font-size:10px}.nav-item b{display:block;font-size:19px;line-height:24px}.nav-item.active{color:var(--blue)}.nav-item.active:before{content:'';display:block;width:28px;height:3px;margin:-10px auto 4px;border-radius:2px;background:var(--blue)}
+    .layers{display:grid;gap:12px}.layer-card{position:relative;height:270px;overflow:hidden;border:1px solid var(--line);border-radius:16px;background-color:#fff;background-image:linear-gradient(45deg,#e7e6df 25%,transparent 25%),linear-gradient(-45deg,#e7e6df 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e7e6df 75%),linear-gradient(-45deg,transparent 75%,#e7e6df 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}.layer-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.layer-card.lower{height:205px}.layer-label{position:absolute;z-index:2;left:10px;top:10px;padding:6px 9px;border-radius:8px;background:rgba(255,255,255,.94);font-size:11px;font-weight:600}.meta{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);color:var(--secondary);font-size:12px;line-height:1.5}.meta code{color:var(--ink)}
+    @media(max-width:1100px){.board{grid-template-columns:402px minmax(390px,1fr);justify-content:center}.reference-panel{display:none}}
+    @media(max-width:600px){html,body{width:100%;height:100%;overflow:hidden;background:var(--ivory)}.review,.board,.preview-panel,.app{width:min(100vw,402px);max-width:402px;height:100%}.review{padding:0}.intro,.reference-panel,.layers-panel{display:none}.board{display:block}.preview-panel{padding:0;border:0;border-radius:0}.app{border:0;border-radius:0}.scroll-window{bottom:124px}.scroll-body{min-height:650px;padding:28px 12px 0}.screen-head{height:57px}.screen-head h3{font-size:28px}.screen-head p{font-size:9px}.mode{height:48px}.mode span{font-size:22px}.options{height:36px;margin:6px 0}.section-title{height:24px;font-size:16px}.player{height:36px}.team-zone{height:224px;margin:10px -12px 0}.team-art{top:-17px}.team-cards{left:12px;right:12px;top:16px;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr)}.versus{font-size:23px}.team{height:194px;border-radius:24px 24px 16px 16px}.team-head{height:39px;font-size:17px}.slots{padding:6px 5px 0}.slot{height:43px;margin-bottom:4px;padding:0 6px;font-size:14px}.slot .avatar{width:25px;height:25px;margin-right:5px}.add{height:42px;margin:1px 5px 5px;font-size:9px}.lower-art{top:auto;bottom:0}.kickoff{left:12px;right:12px;bottom:66px;height:58px;border-width:4px;font-size:23px}.nav{height:64px;padding-top:7px}.nav-item{font-size:9px}.nav-item b{font-size:17px;line-height:21px}.nav-item.active:before{margin-top:-7px}.compact.review,.compact .board,.compact .preview-panel,.compact .app{width:320px}.compact-bottom .scroll-body{transform:translateY(-242px)}}
+    @media(max-width:600px){.review{margin:0}}
+  </style>
+</head>
+<body>
+  <main class="review">
+    <header class="intro">
+      <div><p class="eyebrow">Nuova Partita · setup-r2 combined review</p><h1>Approved artwork.<br>Live controls above it.</h1></div>
+      <p class="intro-copy">Both transparent PNG layers are separately approved. This review tests their combined hierarchy around product-correct 2v2 state, Italian team labels, the retained options entry and Biliardino's five-item navigation.</p>
+    </header>
+    <div class="board">
+      <section class="panel reference-panel">
+        <h2>Exact reference</h2><p>Middle phone only. Its 1v1 highlight, English color labels, checkbox state, back arrow and missing bottom navigation are not product behavior.</p>
+        <div class="reference-crop"><img src="../../../experiments/south-africa-2010/references/issue-11-moodboard.png" alt="Exact board centered on the middle phone"></div>
+      </section>
+      <section class="panel preview-panel" aria-label="Combined live fixture preview">
+        <div class="app">
+          <div class="scroll-window"><div class="scroll-body">
+            <header class="screen-head"><h3>NUOVA PARTITA</h3><p>SCEGLI I GIOCATORI E FORMA LE SQUADRE</p></header>
+            <div class="mode"><span>1 VS 1</span><span class="selected">2 VS 2</span></div>
+            <div class="options"><span>OPZIONI PARTITA</span><span>⌄</span></div>
+            <div class="section-title"><span>GIOCATORI DISPONIBILI</span></div>
+            <div class="players">
+              <div class="player blue"><span class="avatar">A</span><span class="player-name">Ale</span><span class="assignment"></span></div>
+              <div class="player blue"><span class="avatar">L</span><span class="player-name">Luca</span><span class="assignment"></span></div>
+              <div class="player orange"><span class="avatar">M</span><span class="player-name">Marta</span><span class="assignment"></span></div>
+              <div class="player orange"><span class="avatar">F</span><span class="player-name">Fede</span><span class="assignment"></span></div>
+            </div>
+            <section class="team-zone">
+              <img class="team-art" src="candidates/team-stage-v10-gimp-white-to-alpha.png" alt="">
+              <div class="team-cards">
+                <div class="team blue-team"><div class="team-head">SQUADRA 1</div><div class="slots"><div class="slot"><span class="avatar">A</span>ALE</div><div class="slot"><span class="avatar">L</span>LUCA</div></div><div class="add"><strong>＋</strong> AGGIUNGI</div></div>
+                <div class="versus">VS</div>
+                <div class="team orange-team"><div class="team-head">SQUADRA 2</div><div class="slots"><div class="slot"><span class="avatar">M</span>MARTA</div><div class="slot"><span class="avatar">F</span>FEDE</div></div><div class="add"><strong>＋</strong> AGGIUNGI</div></div>
+              </div>
+            </section>
+          </div></div>
+          <img class="lower-art" src="candidates/lower-flourish-v5-transparent.png" alt="">
+          <div class="kickoff"><i>▶</i> INIZIA PARTITA</div>
+          <nav class="nav"><div class="nav-item"><b>⌂</b>Home</div><div class="nav-item"><b>♟</b>Giocatori</div><div class="nav-item active"><b>◒</b>Partita</div><div class="nav-item"><b>▥</b>Classifica</div><div class="nav-item"><b>•••</b>Altro</div></nav>
+        </div>
+      </section>
+      <section class="panel layers-panel">
+        <h2>Approved transparent layers</h2><p>Checkerboard is review chrome. Neither PNG contains labels, controls, names, navigation or phone hardware.</p>
+        <div class="layers">
+          <div class="layer-card"><span class="layer-label">TEAM-STAGE · APPROVED</span><img src="candidates/team-stage-v10-gimp-white-to-alpha.png" alt="Team-stage artwork"></div>
+          <div class="layer-card lower"><span class="layer-label">LOWER FLOURISH · APPROVED</span><img src="candidates/lower-flourish-v5-transparent.png" alt="Lower ribbon and football artwork"></div>
+        </div>
+        <div class="meta"><strong>Upper:</strong> <code>45b320cee3d4…</code><br><strong>Lower:</strong> <code>bb0c574dc80c…</code><br><strong>Combined status:</strong> pending explicit review. Runtime files remain untouched.</div>
+      </section>
+    </div>
+  </main>
+  <script>const state=new URLSearchParams(location.search).get('state')||'';if(state.startsWith('compact'))document.body.classList.add('compact');if(state==='compact-bottom')document.body.classList.add('compact-bottom')</script>
+</body>
+</html>

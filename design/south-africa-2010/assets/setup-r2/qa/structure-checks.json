@@ -1,0 +1,162 @@
+{
+  "passed": true,
+  "revision": "setup-r2",
+  "approval": "combined-composition-approved-user-review",
+  "reference": "matched",
+  "approvedLayers": {
+    "teamStage": "45b320cee3d42d4140f3bd8787159e28bba10f56aa4ac2b1aefb2af5be91ee4d",
+    "lowerFlourish": "bb0c574dc80cdebeb47252cf100a05d6732001ac13fe75791706c530ccd3cc8a"
+  },
+  "assets": [
+    {
+      "id": "team-stage-v1",
+      "hash": "matched",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "format": "PNG RGBA 8-bit",
+      "approval": "rejected-user-review"
+    },
+    {
+      "id": "team-stage-v2",
+      "hash": "matched",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "format": "PNG RGB 8-bit",
+      "approval": "rejected-technical-validation"
+    },
+    {
+      "id": "team-stage-v3",
+      "hash": "matched",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "format": "PNG RGBA 8-bit",
+      "approval": "superseded-by-gimp-v10"
+    },
+    {
+      "id": "team-stage-v9-no-white-separators",
+      "hash": "matched",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "format": "PNG RGBA 8-bit",
+      "approval": "rejected-user-review"
+    },
+    {
+      "id": "team-stage-v10-gimp-white-to-alpha",
+      "hash": "matched",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "format": "PNG RGBA 8-bit",
+      "approval": "approved-user-review"
+    },
+    {
+      "id": "lower-flourish-v1",
+      "hash": "matched",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "format": "PNG RGB 8-bit",
+      "approval": "rejected-technical-validation"
+    },
+    {
+      "id": "lower-flourish-v2",
+      "hash": "matched",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "format": "PNG RGB 8-bit",
+      "approval": "rejected-technical-validation"
+    },
+    {
+      "id": "lower-flourish-v3",
+      "hash": "matched",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "format": "PNG RGB 8-bit",
+      "approval": "rejected-technical-validation"
+    },
+    {
+      "id": "lower-flourish-v4-chroma",
+      "hash": "matched",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "format": "PNG RGB 8-bit",
+      "approval": "intermediate-only"
+    },
+    {
+      "id": "lower-flourish-v5-transparent",
+      "hash": "matched",
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "format": "PNG RGBA 8-bit",
+      "approval": "approved-user-review"
+    }
+  ],
+  "combinedReview": {
+    "approval": "rejected-user-review",
+    "hash": "matched",
+    "offline": true,
+    "renders": [
+      {
+        "file": "qa/review-reference.png",
+        "viewport": [
+          402,
+          874
+        ],
+        "hash": "matched"
+      },
+      {
+        "file": "qa/review-desktop.png",
+        "viewport": [
+          1440,
+          1000
+        ],
+        "hash": "matched"
+      },
+      {
+        "file": "qa/review-compact-top.png",
+        "viewport": [
+          320,
+          568
+        ],
+        "hash": "matched"
+      },
+      {
+        "file": "qa/review-compact-bottom.png",
+        "viewport": [
+          320,
+          568
+        ],
+        "hash": "matched"
+      }
+    ]
+  },
+  "checks": [
+    "exact reference and crop hashes",
+    "all candidate and approved asset hashes, dimensions, and modes",
+    "exact approved-layer alpha properties",
+    "lower v5 RGB identity with v4 source",
+    "no opaque strong-magenta lower pixels",
+    "lower provenance hash",
+    "offline combined review with separate live fixture UI",
+    "combined render dimensions and hashes"
+  ],
+  "limitation": "Structure, provenance, and retained render hashes do not imply combined visual approval or running Flutter validation."
+}

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    @font-face{font-family:Barlow;src:url(../../../../../assets/fonts/Barlow-Regular.ttf)}
+    @font-face{font-family:'Barlow Condensed';src:url(../../../../../assets/fonts/BarlowCondensed-Bold.ttf);font-weight:700}
+    *{box-sizing:border-box}html,body{margin:0;width:982px;height:722px;overflow:hidden;background:#f7f2e7;font-family:Barlow,Arial,sans-serif;color:#111}
+    .stage{position:relative;width:982px;height:722px;overflow:hidden;background:#f7f2e7}
+    .art{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;pointer-events:none}
+    .teams{position:absolute;inset:160px 58px 34px;display:grid;grid-template-columns:370px 80px 370px;align-items:center;justify-content:center}
+    .versus{font:700 58px/1 'Barlow Condensed',Impact,sans-serif;text-align:center}
+    .team{height:520px;border-radius:78px 78px 58px 58px;padding:0 24px 24px;color:#fff;box-shadow:0 2px 0 rgba(0,0,0,.04)}
+    .blue{background:#0964c7}.orange{background:#ff6413}
+    .title{height:104px;display:grid;place-items:center;font:700 58px/1 'Barlow Condensed',Impact,sans-serif}
+    .body{height:392px;padding:18px;border-radius:46px;background:#fffdf8}
+    .row,.add{height:104px;border-radius:34px;display:flex;align-items:center;gap:24px;padding:0 28px;color:#111;font:700 38px/1 'Barlow Condensed',Impact,sans-serif}
+    .row{background:#f7f4ed;border-bottom:2px solid #ddd8ce}
+    .avatar{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 25px/1 Barlow,Arial,sans-serif}.blue .avatar{background:#0964c7}.orange .avatar{background:#ff6413}
+    .add{height:126px;margin-top:10px;justify-content:center;border:3px dashed;color:inherit;background:#fffdf8}.add strong{font-size:58px}.blue .add{color:#0964c7}.orange .add{color:#ff6413}
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <img class="art" src="../candidates/team-stage-v3.png" alt="">
+    <section class="teams">
+      <article class="team blue"><div class="title">SQUADRA 1</div><div class="body"><div class="row"><span class="avatar">A</span>ALE</div><div class="row"><span class="avatar">L</span>LUCA</div><div class="add"><strong>＋</strong> AGGIUNGI</div></div></article>
+      <div class="versus">VS</div>
+      <article class="team orange"><div class="title">SQUADRA 2</div><div class="body"><div class="row"><span class="avatar">M</span>MARTA</div><div class="row"><span class="avatar">F</span>FEDE</div><div class="add"><strong>＋</strong> AGGIUNGI</div></div></article>
+    </section>
+  </main>
+  <script>
+    const requestedAsset = new URLSearchParams(location.search).get('asset');
+    if (requestedAsset) document.querySelector('.art').src = `../candidates/${requestedAsset}`;
+  </script>
+</body>
+</html>

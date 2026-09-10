@@ -127,6 +127,32 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     );
   }
 
+  void replaceTeamPlayer({
+    required String outgoingPlayerId,
+    required String incomingPlayerId,
+    required int team,
+  }) {
+    if (state.kickedOff ||
+        state.isSaving ||
+        state.isPersistingRules ||
+        (team != 1 && team != 2) ||
+        outgoingPlayerId == incomingPlayerId) {
+      return;
+    }
+    if (state.assignment[outgoingPlayerId] != team ||
+        state.assignment.containsKey(incomingPlayerId) ||
+        !state.present.any((player) => player.id == incomingPlayerId)) {
+      return;
+    }
+
+    final current = Map<String, int>.from(state.assignment)
+      ..remove(outgoingPlayerId)
+      ..[incomingPlayerId] = team;
+    emit(
+      state.copyWith(assignment: Map.unmodifiable(current), isRivalry: false),
+    );
+  }
+
   void generateRandomTeams() {
     _generateTeams(balanced: false);
   }

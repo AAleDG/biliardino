@@ -1,0 +1,43 @@
+{
+  "passed": true,
+  "revision": "setup-r1",
+  "approval": "rejected-user-review",
+  "reference": "matched",
+  "inputs": [
+    {
+      "id": "ribbon-header",
+      "hash": "matched"
+    },
+    {
+      "id": "ribbon-corner",
+      "hash": "matched"
+    },
+    {
+      "id": "football",
+      "hash": "matched"
+    }
+  ],
+  "review": {
+    "hash": "matched",
+    "offline": true,
+    "renders": [
+      {
+        "viewport": "402x874",
+        "hash": "matched"
+      },
+      {
+        "viewport": "1440x1000",
+        "hash": "matched"
+      }
+    ]
+  },
+  "checks": [
+    "exact reference hash",
+    "approved R1 input hashes",
+    "offline review sources only",
+    "no embedded raster or canvas artwork",
+    "render output hashes",
+    "decorative content boundary"
+  ],
+  "limitation": "Structure and provenance only; rendered inspection and explicit user approval are separate."
+}

@@ -55,26 +55,65 @@ void main() {
   });
 
   testWidgets(
-    'Last setup row remains fully operable above pinned kickoff at 200 percent',
+    'Full roster and team picker remain operable above kickoff at 200 percent',
     (tester) async {
       await mount(tester, scale: 2, longRoster: true);
       final context = tester.element(find.byType(HomeScreen));
       context.read<HomeCubit>().select(HomeDestination.match);
       await tester.pumpAndSettle();
-      final row = find.byKey(const ValueKey('present-player-p7'));
-      await tester.scrollUntilVisible(
-        row,
-        160,
-        scrollable: find.byType(Scrollable).first,
+      final setupScroll = find.descendant(
+        of: find.byKey(const ValueKey('setup-scroll-view')),
+        matching: find.byType(Scrollable),
       );
-      await tester.ensureVisible(row);
+      final showAll = find.text('VEDI TUTTI (8)');
+      await tester.scrollUntilVisible(showAll, 160, scrollable: setupScroll);
+      await Scrollable.ensureVisible(
+        tester.element(showAll),
+        alignment: .5,
+        duration: Duration.zero,
+      );
       await tester.pumpAndSettle();
-      final kickoff = find.widgetWithText(ElevatedButton, 'INIZIA PARTITA');
-      expect(
-        tester.getRect(row).bottom,
-        lessThanOrEqualTo(tester.getRect(kickoff).top),
+      await tester.tap(showAll);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('present-player-p7')), findsNothing);
+      final lastRosterPlayer = find.byKey(
+        const ValueKey('roster-sheet-player-p7'),
       );
+      final sheetScroll = find.descendant(
+        of: find.byType(DraggableScrollableSheet),
+        matching: find.byType(Scrollable),
+      );
+      await tester.scrollUntilVisible(
+        lastRosterPlayer,
+        120,
+        scrollable: sheetScroll,
+      );
+      expect(find.text('Beatrice Lunghissimo Cognome'), findsOneWidget);
+      Navigator.of(tester.element(lastRosterPlayer)).pop();
+      await tester.pumpAndSettle();
+
+      final add = find.byKey(const ValueKey('add-team-2'));
+      await tester.scrollUntilVisible(add, 160, scrollable: setupScroll);
+      await Scrollable.ensureVisible(
+        tester.element(add),
+        alignment: .4,
+        duration: Duration.zero,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(add);
+      await tester.pumpAndSettle();
       final chip = find.byKey(const ValueKey('team-chip-p7-team-2'));
+      final teamSheetScroll = find.descendant(
+        of: find.byType(DraggableScrollableSheet),
+        matching: find.byType(Scrollable),
+      );
+      await tester.scrollUntilVisible(chip, 120, scrollable: teamSheetScroll);
+      await Scrollable.ensureVisible(
+        tester.element(chip),
+        alignment: .5,
+        duration: Duration.zero,
+      );
+      await tester.pumpAndSettle();
       await tester.tap(chip);
       await tester.pumpAndSettle();
       expect(context.read<NewMatchCubit>().state.team2, contains('p7'));
@@ -91,8 +130,12 @@ void main() {
         .read<HomeCubit>()
         .select(HomeDestination.match);
     await tester.pumpAndSettle();
+    final setupScroll = find.descendant(
+      of: find.byKey(const ValueKey('setup-scroll-view')),
+      matching: find.byType(Scrollable),
+    );
     final guidance = find.text('Vai su Giocatori e segna chi è presente.');
-    await tester.ensureVisible(guidance);
+    await tester.scrollUntilVisible(guidance, 120, scrollable: setupScroll);
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(tester.getRect(guidance).bottom, lessThan(320));

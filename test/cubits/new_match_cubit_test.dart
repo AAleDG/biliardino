@@ -347,6 +347,58 @@ void main() {
     });
 
     test(
+      'replaces one full-team slot atomically and rejects invalid swaps',
+      () async {
+        final players = _PlayerRepositoryFake([
+          ..._players(),
+          Player(
+            id: 'p5',
+            name: 'Player 5',
+            createdAt: DateTime(2026),
+            isPresent: true,
+          ),
+        ]);
+        final cubit = NewMatchCubit(
+          playerRepository: players,
+          matchRepository: _MatchRepositoryFake(),
+          matchRulesRepository: _MatchRulesRepositoryFake(),
+        );
+        cubit
+          ..setTeam('p1', 1)
+          ..setTeam('p2', 1)
+          ..setTeam('p3', 2)
+          ..setTeam('p4', 2)
+          ..setRivalry(true);
+
+        cubit.replaceTeamPlayer(
+          outgoingPlayerId: 'p1',
+          incomingPlayerId: 'p5',
+          team: 1,
+        );
+
+        expect(cubit.state.team1, ['p2', 'p5']);
+        expect(cubit.state.assignment, isNot(contains('p1')));
+        expect(cubit.state.isRivalry, isFalse);
+
+        final unchanged = Map<String, int>.from(cubit.state.assignment);
+        cubit.replaceTeamPlayer(
+          outgoingPlayerId: 'p1',
+          incomingPlayerId: 'p5',
+          team: 1,
+        );
+        cubit.replaceTeamPlayer(
+          outgoingPlayerId: 'p2',
+          incomingPlayerId: 'p3',
+          team: 1,
+        );
+        expect(cubit.state.assignment, unchanged);
+
+        await cubit.close();
+        await players.dispose();
+      },
+    );
+
+    test(
       'random generation is deterministic and replaces its proposal',
       () async {
         NewMatchCubit buildCubit() => NewMatchCubit(

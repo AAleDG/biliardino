@@ -84,6 +84,8 @@ flutter:
     - assets/fonts/Barlow-OFL.txt
     - assets/fonts/BarlowCondensed-OFL.txt
     - design/south-africa-2010/assets/home-h2/png/home-hero-transparent.png
+    - design/south-africa-2010/assets/setup-r2/candidates/team-stage-v10-gimp-white-to-alpha.png
+    - design/south-africa-2010/assets/setup-r2/candidates/lower-flourish-v5-transparent.png
   fonts:
     - family: Barlow
       fonts:

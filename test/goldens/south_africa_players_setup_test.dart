@@ -48,13 +48,13 @@ void main() {
       match.setTeam('p4', 2);
       await tester.pumpAndSettle();
       await capture('south-africa-setup-top');
-      final last = find.byKey(const ValueKey('present-player-p4'));
-      await tester.scrollUntilVisible(
-        last,
-        120,
-        scrollable: find.byType(Scrollable).first,
+      final last = find.byKey(const ValueKey('add-team-2'));
+      final setupScroll = find.descendant(
+        of: find.byKey(const ValueKey('setup-scroll-view')),
+        matching: find.byType(Scrollable),
       );
-      await tester.ensureVisible(last);
+      await tester.scrollUntilVisible(last, 120, scrollable: setupScroll);
+      await Scrollable.ensureVisible(tester.element(last), alignment: .6);
       await tester.pumpAndSettle();
       await capture('south-africa-setup-players');
     },

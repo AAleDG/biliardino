@@ -163,40 +163,21 @@ void main() {
     await _pumpHome(tester, home: const NewMatchScreen(), repos: sample);
     await tester.pumpAndSettle();
 
-    expect(find.text('Attiva Rivalita'), findsNothing);
+    expect(find.text('Modalità Rivalità'), findsNothing);
 
-    Future<void> assignTeam(String playerName, String chipLabel) async {
-      await tester.scrollUntilVisible(
-        find.text(playerName),
-        250,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
-      final row = find.ancestor(
-        of: find.text(playerName),
-        matching: find.byType(Card),
-      );
-      await tester.tap(
-        find.descendant(of: row, matching: find.text(chipLabel)),
-      );
-      await tester.pumpAndSettle();
-    }
+    await _assignTeam(tester, 'Alessandro Antonio Delgaudio', 'S1');
+    await _assignTeam(tester, 'Beatrice Lunghissimo Cognome', 'S1');
+    await _assignTeam(tester, 'Cristiano Nome Molto Esteso', 'S2');
+    await _assignTeam(tester, 'Daniela Super Competitiva', 'S2');
+    await _openSetupOptions(tester);
 
-    await assignTeam('Alessandro Antonio Delgaudio', 'S1');
-    await assignTeam('Beatrice Lunghissimo Cognome', 'S1');
-    await assignTeam('Cristiano Nome Molto Esteso', 'S2');
-    await assignTeam('Daniela Super Competitiva', 'S2');
+    expect(find.text('Modalità Rivalità'), findsOneWidget);
 
-    expect(find.text('Attiva Rivalita'), findsOneWidget);
-
-    await tester.tap(find.text('Attiva Rivalita'));
+    await tester.tap(find.text('Modalità Rivalità'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Attivare Rivalita?'), findsOneWidget);
-    expect(
-      find.textContaining('Lo storico terra separati precedenti'),
-      findsOneWidget,
-    );
+    expect(find.text('Attivare Rivalità?'), findsOneWidget);
+    expect(find.textContaining('Lo storico terrà separati'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -206,6 +187,7 @@ void main() {
       final sample = _sampleData();
       await _pumpHome(tester, home: const NewMatchScreen(), repos: sample);
       await tester.pumpAndSettle();
+      await _openSetupOptions(tester);
 
       final randomAction = find.byKey(const ValueKey('random-teams-action'));
       final balancedAction = find.byKey(
@@ -232,22 +214,24 @@ void main() {
       final firstPlayer = cubit.state.players.firstWhere(
         (player) => player.id == firstPlayerId,
       );
-      final selectedTeam = cubit.state.assignment[firstPlayerId];
-      final playerCard = find.byKey(
-        ValueKey('present-player-${firstPlayer.id}'),
-      );
+      final playerSlot = find.text(firstPlayer.name.toUpperCase());
       await tester.scrollUntilVisible(
-        playerCard,
+        playerSlot,
         250,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.descendant(
-          of: playerCard,
-          matching: find.text(selectedTeam == 1 ? 'S1' : 'S2'),
+        scrollable: find.descendant(
+          of: find.byKey(const ValueKey('setup-scroll-view')),
+          matching: find.byType(Scrollable),
         ),
       );
+      await Scrollable.ensureVisible(
+        tester.element(playerSlot),
+        alignment: .45,
+        duration: Duration.zero,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(playerSlot);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Rimuovi ${firstPlayer.name}'));
       await tester.pump();
       expect(cubit.state.assignment, isNot(contains(firstPlayerId)));
       expect(cubit.state.teamsValid, isFalse);
@@ -274,6 +258,7 @@ void main() {
 
     await tester.tap(find.text('1 VS 1').first);
     await tester.pump();
+    await _openSetupOptions(tester);
     await tester.tap(find.byKey(const ValueKey('random-teams-action')));
     await tester.pump();
 
@@ -296,6 +281,7 @@ void main() {
     ).thenAnswer((_) => pendingSave.future);
     await _pumpHome(tester, home: const NewMatchScreen(), repos: sample);
     await tester.pumpAndSettle();
+    await _openSetupOptions(tester);
 
     final cubit = tester
         .element(find.byType(NewMatchScreen))
@@ -591,7 +577,8 @@ void main() {
     await _pumpHome(tester, home: const NewMatchScreen(), repos: repos);
     await tester.pumpAndSettle();
 
-    expect(find.text('REGOLE PUNTEGGIO'), findsOneWidget);
+    expect(find.text('OPZIONI PARTITA'), findsOneWidget);
+    await _openSetupOptions(tester);
     expect(find.text('Libero'), findsOneWidget);
     expect(find.text('Primo a N'), findsOneWidget);
     expect(find.text('Goal vittoria'), findsNothing);
@@ -1048,11 +1035,19 @@ void main() {
           ),
         );
 
-        await tester.scrollUntilVisible(
-          find.byKey(const ValueKey('present-player-p1')),
-          250,
-          scrollable: find.byType(Scrollable).first,
+        final add = find.byKey(const ValueKey('add-team-1'));
+        final setupScroll = find.descendant(
+          of: find.byKey(const ValueKey('setup-scroll-view')),
+          matching: find.byType(Scrollable),
         );
+        await tester.scrollUntilVisible(add, 250, scrollable: setupScroll);
+        await Scrollable.ensureVisible(
+          tester.element(add),
+          alignment: .4,
+          duration: Duration.zero,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(add);
         await tester.pumpAndSettle();
 
         final teamOneChip = find.byKey(const ValueKey('team-chip-p1-team-1'));
@@ -1530,21 +1525,58 @@ Future<void> _assignTeam(
   String playerName,
   String chipLabel,
 ) async {
-  if (find.text(playerName).evaluate().isEmpty) {
-    await tester.scrollUntilVisible(
-      find.text(playerName),
-      120,
-      scrollable: find.byType(Scrollable).first,
-    );
-  } else {
-    await tester.ensureVisible(find.text(playerName));
-  }
-  await tester.pumpAndSettle();
-  final row = find.ancestor(
-    of: find.text(playerName),
-    matching: find.byType(Card),
+  final team = chipLabel == 'S1' ? 1 : 2;
+  final add = find.byKey(ValueKey('add-team-$team'));
+  await tester.scrollUntilVisible(
+    add,
+    160,
+    scrollable: find.descendant(
+      of: find.byKey(const ValueKey('setup-scroll-view')),
+      matching: find.byType(Scrollable),
+    ),
   );
-  await tester.tap(find.descendant(of: row, matching: find.text(chipLabel)));
+  await Scrollable.ensureVisible(
+    tester.element(add),
+    alignment: .4,
+    duration: Duration.zero,
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(add);
+  await tester.pumpAndSettle();
+  final player = find.text(playerName).last;
+  await tester.scrollUntilVisible(
+    player,
+    120,
+    scrollable: find.descendant(
+      of: find.byType(DraggableScrollableSheet),
+      matching: find.byType(Scrollable),
+    ),
+  );
+  await Scrollable.ensureVisible(
+    tester.element(player),
+    alignment: .5,
+    duration: Duration.zero,
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(player);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _openSetupOptions(WidgetTester tester) async {
+  final setupScroll = find.descendant(
+    of: find.byKey(const ValueKey('setup-scroll-view')),
+    matching: find.byType(Scrollable),
+  );
+  tester.state<ScrollableState>(setupScroll).position.jumpTo(0);
+  await tester.pumpAndSettle();
+  final disclosure = find.byKey(const ValueKey('setup-options-disclosure'));
+  await Scrollable.ensureVisible(
+    tester.element(disclosure),
+    alignment: .2,
+    duration: Duration.zero,
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(disclosure);
   await tester.pumpAndSettle();
 }
 

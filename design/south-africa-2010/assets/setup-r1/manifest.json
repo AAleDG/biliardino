@@ -1,0 +1,84 @@
+{
+  "revision": "setup-r1",
+  "created": "2026-09-10",
+  "approval": "rejected-user-review",
+  "target": "Nuova Partita setup state, middle phone only",
+  "medium": "deterministic composition of approved transparent SVG masters",
+  "contentBoundary": "decorative ribbons and football only",
+  "reference": {
+    "file": "design/experiments/south-africa-2010/references/issue-11-moodboard.png",
+    "sha256": "a5b2c1415025746a3dbe688fe4873043c6823424e01d862fd20d7e1d38b67492",
+    "focus": "middle phone; device hardware, surrounding poster, left phone, and right phone are excluded"
+  },
+  "inputs": [
+    {
+      "id": "ribbon-header",
+      "file": "design/south-africa-2010/assets/r1/svg/ribbon-header.svg",
+      "sha256": "3c5762ed5fefa5a8b62c35dc7bdc4315d18db8010dd418d225b533d75e0d9b9b",
+      "approval": "approved-r1"
+    },
+    {
+      "id": "ribbon-corner",
+      "file": "design/south-africa-2010/assets/r1/svg/ribbon-corner.svg",
+      "sha256": "8f6fa03a99f5079e61f7dbcd6a826208458aaab24af45e16c5f693da3ffa4eec",
+      "approval": "approved-r1"
+    },
+    {
+      "id": "football",
+      "file": "design/south-africa-2010/assets/r1/svg/football.svg",
+      "sha256": "c8ee257849846cfb9888c883f4901cd24c1066d977781a40984db48d8c27c9e7",
+      "approval": "approved-r1"
+    }
+  ],
+  "compositions": {
+    "setup-team-stage": "mirrored corner sweeps at the outer shoulders, paired header sweeps rising below the team panels, and one rotated corner sweep forming the narrow central fan",
+    "setup-lower-flourish": "one broad header sweep, one crossing corner sweep, and one cropped rotated football at the lower trailing edge"
+  },
+  "review": {
+    "file": "review.html",
+    "sha256": "5a257f83d416b14f85e8ee26a79d94b01da62241e76101d3717f1bd34fce2cb5",
+    "viewports": [
+      "402x874 reference app preview",
+      "1440x1000 desktop comparison and transparent layer inspection"
+    ],
+    "renders": [
+      {
+        "file": "qa/review-reference.png",
+        "viewport": "402x874",
+        "sha256": "7bdacdea41f380ef270cf2f4678a1db3d212c036ba9cbdb8de90daf7c004cffa"
+      },
+      {
+        "file": "qa/review-desktop.png",
+        "viewport": "1440x1000",
+        "sha256": "e3165d7b9e2bfb020dde083578a593887849b545bdf9ee0a8556865a02c0bcb2"
+      }
+    ],
+    "fixtureBoundary": "All title, mode, option, player, team, action, and navigation text in review.html is live review chrome and is not artwork."
+  },
+  "palette": [
+    "#111111",
+    "#FFC700",
+    "#087F3E",
+    "#0057B8",
+    "#C62828"
+  ],
+  "forbiddenArtworkContent": [
+    "title",
+    "player name",
+    "team label",
+    "option",
+    "button",
+    "navigation",
+    "score",
+    "timer",
+    "phone hardware",
+    "logo",
+    "watermark"
+  ],
+  "runtimeIntent": "After exact user approval, reproduce this composition with noninteractive, semantics-excluded Flutter painter instances of the approved R1 marks. Do not ship review.html or its fixture UI as runtime artwork.",
+  "approvalRecord": {
+    "status": "rejected",
+    "date": "2026-09-10",
+    "reason": "The composed R1 vector marks are materially too far from the middle-phone reference artwork. Retain this revision as review evidence; do not integrate it."
+  }
+}
