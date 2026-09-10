@@ -56,6 +56,7 @@ void main() {
     await tester.tap(opener);
     await tester.pumpAndSettle();
     expect(sheet, findsOneWidget);
+    expect(find.byKey(const ValueKey('sheet-ribbon-accent')), findsOneWidget);
   }
 
   testWidgets('Live options retain selection, width and underlying layout', (

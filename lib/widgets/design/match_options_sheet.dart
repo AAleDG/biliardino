@@ -8,6 +8,7 @@ import '../../models/match_rules.dart';
 import '../../services/stats_service.dart';
 import '../../theme/app_theme.dart';
 import 'adaptive_pair.dart';
+import 'sheet_ribbon_accent.dart';
 
 String _rulesSummary(MatchRules rules) => rules.isFree
     ? 'Punteggio libero'
@@ -106,153 +107,165 @@ class _MatchOptionsSheet extends StatelessWidget {
     initialChildSize: .72,
     minChildSize: .5,
     maxChildSize: .95,
-    builder: (context, controller) => SafeArea(
-      top: false,
-      child: Column(
-        key: const ValueKey('match-options-sheet'),
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 12, 10),
-            child: Column(
-              children: [
-                ExcludeSemantics(
-                  child: Container(
-                    width: 36,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.divider,
-                      borderRadius: BorderRadius.circular(AppRadius.small),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
+    builder: (context, controller) => Stack(
+      children: [
+        const Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          height: 64,
+          child: SheetRibbonAccent(),
+        ),
+        SafeArea(
+          top: false,
+          child: Column(
+            key: const ValueKey('match-options-sheet'),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 12, 10),
+                child: Column(
                   children: [
-                    Expanded(
-                      child: Semantics(
-                        header: true,
-                        child: const Text(
-                          'OPZIONI PARTITA',
-                          style: AppType.section,
+                    ExcludeSemantics(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.divider,
+                          borderRadius: BorderRadius.circular(AppRadius.small),
                         ),
                       ),
                     ),
-                    IconButton(
-                      key: const ValueKey('close-match-options'),
-                      tooltip: 'Chiudi opzioni partita',
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.close),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: BlocBuilder<NewMatchCubit, NewMatchState>(
-              builder: (context, state) {
-                final cubit = context.read<NewMatchCubit>();
-                final disabled = state.isPersistingRules;
-                final assignmentStyle = OutlinedButton.styleFrom(
-                  textStyle: AppType.action,
-                );
-                return ListView(
-                  key: const ValueKey('match-options-scroll'),
-                  controller: controller,
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                  children: [
-                    Text(
-                      'Le modifiche si applicano subito.',
-                      style: AppType.caption.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const _SectionTitle('Regole'),
-                    const SizedBox(height: 10),
-                    _RulesControls(state: state),
-                    if (state.lastFeedback?.kind == NewMatchFeedback.saveFailed)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Semantics(
-                          liveRegion: true,
-                          child: Text(
-                            'Impossibile salvare le opzioni. Riprova.',
-                            style: AppType.body.copyWith(
-                              color: AppColors.error,
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Semantics(
+                            header: true,
+                            child: const Text(
+                              'OPZIONI PARTITA',
+                              style: AppType.section,
                             ),
                           ),
                         ),
-                      ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      child: Divider(height: 1),
+                        IconButton(
+                          key: const ValueKey('close-match-options'),
+                          tooltip: 'Chiudi opzioni partita',
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
                     ),
-                    const _SectionTitle('Componi le squadre'),
-                    const SizedBox(height: 12),
-                    AdaptivePair(
-                      first: OutlinedButton.icon(
-                        key: const ValueKey('random-teams-action'),
-                        style: assignmentStyle,
-                        onPressed: disabled
-                            ? null
-                            : () {
-                                cubit.generateRandomTeams();
-                                Navigator.pop(context);
-                              },
-                        icon: const Icon(Icons.shuffle, size: 20),
-                        label: const Text('CASUALI'),
-                      ),
-                      second: OutlinedButton.icon(
-                        key: const ValueKey('balanced-teams-action'),
-                        style: assignmentStyle,
-                        onPressed: disabled
-                            ? null
-                            : () {
-                                cubit.generateBalancedTeams();
-                                Navigator.pop(context);
-                              },
-                        icon: const Icon(Icons.balance, size: 20),
-                        label: const Text('BILANCIATE'),
-                      ),
-                    ),
-                    if (state.teamsValid) ...[
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20),
-                        child: Divider(height: 1),
-                      ),
-                      _OptionSwitch(
-                        title: 'Modalità Rivalità',
-                        value: state.isRivalry,
-                        onChanged: disabled
-                            ? null
-                            : (enabled) async {
-                                if (!enabled ||
-                                    await _confirmRivalry(
-                                      context,
-                                      state.mode,
-                                    )) {
-                                  if (context.mounted) {
-                                    cubit.setRivalry(enabled);
-                                  }
-                                }
-                              },
-                      ),
-                      if (state.isRivalry)
+                  ],
+                ),
+              ),
+              Expanded(
+                child: BlocBuilder<NewMatchCubit, NewMatchState>(
+                  builder: (context, state) {
+                    final cubit = context.read<NewMatchCubit>();
+                    final disabled = state.isPersistingRules;
+                    final assignmentStyle = OutlinedButton.styleFrom(
+                      textStyle: AppType.action,
+                    );
+                    return ListView(
+                      key: const ValueKey('match-options-scroll'),
+                      controller: controller,
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                      children: [
                         Text(
-                          _rivalrySummary(state),
+                          'Le modifiche si applicano subito.',
                           style: AppType.caption.copyWith(
                             color: AppColors.textSecondary,
                           ),
                         ),
-                    ],
-                  ],
-                );
-              },
-            ),
+                        const SizedBox(height: 20),
+                        const _SectionTitle('Regole'),
+                        const SizedBox(height: 10),
+                        _RulesControls(state: state),
+                        if (state.lastFeedback?.kind ==
+                            NewMatchFeedback.saveFailed)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 12),
+                            child: Semantics(
+                              liveRegion: true,
+                              child: Text(
+                                'Impossibile salvare le opzioni. Riprova.',
+                                style: AppType.body.copyWith(
+                                  color: AppColors.error,
+                                ),
+                              ),
+                            ),
+                          ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Divider(height: 1),
+                        ),
+                        const _SectionTitle('Componi le squadre'),
+                        const SizedBox(height: 12),
+                        AdaptivePair(
+                          first: OutlinedButton.icon(
+                            key: const ValueKey('random-teams-action'),
+                            style: assignmentStyle,
+                            onPressed: disabled
+                                ? null
+                                : () {
+                                    cubit.generateRandomTeams();
+                                    Navigator.pop(context);
+                                  },
+                            icon: const Icon(Icons.shuffle, size: 20),
+                            label: const Text('CASUALI'),
+                          ),
+                          second: OutlinedButton.icon(
+                            key: const ValueKey('balanced-teams-action'),
+                            style: assignmentStyle,
+                            onPressed: disabled
+                                ? null
+                                : () {
+                                    cubit.generateBalancedTeams();
+                                    Navigator.pop(context);
+                                  },
+                            icon: const Icon(Icons.balance, size: 20),
+                            label: const Text('BILANCIATE'),
+                          ),
+                        ),
+                        if (state.teamsValid) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            child: Divider(height: 1),
+                          ),
+                          _OptionSwitch(
+                            title: 'Modalità Rivalità',
+                            value: state.isRivalry,
+                            onChanged: disabled
+                                ? null
+                                : (enabled) async {
+                                    if (!enabled ||
+                                        await _confirmRivalry(
+                                          context,
+                                          state.mode,
+                                        )) {
+                                      if (context.mounted) {
+                                        cubit.setRivalry(enabled);
+                                      }
+                                    }
+                                  },
+                          ),
+                          if (state.isRivalry)
+                            Text(
+                              _rivalrySummary(state),
+                              style: AppType.caption.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }
