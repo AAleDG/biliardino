@@ -1,6 +1,6 @@
 # South Africa 2010 implementation receipt
 
-Updated 9 September 2026. Issue #11. Branch: `codex/south-africa-2010-design-implementation`.
+Updated 10 September 2026. Issue #11. Branch: `codex/south-africa-2010-design-implementation`.
 
 ## Home dashboard extension checkpoint — 9 September 2026
 
@@ -72,7 +72,7 @@ No implementation scope was waived. The user accepted the two unavailable native
 
 ## Ownership and provenance
 
-[Root DESIGN.md](../../DESIGN.md) owns visuals and motion. [PROJECT_DOCUMENTATION.md](../../PROJECT_DOCUMENTATION.md) owns architecture. [Asset inventory](assets/README.md), [R1 manifest](assets/r1/manifest.json) and [H2 manifest](assets/home-h2/manifest.json) own approval, hashes and artwork provenance. All five SVGs, the corrected foot-origin entrance and the exact H2 Home PNG were explicitly approved; no unseen artwork is accepted by this receipt.
+[Root DESIGN.md](../../DESIGN.md) owns visuals and motion. [PROJECT_DOCUMENTATION.md](../../PROJECT_DOCUMENTATION.md) owns architecture. [Asset inventory](assets/README.md), [R1 manifest](assets/r1/manifest.json), [H2 manifest](assets/home-h2/manifest.json) and [setup-r2 manifest](assets/setup-r2/manifest.json) own approval, hashes and artwork provenance. All five SVGs, the corrected foot-origin entrance, the exact H2 Home PNG and both byte-identical setup-r2 PNGs were explicitly approved; no unseen artwork is accepted by this receipt.
 
 ## Nuova Partita reference correction accepted — 10 September 2026
 
@@ -90,3 +90,11 @@ The user then approved the running horizon-arc decoration: a shallow yellow/blue
 Validation: Flutter 3.44.9 / Dart 3.12.2, 187 tests passing, clean Flutter analysis and pinned DESIGN lint. Real-font goldens cover the summary, lower composition and both options modes. Widget tests cover stable page geometry, live persistence, rollback feedback, close/swipe, assignment dismissal and 200% text at 320×568 and 568×320. The debug review build was exercised on the authorized iPhone 17 Pro Max 26.0 AppStore, iOS 26.0, UDID `293A02E2-FC2D-4D72-93E4-C1EE93CA537E`, using `com.biliardino.southafrica.review` and an in-memory four-player 2v2 fixture. Native evidence covers both rule modes, score adjustment, two-goal switch, rivalry confirmation/cancel, automatic assignment and dismissal. Both selector segments remain 200×48 logical pixels across modes on the 440×956 device. Persisted review Documents files, including the database, retain identical SHA-256 hashes.
 
 Implementation evidence lives in the ignored local packet's `qa/options-d/` folder. Actual VoiceOver traversal and native Reduce Motion remain deferred manual checks; accessibility hierarchy inspection and widget tests are not substitutes. The user explicitly approved the implemented panel after reviewing its running simulator rendering on 2026-09-10.
+
+## Nuova Partita hardening — 10 September 2026
+
+P4 kept the approved composition and behavior while tightening ownership and failure paths. Setup-only presentation and modal orchestration now live under `lib/screens/new_match/`; the screen remains the `NewMatchCubit` boundary and `MatchSetupView` is a pure injected `StatelessWidget`. Open full-roster and team-assignment sheets react to current presence, assignment, capacity and busy state, use lazy safe-area lists, and cannot offer stale players. Casual and balanced assignment are disabled when the current roster cannot satisfy the selected mode.
+
+Long player names retain user-authored casing, may occupy two lines, and grow their targets at large text sizes. Decorative PNGs are excluded from input and semantics. Runtime accessibility inspection exposed occupied team rows and add controls as generic content; they now announce full names and target teams as enabled buttons. The exact approved PNGs were moved byte-identically from candidate storage to stable `approved/` paths. Their SHA-256 values remain `45b320cee3d42d4140f3bd8787159e28bba10f56aa4ac2b1aefb2af5be91ee4d` and `bb0c574dc80cdebeb47252cf100a05d6732001ac13fe75791706c530ccd3cc8a`.
+
+Validation on the final P4 source: all 190 Flutter tests passed, including actual-font setup goldens, reactive sheet invalidation, insufficient rosters, long names, 200% text, navigation and active-match regressions; Flutter analysis was clean. Both setup and R1 asset checkers passed, the pinned DESIGN lint reported zero errors and warnings, generated R1 paths were byte-identical across repeated generation, and the iOS simulator debug build succeeded. The isolated review build ran on the exclusive iPhone 17 Pro Max 26.0 AppStore (`293A02E2-FC2D-4D72-93E4-C1EE93CA537E`); the final 1320×2868 capture has SHA-256 `0724909806bd872d2cb0b58aed0766b4c47f0acfea86e6d60c3fb4a0f6e30885`. `axe describe-ui` confirmed team edit/add and kickoff actions, and the isolated database remained unchanged at SHA-256 `ee963ebac7801695abf7e6f1d4c501c1138e9e5277a10795fc1d6cac6c519bee`. Actual VoiceOver traversal and native Reduce Motion replay remain the user-deferred release-hardening checks and are not claimed as passed.

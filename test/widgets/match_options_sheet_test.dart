@@ -19,6 +19,7 @@ void main() {
     WidgetTester tester, {
     Size size = const Size(440, 956),
     double scale = 1,
+    bool empty = false,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -26,17 +27,19 @@ void main() {
     tester.platformDispatcher.textScaleFactorTestValue = scale;
     addTearDown(tester.view.reset);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    final fixture = DesignFixture();
+    final fixture = DesignFixture(empty: empty);
     await fixture.load();
     await tester.pumpWidget(fixture.home);
     final context = tester.element(find.byType(HomeScreen));
     context.read<HomeCubit>().select(HomeDestination.match);
     final cubit = context.read<NewMatchCubit>();
-    cubit
-      ..setTeam('p0', 1)
-      ..setTeam('p2', 1)
-      ..setTeam('p3', 2)
-      ..setTeam('p4', 2);
+    if (!empty) {
+      cubit
+        ..setTeam('p0', 1)
+        ..setTeam('p2', 1)
+        ..setTeam('p3', 2)
+        ..setTeam('p4', 2);
+    }
     await tester.pumpAndSettle();
     addTearDown(() async {
       await tester.pumpWidget(const SizedBox.shrink());
@@ -50,6 +53,13 @@ void main() {
       of: find.byKey(const ValueKey('setup-scroll-view')),
       matching: find.byType(Scrollable),
     );
+    if (opener.evaluate().isEmpty) {
+      final position = tester.state<ScrollableState>(scroll).position;
+      position.jumpTo(
+        position.maxScrollExtent < 240 ? position.maxScrollExtent : 240,
+      );
+      await tester.pumpAndSettle();
+    }
     await tester.scrollUntilVisible(opener, 100, scrollable: scroll);
     await Scrollable.ensureVisible(tester.element(opener), alignment: 0);
     await tester.pumpAndSettle();
@@ -118,6 +128,22 @@ void main() {
         findsOneWidget,
       );
     }
+  });
+
+  testWidgets('Assignment actions are disabled for an insufficient roster', (
+    tester,
+  ) async {
+    final (_, cubit) = await mount(tester, empty: true);
+    await open(tester);
+
+    expect(cubit.state.present, isEmpty);
+    for (final key in ['random-teams-action', 'balanced-teams-action']) {
+      expect(
+        tester.widget<OutlinedButton>(find.byKey(ValueKey(key))).onPressed,
+        isNull,
+      );
+    }
+    expect(sheet, findsOneWidget);
   });
 
   for (final size in [const Size(320, 568), const Size(568, 320)]) {

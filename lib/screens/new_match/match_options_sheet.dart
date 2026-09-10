@@ -5,10 +5,10 @@ import '../../cubits/new_match/new_match_cubit.dart';
 import '../../cubits/new_match/new_match_state.dart';
 import '../../models/game_match.dart';
 import '../../models/match_rules.dart';
-import '../../services/stats_service.dart';
 import '../../theme/app_theme.dart';
-import 'adaptive_pair.dart';
-import 'sheet_ribbon_accent.dart';
+import '../../widgets/design/adaptive_pair.dart';
+import '../../widgets/design/sheet_ribbon_accent.dart';
+import 'match_rivalry_summary.dart';
 
 String _rulesSummary(MatchRules rules) => rules.isFree
     ? 'Punteggio libero'
@@ -163,6 +163,11 @@ class _MatchOptionsSheet extends StatelessWidget {
                   builder: (context, state) {
                     final cubit = context.read<NewMatchCubit>();
                     final disabled = state.isPersistingRules;
+                    final canGenerate =
+                        !disabled &&
+                        !state.kickedOff &&
+                        !state.isSaving &&
+                        state.present.length >= state.requiredPlayers;
                     final assignmentStyle = OutlinedButton.styleFrom(
                       textStyle: AppType.action,
                     );
@@ -205,7 +210,7 @@ class _MatchOptionsSheet extends StatelessWidget {
                           first: OutlinedButton.icon(
                             key: const ValueKey('random-teams-action'),
                             style: assignmentStyle,
-                            onPressed: disabled
+                            onPressed: !canGenerate
                                 ? null
                                 : () {
                                     cubit.generateRandomTeams();
@@ -217,7 +222,7 @@ class _MatchOptionsSheet extends StatelessWidget {
                           second: OutlinedButton.icon(
                             key: const ValueKey('balanced-teams-action'),
                             style: assignmentStyle,
-                            onPressed: disabled
+                            onPressed: !canGenerate
                                 ? null
                                 : () {
                                     cubit.generateBalancedTeams();
@@ -250,11 +255,11 @@ class _MatchOptionsSheet extends StatelessWidget {
                                   },
                           ),
                           if (state.isRivalry)
-                            Text(
-                              _rivalrySummary(state),
-                              style: AppType.caption.copyWith(
-                                color: AppColors.textSecondary,
-                              ),
+                            MatchRivalrySummary(
+                              matches: state.matches,
+                              players: state.players,
+                              team1: state.team1,
+                              team2: state.team2,
                             ),
                         ],
                       ],
@@ -418,21 +423,6 @@ class _OptionSwitch extends StatelessWidget {
     value: value,
     onChanged: onChanged,
   );
-}
-
-String _rivalrySummary(NewMatchState state) {
-  final overview = StatsService.rivalryOverview(
-    state.matches,
-    team1Ids: state.team1,
-    team2Ids: state.team2,
-  );
-  String label(List<String> ids) =>
-      ids.map((id) => StatsService.playerName(state.players, id)).join(' / ');
-  final team1 = label(state.team1);
-  final team2 = label(state.team2);
-  return overview.hasMatches
-      ? '$team1 vs $team2 · ${overview.team1Wins}-${overview.team2Wins} nei duelli'
-      : 'Primo duello tra $team1 e $team2.';
 }
 
 Future<bool> _confirmRivalry(BuildContext context, MatchMode mode) async {

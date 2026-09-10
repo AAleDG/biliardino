@@ -122,9 +122,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
       if (targetTeam.length >= state.mode.teamSize) return;
       current[playerId] = team;
     }
-    emit(
-      state.copyWith(assignment: Map.unmodifiable(current), isRivalry: false),
-    );
+    _commitAssignment(current);
   }
 
   void replaceTeamPlayer({
@@ -148,8 +146,15 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     final current = Map<String, int>.from(state.assignment)
       ..remove(outgoingPlayerId)
       ..[incomingPlayerId] = team;
+    _commitAssignment(current);
+  }
+
+  void _commitAssignment(Map<String, int> assignment) {
     emit(
-      state.copyWith(assignment: Map.unmodifiable(current), isRivalry: false),
+      state.copyWith(
+        assignment: Map.unmodifiable(assignment),
+        isRivalry: false,
+      ),
     );
   }
 

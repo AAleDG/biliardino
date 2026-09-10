@@ -214,7 +214,10 @@ void main() {
       final firstPlayer = cubit.state.players.firstWhere(
         (player) => player.id == firstPlayerId,
       );
-      final playerSlot = find.text(firstPlayer.name.toUpperCase());
+      final firstTeam = cubit.state.assignment[firstPlayerId]!;
+      final playerSlot = find.byKey(
+        ValueKey('team-$firstTeam-player-$firstPlayerId'),
+      );
       await tester.scrollUntilVisible(
         playerSlot,
         250,
@@ -1075,6 +1078,16 @@ void main() {
           duration: Duration.zero,
         );
         await tester.pumpAndSettle();
+        expect(
+          tester.getSemantics(add),
+          matchesSemantics(
+            label: 'Aggiungi giocatore alla Squadra 1',
+            isButton: true,
+            hasEnabledState: true,
+            isEnabled: true,
+            hasTapAction: true,
+          ),
+        );
         await tester.tap(add);
         await tester.pumpAndSettle();
 
@@ -1089,6 +1102,20 @@ void main() {
             isButton: true,
             isSelected: false,
             hasSelectedState: true,
+            hasEnabledState: true,
+            isEnabled: true,
+            hasTapAction: true,
+          ),
+        );
+        await tester.tap(teamOneChip);
+        await tester.pumpAndSettle();
+
+        final assignedSlot = find.byKey(const ValueKey('team-1-player-p1'));
+        expect(
+          tester.getSemantics(assignedSlot),
+          matchesSemantics(
+            label: 'Alessandro Antonio Delgaudio, modifica Squadra 1',
+            isButton: true,
             hasEnabledState: true,
             isEnabled: true,
             hasTapAction: true,

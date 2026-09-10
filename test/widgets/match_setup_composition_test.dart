@@ -60,10 +60,7 @@ void main() {
         expect(tester.getSize(lastAdd).height, greaterThanOrEqualTo(48));
         expect(tester.widget<ElevatedButton>(kickoff).onPressed, isNotNull);
 
-        final playerName = find.text('ANDREA');
-        final slot = find
-            .ancestor(of: playerName, matching: find.byType(InkWell))
-            .first;
+        final slot = find.byKey(const ValueKey('team-1-player-p0'));
         expect(tester.getSize(slot).height, greaterThanOrEqualTo(48));
         await tester.ensureVisible(slot);
         await tester.tap(slot);

@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../widgets/design/brand_header.dart';
-import '../widgets/design/score_panel.dart';
-import '../widgets/design/match_setup_view.dart';
-import '../widgets/design/match_options_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubits/home/home_cubit.dart';
@@ -17,6 +13,11 @@ import '../services/stats_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/avatar.dart';
 import '../widgets/celebrations.dart';
+import '../widgets/design/brand_header.dart';
+import '../widgets/design/score_panel.dart';
+import 'new_match/match_options_sheet.dart';
+import 'new_match/match_setup_roster.dart';
+import 'new_match/match_setup_view.dart';
 
 class NewMatchScreen extends StatelessWidget {
   const NewMatchScreen({super.key});
@@ -220,8 +221,16 @@ class _NewMatchViewState extends State<_NewMatchView> {
                     assignment: state.assignment,
                     onModeChanged: cubit.setMatchMode,
                     onOptionsPressed: () => showMatchOptions(context),
-                    onToggle: cubit.setTeam,
-                    onReplace: cubit.replaceTeamPlayer,
+                    onShowAllPlayers: () =>
+                        showAllMatchPlayersSheet(context, cubit),
+                    onAddPlayer: (team) =>
+                        showMatchTeamPlayersSheet(context, cubit, team),
+                    onEditPlayer: (team, playerId) => showMatchTeamPlayersSheet(
+                      context,
+                      cubit,
+                      team,
+                      replacingId: playerId,
+                    ),
                     onKickoff: state.teamsValid && !state.isPersistingRules
                         ? cubit.kickoff
                         : null,

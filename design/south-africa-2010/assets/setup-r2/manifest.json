@@ -154,7 +154,7 @@
     },
     {
       "id": "team-stage-v10-gimp-white-to-alpha",
-      "file": "candidates/team-stage-v10-gimp-white-to-alpha.png",
+      "file": "approved/team-stage-v10-gimp-white-to-alpha.png",
       "sha256": "45b320cee3d42d4140f3bd8787159e28bba10f56aa4ac2b1aefb2af5be91ee4d",
       "dimensions": [
         1448,
@@ -259,7 +259,7 @@
     },
     {
       "id": "lower-flourish-v5-transparent",
-      "file": "candidates/lower-flourish-v5-transparent.png",
+      "file": "approved/lower-flourish-v5-transparent.png",
       "sha256": "bb0c574dc80cdebeb47252cf100a05d6732001ac13fe75791706c530ccd3cc8a",
       "dimensions": [
         1448,
@@ -315,7 +315,7 @@
   "combinedReview": {
     "approval": "rejected-user-review",
     "file": "review.html",
-    "sha256": "8d4e097f869723646f989f2c1c41249e22624bdff2f506e5180546ca3eed0450",
+    "sha256": "8aab116169984fe479416d7be56c1d254db08c35ec161ddb8da460f090d8a743",
     "fixtureBoundary": "All title, mode, option, player, team, action, and navigation content in review.html is live review UI layered separately from the two approved PNGs.",
     "renders": [
       {
@@ -394,7 +394,7 @@
     "limitation": "Widget-render evidence uses the real Flutter tree and fonts but is not yet an installed simulator runtime capture."
   },
   "contentBoundary": "decorative ribbons and the lower football only; all UI and text remain live Flutter widgets",
-  "runtimeStatus": "Flutter composition approved by user on 2026-09-10; uncommitted working tree",
+  "runtimeStatus": "Flutter composition approved by user on 2026-09-10; P4 hardening complete on codex/south-africa-2010-design-implementation",
   "approvedSimulatorReview": {
     "approval": "approved-user-review",
     "date": "2026-09-10",

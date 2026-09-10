@@ -1,6 +1,6 @@
 """Compile approved, deliberately restricted SVG primitives into Flutter paths."""
 from pathlib import Path
-import hashlib,json,re,xml.etree.ElementTree as ET
+import hashlib,json,re,subprocess,xml.etree.ElementTree as ET
 def require(condition, message):
  if not condition:
   raise ValueError(message)
@@ -61,4 +61,6 @@ for asset in manifest['assets']:
  raw=(folder/asset['file']).read_bytes();require(hashlib.sha256(raw).hexdigest()==asset['sha256'], f'Artwork hash mismatch: {asset["file"]}')
  name=''.join(w.capitalize() for w in asset['id'].split('-'));lines=[];visit(ET.fromstring(raw),{},lines)
  methods.append(f'// {asset["id"]}: {asset["sha256"]}\nvoid draw{name}(Canvas canvas, Color? monochrome) {{\n  '+'\n  '.join(lines)+'\n}')
-(root/'lib/widgets/design/artwork_paths.dart').write_text('\n\n'.join(out+constants+methods)+'\n')
+output_path=root/'lib/widgets/design/artwork_paths.dart'
+output_path.write_text('\n\n'.join(out+constants+methods)+'\n')
+subprocess.run(['dart', 'format', str(output_path)], check=True)
