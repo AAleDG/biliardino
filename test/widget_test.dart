@@ -198,7 +198,7 @@ void main() {
       expect(balancedAction, findsOneWidget);
 
       await tester.tap(randomAction);
-      await tester.pump();
+      await tester.pumpAndSettle();
       final cubit = tester
           .element(find.byType(NewMatchScreen))
           .read<NewMatchCubit>();
@@ -236,6 +236,7 @@ void main() {
       expect(cubit.state.assignment, isNot(contains(firstPlayerId)));
       expect(cubit.state.teamsValid, isFalse);
 
+      await _openSetupOptions(tester);
       await tester.scrollUntilVisible(
         balancedAction,
         -250,
@@ -303,6 +304,33 @@ void main() {
 
     expect(action(randomAction).onPressed, isNotNull);
     expect(action(balancedAction).onPressed, isNotNull);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Il pannello mostra il fallimento e ripristina le regole', (
+    tester,
+  ) async {
+    final sample = _sampleData();
+    when(
+      () => sample.matchRulesRepo.save(any()),
+    ).thenThrow(StateError('Storage unavailable'));
+    await _pumpHome(tester, home: const NewMatchScreen(), repos: sample);
+    await tester.pumpAndSettle();
+    await _openSetupOptions(tester);
+    await tester.tap(find.text('Primo a N'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Impossibile salvare le opzioni. Riprova.'),
+      findsOneWidget,
+    );
+    final selector = tester.widget<SegmentedButton<MatchRuleMode>>(
+      find.byKey(const ValueKey('match-rule-selector')),
+    );
+    expect(selector.selected, {MatchRuleMode.free});
+    expect(selector.onSelectionChanged, isNotNull);
+    await tester.tap(find.byKey(const ValueKey('close-match-options')));
+    await tester.pumpAndSettle();
+    expect(find.text('Punteggio libero'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -1569,7 +1597,7 @@ Future<void> _openSetupOptions(WidgetTester tester) async {
   );
   tester.state<ScrollableState>(setupScroll).position.jumpTo(0);
   await tester.pumpAndSettle();
-  final disclosure = find.byKey(const ValueKey('setup-options-disclosure'));
+  final disclosure = find.byKey(const ValueKey('setup-options-action'));
   await Scrollable.ensureVisible(
     tester.element(disclosure),
     alignment: .2,

@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import '../../models/game_match.dart';
 import '../../models/match_rules.dart';
 import '../../models/player.dart';
-import '../../models/rivalry_overview.dart';
 import '../../services/stats_service.dart';
 import '../../theme/app_theme.dart';
 import '../avatar.dart';
+import 'match_options_sheet.dart';
 import 'adaptive_pair.dart';
 
 const _teamStageAsset =
@@ -20,7 +20,6 @@ class MatchSetupView extends StatefulWidget {
   const MatchSetupView({
     super.key,
     required this.players,
-    required this.matches,
     required this.mode,
     required this.rules,
     required this.isPersistingRules,
@@ -30,19 +29,13 @@ class MatchSetupView extends StatefulWidget {
     required this.team2,
     required this.assignment,
     required this.onModeChanged,
-    required this.onRuleModeChanged,
-    required this.onTargetScoreChanged,
-    required this.onWinByTwoChanged,
-    required this.onRivalryChanged,
-    required this.onRandomTeams,
-    required this.onBalancedTeams,
+    required this.onOptionsPressed,
     required this.onToggle,
     required this.onReplace,
     required this.onKickoff,
   });
 
   final List<Player> players;
-  final List<GameMatch> matches;
   final MatchMode mode;
   final MatchRules rules;
   final bool isPersistingRules;
@@ -52,12 +45,7 @@ class MatchSetupView extends StatefulWidget {
   final List<String> team2;
   final Map<String, int> assignment;
   final ValueChanged<MatchMode> onModeChanged;
-  final ValueChanged<MatchRuleMode> onRuleModeChanged;
-  final ValueChanged<int> onTargetScoreChanged;
-  final ValueChanged<bool> onWinByTwoChanged;
-  final ValueChanged<bool> onRivalryChanged;
-  final VoidCallback onRandomTeams;
-  final VoidCallback onBalancedTeams;
+  final VoidCallback onOptionsPressed;
   final void Function(String id, int team) onToggle;
   final void Function({
     required String outgoingPlayerId,
@@ -72,8 +60,6 @@ class MatchSetupView extends StatefulWidget {
 }
 
 class _MatchSetupViewState extends State<MatchSetupView> {
-  bool _optionsExpanded = false;
-
   String _playerName(String id) => StatsService.playerName(widget.players, id);
 
   Future<void> _showAllPlayers() => showModalBottomSheet<void>(
@@ -196,16 +182,6 @@ class _MatchSetupViewState extends State<MatchSetupView> {
   Widget build(BuildContext context) {
     final requiredPlayers = widget.mode.teamSize * 2;
     final enoughPlayers = widget.present.length >= requiredPlayers;
-    final teamsReady =
-        widget.team1.length == widget.mode.teamSize &&
-        widget.team2.length == widget.mode.teamSize;
-    final rivalry = widget.isRivalry && teamsReady
-        ? StatsService.rivalryOverview(
-            widget.matches,
-            team1Ids: widget.team1,
-            team2Ids: widget.team2,
-          )
-        : null;
 
     return Stack(
       children: [
@@ -235,24 +211,10 @@ class _MatchSetupViewState extends State<MatchSetupView> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: _OptionsDisclosure(
-                  expanded: _optionsExpanded,
-                  onExpansionChanged: (value) =>
-                      setState(() => _optionsExpanded = value),
+                child: MatchOptionsSummary(
                   rules: widget.rules,
-                  mode: widget.mode,
-                  isPersistingRules: widget.isPersistingRules,
                   isRivalry: widget.isRivalry,
-                  teamsReady: teamsReady,
-                  rivalry: rivalry,
-                  team1Label: _teamLabel(widget.team1, 'Squadra 1'),
-                  team2Label: _teamLabel(widget.team2, 'Squadra 2'),
-                  onRuleModeChanged: widget.onRuleModeChanged,
-                  onTargetScoreChanged: widget.onTargetScoreChanged,
-                  onWinByTwoChanged: widget.onWinByTwoChanged,
-                  onRandomTeams: widget.onRandomTeams,
-                  onBalancedTeams: widget.onBalancedTeams,
-                  onRivalryChanged: widget.onRivalryChanged,
+                  onPressed: widget.onOptionsPressed,
                 ),
               ),
               Padding(
@@ -291,9 +253,6 @@ class _MatchSetupViewState extends State<MatchSetupView> {
       ],
     );
   }
-
-  String _teamLabel(List<String> ids, String fallback) =>
-      ids.isEmpty ? fallback : ids.map(_playerName).join(' / ');
 }
 
 class _SetupHeader extends StatelessWidget {
@@ -865,190 +824,6 @@ class _EmptyTeamSlot extends StatelessWidget {
   );
 }
 
-class _OptionsDisclosure extends StatelessWidget {
-  const _OptionsDisclosure({
-    required this.expanded,
-    required this.onExpansionChanged,
-    required this.rules,
-    required this.mode,
-    required this.isPersistingRules,
-    required this.isRivalry,
-    required this.teamsReady,
-    required this.rivalry,
-    required this.team1Label,
-    required this.team2Label,
-    required this.onRuleModeChanged,
-    required this.onTargetScoreChanged,
-    required this.onWinByTwoChanged,
-    required this.onRandomTeams,
-    required this.onBalancedTeams,
-    required this.onRivalryChanged,
-  });
-
-  final bool expanded;
-  final ValueChanged<bool> onExpansionChanged;
-  final MatchRules rules;
-  final MatchMode mode;
-  final bool isPersistingRules;
-  final bool isRivalry;
-  final bool teamsReady;
-  final RivalryOverview? rivalry;
-  final String team1Label;
-  final String team2Label;
-  final ValueChanged<MatchRuleMode> onRuleModeChanged;
-  final ValueChanged<int> onTargetScoreChanged;
-  final ValueChanged<bool> onWinByTwoChanged;
-  final VoidCallback onRandomTeams;
-  final VoidCallback onBalancedTeams;
-  final ValueChanged<bool> onRivalryChanged;
-
-  @override
-  Widget build(BuildContext context) => Material(
-    color: AppColors.surface.withValues(alpha: .32),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppRadius.panel),
-      side: const BorderSide(color: AppColors.divider),
-    ),
-    clipBehavior: Clip.antiAlias,
-    child: ExpansionTile(
-      key: const ValueKey('setup-options-disclosure'),
-      initiallyExpanded: expanded,
-      onExpansionChanged: onExpansionChanged,
-      tilePadding: const EdgeInsets.symmetric(horizontal: 14),
-      childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 14),
-      minTileHeight: 48,
-      title: Wrap(
-        spacing: 12,
-        runSpacing: 4,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          const Text('OPZIONI PARTITA', style: AppType.utility),
-          Text(
-            rules.mode == MatchRuleMode.free
-                ? 'Punteggio libero'
-                : 'Primo a ${rules.targetScore}${rules.winByTwo ? ' · +2' : ''}',
-            style: AppType.caption.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
-      ),
-      children: [
-        _RulesControls(
-          rules: rules,
-          disabled: isPersistingRules,
-          onModeChanged: onRuleModeChanged,
-          onTargetScoreChanged: onTargetScoreChanged,
-          onWinByTwoChanged: onWinByTwoChanged,
-        ),
-        const SizedBox(height: 10),
-        AdaptivePair(
-          first: OutlinedButton.icon(
-            key: const ValueKey('random-teams-action'),
-            onPressed: isPersistingRules ? null : onRandomTeams,
-            icon: const Icon(Icons.shuffle, size: 18),
-            label: const Text('CASUALI'),
-          ),
-          second: OutlinedButton.icon(
-            key: const ValueKey('balanced-teams-action'),
-            onPressed: isPersistingRules ? null : onBalancedTeams,
-            icon: const Icon(Icons.balance, size: 18),
-            label: const Text('BILANCIATE'),
-          ),
-        ),
-        if (teamsReady) ...[
-          const SizedBox(height: 8),
-          SwitchListTile.adaptive(
-            value: isRivalry,
-            onChanged: isPersistingRules
-                ? null
-                : (value) async {
-                    if (!value) {
-                      onRivalryChanged(false);
-                      return;
-                    }
-                    final confirmed = await _confirmRivalry(context, mode);
-                    if (confirmed) onRivalryChanged(true);
-                  },
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Modalità Rivalità'),
-          ),
-        ],
-        if (isRivalry && rivalry != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Text(
-              rivalry!.hasMatches
-                  ? '$team1Label vs $team2Label · '
-                        '${rivalry!.team1Wins}-${rivalry!.team2Wins} nei duelli'
-                  : 'Primo duello tra $team1Label e $team2Label.',
-              style: AppType.caption.copyWith(color: AppColors.textSecondary),
-            ),
-          ),
-      ],
-    ),
-  );
-}
-
-class _RulesControls extends StatelessWidget {
-  const _RulesControls({
-    required this.rules,
-    required this.disabled,
-    required this.onModeChanged,
-    required this.onTargetScoreChanged,
-    required this.onWinByTwoChanged,
-  });
-
-  final MatchRules rules;
-  final bool disabled;
-  final ValueChanged<MatchRuleMode> onModeChanged;
-  final ValueChanged<int> onTargetScoreChanged;
-  final ValueChanged<bool> onWinByTwoChanged;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      SegmentedButton<MatchRuleMode>(
-        segments: const [
-          ButtonSegment(value: MatchRuleMode.free, label: Text('Libero')),
-          ButtonSegment(value: MatchRuleMode.firstTo, label: Text('Primo a N')),
-        ],
-        selected: {rules.mode},
-        onSelectionChanged: disabled
-            ? null
-            : (selection) => onModeChanged(selection.single),
-      ),
-      if (rules.mode == MatchRuleMode.firstTo) ...[
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            const Expanded(child: Text('Goal vittoria')),
-            IconButton(
-              onPressed:
-                  disabled || rules.targetScore <= MatchRules.minTargetScore
-                  ? null
-                  : () => onTargetScoreChanged(rules.targetScore - 1),
-              icon: const Icon(Icons.remove),
-            ),
-            Text('${rules.targetScore}', style: AppType.section),
-            IconButton(
-              onPressed:
-                  disabled || rules.targetScore >= MatchRules.maxTargetScore
-                  ? null
-                  : () => onTargetScoreChanged(rules.targetScore + 1),
-              icon: const Icon(Icons.add),
-            ),
-          ],
-        ),
-        SwitchListTile.adaptive(
-          value: rules.winByTwo,
-          onChanged: disabled ? null : onWinByTwoChanged,
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Vinci con due goal di scarto'),
-        ),
-      ],
-    ],
-  );
-}
-
 class _RosterSheet extends StatelessWidget {
   const _RosterSheet({required this.title, required this.children});
 
@@ -1182,33 +957,6 @@ class _KickoffButton extends StatelessWidget {
       ),
     ),
   );
-}
-
-Future<bool> _confirmRivalry(BuildContext context, MatchMode mode) async {
-  final subject = mode == MatchMode.oneVsOne
-      ? 'tra questi due giocatori'
-      : 'tra queste due coppie';
-  return await showDialog<bool>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: const Text('Attivare Rivalità?'),
-          content: Text(
-            'Puoi marcare questa partita come Rivalità $subject. Lo storico '
-            'terrà separati i precedenti dedicati a questa sfida.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('Annulla'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Attiva'),
-            ),
-          ],
-        ),
-      ) ??
-      false;
 }
 
 String _modeTitle(MatchMode mode) =>

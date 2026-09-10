@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../widgets/design/brand_header.dart';
 import '../widgets/design/score_panel.dart';
 import '../widgets/design/match_setup_view.dart';
+import '../widgets/design/match_options_sheet.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubits/home/home_cubit.dart';
@@ -209,7 +210,6 @@ class _NewMatchViewState extends State<_NewMatchView> {
                   )
                 : MatchSetupView(
                     players: state.players,
-                    matches: state.matches,
                     mode: state.mode,
                     rules: state.rules,
                     isPersistingRules: state.isPersistingRules,
@@ -219,12 +219,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
                     team2: state.team2,
                     assignment: state.assignment,
                     onModeChanged: cubit.setMatchMode,
-                    onRuleModeChanged: cubit.setRuleMode,
-                    onTargetScoreChanged: cubit.setTargetScore,
-                    onWinByTwoChanged: cubit.setWinByTwo,
-                    onRivalryChanged: cubit.setRivalry,
-                    onRandomTeams: cubit.generateRandomTeams,
-                    onBalancedTeams: cubit.generateBalancedTeams,
+                    onOptionsPressed: () => showMatchOptions(context),
                     onToggle: cubit.setTeam,
                     onReplace: cubit.replaceTeamPlayer,
                     onKickoff: state.teamsValid && !state.isPersistingRules

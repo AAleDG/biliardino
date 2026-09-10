@@ -57,6 +57,16 @@ void main() {
       await Scrollable.ensureVisible(tester.element(last), alignment: .6);
       await tester.pumpAndSettle();
       await capture('south-africa-setup-players');
+      tester.state<ScrollableState>(setupScroll).position.jumpTo(0);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('setup-options-action')));
+      await tester.pumpAndSettle();
+      await capture('south-africa-setup-options-free');
+      await tester.tap(find.text('Primo a N'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Scarto di 2 goal'));
+      await tester.pumpAndSettle();
+      await capture('south-africa-setup-options-target');
     },
   );
 }
