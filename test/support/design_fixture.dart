@@ -23,6 +23,7 @@ import 'fake_database.dart';
 class DesignFixture {
   DesignFixture({
     bool empty = false,
+    PlayerRepository Function(FakeDatabaseHelper)? playerRepositoryFactory,
     bool longRoster = false,
     bool populatedDashboard = false,
     bool sparseDashboard = false,
@@ -85,7 +86,8 @@ class DesignFixture {
               ),
             ],
     );
-    playersRepository = PlayerRepository(database);
+    playersRepository =
+        playerRepositoryFactory?.call(database) ?? PlayerRepository(database);
     matchesRepository = MatchRepository(database);
     rulesRepository = MatchRulesRepository(database);
   }

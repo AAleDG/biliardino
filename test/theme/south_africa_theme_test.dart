@@ -3,6 +3,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+    test('Shared switch palette survives adaptive shape on $platform', () {
+      final theme = AppTheme.southAfrica().copyWith(platform: platform);
+      final palette = theme.getAdaptation<SwitchThemeData>()!.adapt(
+        theme,
+        theme.switchTheme,
+      );
+      expect(
+        palette.trackColor!.resolve({WidgetState.selected}),
+        AppColors.primary,
+      );
+      expect(palette.trackColor!.resolve({}), AppColors.outline);
+      expect(
+        palette.thumbColor!.resolve({WidgetState.selected}),
+        AppColors.surface,
+      );
+      expect(palette.thumbColor!.resolve({}), AppColors.surface);
+      expect(
+        palette.trackColor!.resolve({WidgetState.disabled}),
+        AppColors.disabledContainer,
+      );
+      expect(
+        palette.thumbColor!.resolve({WidgetState.disabled}),
+        AppColors.disabledContent,
+      );
+    });
+  }
+
   test('Semantic foreground pairs meet normal-text contrast', () {
     final pairs = <(Color, Color)>[
       (AppColors.ink, AppColors.background),

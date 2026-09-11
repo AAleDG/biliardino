@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/design/brand_header.dart';
+import '../widgets/design/south_africa_artwork.dart';
+import '../navigation/app_navigation.dart';
+import 'players/player_dialogs.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../cubits/players/players_cubit.dart';
@@ -7,7 +10,6 @@ import '../cubits/players/players_state.dart';
 import '../models/player.dart';
 import '../theme/app_theme.dart';
 import '../widgets/avatar.dart';
-import 'player_profile_screen.dart';
 
 class PlayersScreen extends StatelessWidget {
   const PlayersScreen({super.key});
@@ -21,17 +23,20 @@ class PlayersScreen extends StatelessWidget {
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            SnackBar(content: Text(_feedbackText(state.feedback!))),
+            SnackBar(content: Text(playersFeedbackText(state.feedback!))),
           );
       },
       builder: (context, state) {
-        final players = [...state.active, ...state.archived];
+        final active = state.active;
+        final archived = state.archived;
+        final players = [...active, ...archived];
         final presentCount = state.present.length;
 
         return Scaffold(
-          appBar: brandAppBar(context, title: 'GIOCATORI'),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: state.isMutating ? null : () => _showAddDialog(context),
+            onPressed: state.isMutating
+                ? null
+                : () => showPlayerAddDialog(context),
             backgroundColor: state.isMutating
                 ? AppColors.disabledContainer
                 : AppColors.primary,
@@ -41,51 +46,88 @@ class PlayersScreen extends StatelessWidget {
             icon: const Icon(Icons.person_add_alt_1),
             label: const Text('NUOVO'),
           ),
-          body: RibbonBackdrop(
-            child: players.isEmpty
-                ? const _Empty()
-                : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-                    itemCount: players.length + 1,
-                    itemBuilder: (_, index) {
-                      if (index == 0) {
-                        return _Summary(
-                          presentCount: presentCount,
-                          total: state.active.length,
-                        );
-                      }
-                      final i = index - 1;
-                      return _PlayerRow(
-                        first: i == 0,
-                        last: i == players.length - 1,
-                        player: players[i],
-                        onToggle: state.isMutating || players[i].isArchived
-                            ? null
-                            : () async {
-                                await context
-                                    .read<PlayersCubit>()
-                                    .togglePresent(players[i]);
-                              },
-                        onRename: state.isMutating
-                            ? null
-                            : () => _showRenameDialog(context, players[i]),
-                        onArchive: state.isMutating || players[i].isArchived
-                            ? null
-                            : () => _showArchiveDialog(context, players[i]),
-                        onReactivate: state.isMutating || !players[i].isArchived
-                            ? null
-                            : () => context
-                                  .read<PlayersCubit>()
-                                  .reactivatePlayer(players[i]),
-                        onOpenProfile: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) =>
-                                PlayerProfileScreen(playerId: players[i].id),
-                          ),
-                        ),
-                      );
-                    },
+          body: SafeArea(
+            bottom: false,
+            child: RibbonBackdrop(
+              child: CustomScrollView(
+                key: const ValueKey('players-scroll'),
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: _Header(
+                      summary: players.isEmpty
+                          ? null
+                          : _Summary(
+                              presentCount: presentCount,
+                              total: active.length,
+                            ),
+                    ),
                   ),
+                  if (players.isEmpty)
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: 96),
+                        child: _Empty(),
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
+                      sliver: SliverList.builder(
+                        itemCount: players.length + (archived.isEmpty ? 0 : 1),
+                        itemBuilder: (_, index) {
+                          if (archived.isNotEmpty && index == active.length) {
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                top: active.isEmpty ? 0 : AppSpace.section,
+                                bottom: AppSpace.medium,
+                              ),
+                              child: Semantics(
+                                header: true,
+                                child: const Text(
+                                  'ARCHIVIATI',
+                                  style: AppType.section,
+                                ),
+                              ),
+                            );
+                          }
+                          final i = index > active.length && archived.isNotEmpty
+                              ? index - 1
+                              : index;
+                          final player = players[i];
+                          return _PlayerRow(
+                            key: ValueKey('player-row-${player.id}'),
+                            first: i == 0 || i == active.length,
+                            last:
+                                i == active.length - 1 ||
+                                i == players.length - 1,
+                            player: player,
+                            onToggle: state.isMutating || player.isArchived
+                                ? null
+                                : () => context
+                                      .read<PlayersCubit>()
+                                      .togglePresent(player),
+                            onRename: state.isMutating
+                                ? null
+                                : () => showPlayerRenameDialog(context, player),
+                            onArchive: state.isMutating || player.isArchived
+                                ? null
+                                : () =>
+                                      showPlayerArchiveDialog(context, player),
+                            onReactivate: state.isMutating || !player.isArchived
+                                ? null
+                                : () => context
+                                      .read<PlayersCubit>()
+                                      .reactivatePlayer(player),
+                            onOpenProfile: () =>
+                                openPlayerProfile(context, player.id),
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         );
       },
@@ -93,172 +135,44 @@ class PlayersScreen extends StatelessWidget {
   }
 }
 
-String _feedbackText(PlayersFeedback feedback) {
-  switch (feedback) {
-    case PlayersFeedback.addFailed:
-      return 'Impossibile aggiungere il giocatore. Riprova.';
-    case PlayersFeedback.renameFailed:
-      return 'Impossibile rinominare il giocatore. Controlla il nome.';
-    case PlayersFeedback.presenceUpdateFailed:
-      return 'Impossibile aggiornare la presenza. Riprova.';
-    case PlayersFeedback.archiveFailed:
-      return 'Impossibile archiviare il giocatore. Riprova.';
-    case PlayersFeedback.reactivateFailed:
-      return 'Impossibile riattivare il giocatore. Riprova.';
-  }
-}
+class _Header extends StatelessWidget {
+  const _Header({this.summary});
+  final Widget? summary;
 
-void _showArchiveDialog(BuildContext rootContext, Player player) {
-  final cubit = rootContext.read<PlayersCubit>();
-  showDialog<void>(
-    context: rootContext,
-    builder: (ctx) => BlocBuilder<PlayersCubit, PlayersState>(
-      bloc: cubit,
-      builder: (context, state) => PopScope(
-        canPop: !state.isMutating,
-        child: AlertDialog(
-          scrollable: true,
-          title: const Text('Archivia giocatore'),
-          content: Text(
-            'Archiviare ${player.name}? Rimarrà visibile nelle partite e nelle statistiche passate.',
+  @override
+  Widget build(BuildContext context) {
+    final compact =
+        MediaQuery.sizeOf(context).height < 650 ||
+        MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    return Column(
+      children: [
+        SizedBox(
+          height: compact ? 12 : 36,
+          width: double.infinity,
+          child: const SouthAfricaArtwork(
+            mark: ArtworkMark.headerRibbon,
+            fit: BoxFit.fill,
           ),
-          actions: [
-            TextButton(
-              onPressed: state.isMutating ? null : () => Navigator.pop(ctx),
-              child: const Text('Annulla'),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          child: Semantics(
+            header: true,
+            child: const Text(
+              'GIOCATORI',
+              style: AppType.screen,
+              textAlign: TextAlign.center,
             ),
-            ElevatedButton.icon(
-              key: const ValueKey('confirm-archive-player'),
-              onPressed: state.isMutating
-                  ? null
-                  : () async {
-                      final archived = await cubit.archivePlayer(player);
-                      if (archived && ctx.mounted) Navigator.pop(ctx);
-                    },
-              style: AppTheme.primaryButton(
-                background: AppColors.error,
-                pressed: AppColors.error,
-              ),
-              icon: state.isMutating
-                  ? const SizedBox.square(
-                      dimension: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        semanticsLabel: 'In corso',
-                      ),
-                    )
-                  : const Icon(Icons.archive_outlined),
-              label: const Text('Archivia'),
-            ),
-          ],
+          ),
         ),
-      ),
-    ),
-  );
-}
-
-void _showAddDialog(BuildContext rootContext) {
-  final cubit = rootContext.read<PlayersCubit>();
-  showDialog<void>(
-    context: rootContext,
-    builder: (_) => _PlayerNameDialog(
-      title: 'Nuovo giocatore',
-      action: 'Aggiungi',
-      onSubmit: cubit.addPlayer,
-    ),
-  );
-}
-
-void _showRenameDialog(BuildContext rootContext, Player player) {
-  final cubit = rootContext.read<PlayersCubit>();
-  showDialog<void>(
-    context: rootContext,
-    builder: (_) => _PlayerNameDialog(
-      title: 'Modifica nome',
-      action: 'Salva',
-      initialName: player.name,
-      onSubmit: (name) => cubit.renamePlayer(player, name),
-    ),
-  );
-}
-
-class _PlayerNameDialog extends StatefulWidget {
-  const _PlayerNameDialog({
-    required this.title,
-    required this.action,
-    required this.onSubmit,
-    this.initialName = '',
-  });
-  final String title, action, initialName;
-  final Future<bool> Function(String name) onSubmit;
-  @override
-  State<_PlayerNameDialog> createState() => _PlayerNameDialogState();
-}
-
-class _PlayerNameDialogState extends State<_PlayerNameDialog> {
-  final _form = GlobalKey<FormState>();
-  late final _controller = TextEditingController(text: widget.initialName);
-  bool _busy = false;
-
-  Future<void> _submit() async {
-    if (_busy || !_form.currentState!.validate()) return;
-    setState(() => _busy = true);
-    final success = await widget.onSubmit(_controller.text.trim());
-    if (!mounted) return;
-    if (success) {
-      Navigator.of(context).pop();
-    } else {
-      setState(() => _busy = false);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => PopScope(
-    canPop: !_busy,
-    child: AlertDialog(
-      scrollable: true,
-      title: Text(widget.title),
-      content: Form(
-        key: _form,
-        child: TextFormField(
-          controller: _controller,
-          autofocus: true,
-          enabled: !_busy,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(labelText: 'Nome'),
-          validator: (value) => value == null || value.trim().isEmpty
-              ? 'Inserisci un nome.'
-              : null,
-          onFieldSubmitted: (_) => _submit(),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: _busy ? null : () => Navigator.of(context).pop(),
-          child: const Text('Annulla'),
-        ),
-        ElevatedButton.icon(
-          onPressed: _busy ? null : _submit,
-          icon: _busy
-              ? const SizedBox.square(
-                  dimension: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    semanticsLabel: 'In corso',
-                  ),
-                )
-              : const Icon(Icons.check),
-          label: Text(widget.action),
-        ),
+        if (summary != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: summary!,
+          ),
       ],
-    ),
-  );
+    );
+  }
 }
 
 class _Summary extends StatelessWidget {
@@ -274,6 +188,7 @@ class _Summary extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Wrap(
+        alignment: WrapAlignment.center,
         spacing: 8,
         runSpacing: 8,
         children: [
@@ -295,6 +210,7 @@ class _Summary extends StatelessWidget {
 
 class _PlayerRow extends StatelessWidget {
   const _PlayerRow({
+    super.key,
     required this.player,
     required this.onToggle,
     required this.onRename,
@@ -322,58 +238,56 @@ class _PlayerRow extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(
-            children: [
-              Expanded(
-                child: Semantics(
-                  button: true,
-                  label: 'Profilo di ${player.name}',
-                  value: player.isArchived
-                      ? 'Archiviato'
-                      : player.isPresent
-                      ? 'In ufficio'
-                      : 'Assente',
+          child: _PlayerRowLayout(
+            profile: Semantics(
+              button: true,
+              label: 'Profilo di ${player.name}',
+              value: player.isArchived
+                  ? 'Archiviato'
+                  : player.isPresent
+                  ? 'In ufficio'
+                  : 'Assente',
+              onTap: onOpenProfile,
+              child: ExcludeSemantics(
+                child: InkWell(
                   onTap: onOpenProfile,
-                  child: ExcludeSemantics(
-                    child: InkWell(
-                      onTap: onOpenProfile,
-                      borderRadius: BorderRadius.circular(AppRadius.small),
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(minHeight: 48),
-                        child: Row(
-                          children: [
-                            PlayerAvatar(name: player.name, size: 42),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(player.name, style: AppType.player),
-                                  const SizedBox(height: 2),
-                                  AnimatedSwitcher(
-                                    duration: AppMotion.duration(
-                                      context,
-                                      AppMotion.selection,
-                                    ),
-                                    child: _PresenceBadge(
-                                      key: ValueKey(
-                                        '${player.isPresent}-${player.isArchived}',
-                                      ),
-                                      isPresent: player.isPresent,
-                                      isArchived: player.isArchived,
-                                    ),
+                  borderRadius: BorderRadius.circular(AppRadius.small),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 48),
+                    child: Row(
+                      children: [
+                        PlayerAvatar(name: player.name, size: 42),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(player.name, style: AppType.player),
+                              const SizedBox(height: 2),
+                              AnimatedSwitcher(
+                                duration: AppMotion.duration(
+                                  context,
+                                  AppMotion.selection,
+                                ),
+                                child: _PresenceBadge(
+                                  key: ValueKey(
+                                    '${player.isPresent}-${player.isArchived}',
                                   ),
-                                ],
+                                  isPresent: player.isPresent,
+                                  isArchived: player.isArchived,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
               ),
+            ),
+            controls: [
               if (!player.isArchived)
                 Semantics(
                   key: ValueKey('player-presence-${player.id}'),
@@ -383,7 +297,7 @@ class _PlayerRow extends StatelessWidget {
                   enabled: onToggle != null,
                   onTap: onToggle,
                   child: ExcludeSemantics(
-                    child: Switch(
+                    child: Switch.adaptive(
                       value: player.isPresent,
                       onChanged: onToggle == null ? null : (_) => onToggle!(),
                     ),
@@ -449,6 +363,31 @@ class _PlayerRow extends StatelessWidget {
   );
 }
 
+class _PlayerRowLayout extends StatelessWidget {
+  const _PlayerRowLayout({required this.profile, required this.controls});
+  final Widget profile;
+  final List<Widget> controls;
+
+  @override
+  Widget build(BuildContext context) {
+    if (MediaQuery.textScalerOf(context).scale(1) > 1.3) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          profile,
+          Row(mainAxisAlignment: MainAxisAlignment.end, children: controls),
+        ],
+      );
+    }
+    return Row(
+      children: [
+        Expanded(child: profile),
+        ...controls,
+      ],
+    );
+  }
+}
+
 enum _PlayerAction { profile, rename, archive, reactivate }
 
 class _PresenceBadge extends StatelessWidget {
@@ -501,16 +440,13 @@ class _Pill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     decoration: BoxDecoration(
       color: AppColors.surface,
       borderRadius: BorderRadius.circular(20),
       border: Border.all(color: color),
     ),
-    child: Text(
-      text,
-      style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w600),
-    ),
+    child: Text(text, style: AppType.utility.copyWith(color: color)),
   );
 }
 
@@ -531,15 +467,7 @@ class _Empty extends StatelessWidget {
               color: AppColors.textSecondary,
             ),
             SizedBox(height: 16),
-            Text(
-              'Nessun giocatore',
-              style: TextStyle(
-                color: AppColors.ink,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
-              ),
-            ),
+            Text('Nessun giocatore', style: AppType.section),
             SizedBox(height: 6),
             Text(
               'Aggiungi il primo player con il pulsante in basso.',

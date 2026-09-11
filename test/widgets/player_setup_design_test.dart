@@ -1,6 +1,8 @@
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/screens/home_screen.dart';
+import 'package:biliardino/screens/players_screen.dart';
+import 'package:biliardino/screens/player_profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -47,7 +49,9 @@ void main() {
       fixture.database.players.firstWhere((p) => p.id == 'p0').isPresent,
       isFalse,
     );
-    expect(find.text('GIOCATORI'), findsOneWidget);
+    // The heading now scrolls with the roster at large text.
+    expect(find.byType(PlayersScreen), findsOneWidget);
+    expect(find.byType(PlayerProfileScreen), findsNothing);
     await tester.tap(find.byKey(const ValueKey('player-actions-p0')));
     await tester.pumpAndSettle();
     expect(find.text('Modifica nome'), findsOneWidget);

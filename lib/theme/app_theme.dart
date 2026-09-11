@@ -98,6 +98,7 @@ abstract final class AppTheme {
     );
     return ThemeData(
       useMaterial3: true,
+      adaptations: const [_AppSwitchAdaptation()],
       colorScheme: scheme,
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.background,
@@ -280,7 +281,7 @@ abstract final class AppTheme {
           (s) => s.contains(WidgetState.disabled)
               ? AppColors.disabledContainer
               : s.contains(WidgetState.selected)
-              ? AppColors.success
+              ? AppColors.primary
               : AppColors.outline,
         ),
         trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
@@ -302,4 +303,13 @@ abstract final class AppTheme {
       ),
     );
   }
+}
+
+/// Keep one switch palette when Flutter adapts the shape for Apple platforms.
+class _AppSwitchAdaptation extends Adaptation<SwitchThemeData> {
+  const _AppSwitchAdaptation();
+
+  @override
+  SwitchThemeData adapt(ThemeData theme, SwitchThemeData defaultValue) =>
+      defaultValue;
 }

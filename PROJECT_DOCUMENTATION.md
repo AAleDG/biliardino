@@ -196,7 +196,7 @@ Prompt per questa documentazione, noto:
 - Aggiunta nuovo giocatore tramite dialog.
 - Stato presenza con switch.
 - Riepilogo presenti/totale.
-- Indicazione se ci sono almeno 4 presenti per giocare.
+- Indicazione se ci sono almeno 2 presenti per giocare (1v1).
 - Avatar generato dalle iniziali/nome del giocatore.
 
 ### Nuova partita

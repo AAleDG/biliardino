@@ -418,7 +418,6 @@ class _OptionSwitch extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SwitchListTile.adaptive(
     contentPadding: EdgeInsets.zero,
-    activeTrackColor: AppColors.primary,
     title: Text(title, style: AppType.bodyStrong),
     value: value,
     onChanged: onChanged,

@@ -187,6 +187,15 @@ components:
     textColor: "{colors.ink}"
     size: 40px
     rounded: "{rounded.full}"
+  switch-on:
+    backgroundColor: "{colors.primary}"
+    rounded: "{rounded.full}"
+  switch-off:
+    backgroundColor: "{colors.outline}"
+    rounded: "{rounded.full}"
+  switch-thumb:
+    backgroundColor: "{colors.surface}"
+    rounded: "{rounded.full}"
   presence-on:
     backgroundColor: "{colors.success-container}"
     textColor: "{colors.success-pressed}"
@@ -278,7 +287,7 @@ Source format: [Google DESIGN.md specification](https://github.com/google-labs-c
 
 Use the frontmatter as the approved palette baseline. Values were deliberately chosen for this application; they are not asserted to be pixel samples or official tournament brand values.
 
-Warm background and white panels dominate everyday screens. Blue marks general actions, selection and the active tab. Green marks presence, success and kickoff. Yellow adds energy and highlights first place. Red serves errors/destructive actions, and can appear as a narrow decorative ribbon. Orange is reserved for the second team in match contexts.
+Warm background and white panels dominate everyday screens. Blue marks general actions, selection and the active tab. Green marks presence text/status, success and kickoff; switches use blue for their selected track across the app. Yellow adds energy and highlights first place. Red serves errors/destructive actions, and can appear as a narrow decorative ribbon. Orange is reserved for the second team in match contexts.
 
 Team identity has its own tokens even where values match a brand token. Keep Squadra 1 on the left and Squadra 2 on the right; also label them and show selected/check states. Presence uses text plus the switch position, never just a dot. Use neutral initials outside a match so avatar hues do not compete with teams or status.
 
@@ -298,7 +307,7 @@ The reference viewport is 402 × 874 logical pixels, including system safe areas
 
 Use 16-pixel page gutters, a 4-pixel base rhythm, 24-pixel section gaps and at least 48 × 48 logical pixels for interactive targets. The approved Home hero is the deliberate exception to the page gutter: it spans the safe-area width at its intrinsic 1516:1038 ratio with contain/fit-width behavior, so no upper or lower artwork is cropped. Its wordmark, action and data sections retain the standard gutters. Primary bottom actions start at 56 pixels high and grow with text. Labels and overflow menus remain separate tappable areas.
 
-Home is the initial post-splash destination. Preserve the leftmost-phone hierarchy: live wordmark and tagline, substantial approved H2 hero, prominent blue start/resume action, recent results and ranking summaries. The page scrolls when five match rows plus four ranking rows do not safely fit; do not shrink the hero or interactive targets merely to force all data above the fold. Players remains a separate primary destination. Its masthead stays compact, and larger rosters and accessibility sizes scroll.
+Home is the initial post-splash destination. Preserve the leftmost-phone hierarchy: live wordmark and tagline, substantial approved H2 hero, prominent blue start/resume action, recent results and ranking summaries. The page scrolls when five match rows plus four ranking rows do not safely fit; do not shrink the hero or interactive targets merely to force all data above the fold. Players remains a separate primary destination. Its masthead stays compact, and larger rosters and accessibility sizes scroll. The user-approved 11 September refinement places the existing shallow ribbon above a centered GIOCATORI title and centered wrapping summary pills. Active rows form one calm grouped panel; archived players remain fully visible in a separate ARCHIVIATI group below, omitted when empty. Keep the original compact NUOVO action on the right so the approved bottom-left corner ribbons remain visible. Header and roster scroll together at constrained sizes; preserve full names, separate actions and bottom padding so the final row clears the floating action. No new illustration or ribbon master is introduced.
 
 Match setup is one scrolling screen ordered as heading, mode, compact match-options summary, available-player summary and team composition. The summary shows at most four stable-order rows; larger rosters remain reachable through the full roster sheet. Rules, automatic assignment and rivalry remain available in the options sheet. The pinned kickoff capsule sits 12 logical pixels above the opaque bottom navigation. Preserve the default 2v2 mode and Italian team labels; actual mode determines slot count. This replaces the original setup ordering under the approved Nuova Partita reference revision. Never squeeze the entire setup into an unreadably dense phone.
 
@@ -348,6 +357,10 @@ The frontmatter provides core colors, typography and dimensions. Component varia
 | Data actions/bootstrap/feedback | Loading/busy, empty where applicable, ready, failure/retry, export feedback and restore confirmation; retain native file picker/share sheet |
 
 A short screen title, player name and numeric metric are always real text widgets. Decorative layers exclude themselves from semantics and do not intercept input. Avatar initials remain generated from the name; photographs are not introduced.
+
+### Shared switch decision — 11 September 2026
+
+The user selected the existing match-options switch appearance for every switch in the app: blue selected track, white thumb, neutral outlined-token off track, and the shared disabled colors with platform disabled treatment. Players presence, match rules/rivalry and history editing all use adaptive switches driven by AppTheme; on iOS this preserves the reference's compact pill geometry. A theme adaptation preserves the common palette when Flutter adapts shape. No screen supplies its own switch color. Presence labels remain green with explicit In ufficio/Assente text, independent of switch styling. Keep enabled/toggled semantics, platform interaction, focus and at least 48dp targets. This is a control-style decision, not new artwork.
 
 ## Do's and Don'ts
 

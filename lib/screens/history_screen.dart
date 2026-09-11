@@ -318,7 +318,7 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
                   ),
                 ],
               ),
-              SwitchListTile(
+              SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Rivalita'),
                 value: _isRivalry,
