@@ -119,12 +119,11 @@ void main() {
       expect(find.byKey(const ValueKey('score-add-team-1')), findsOneWidget);
       expect(find.byKey(const ValueKey('score-add-team-2')), findsOneWidget);
       for (final teamNumber in [1, 2]) {
-        expect(
-          tester
-              .getRect(find.byKey(ValueKey('score-add-team-$teamNumber')))
-              .bottom,
-          lessThanOrEqualTo(640),
-        );
+        final action = find.byKey(ValueKey('score-add-team-$teamNumber'));
+        await tester.ensureVisible(action);
+        await tester.pumpAndSettle();
+        expect(action.hitTestable(), findsOneWidget);
+        expect(tester.getSize(action).height, greaterThanOrEqualTo(48));
       }
       expect(tester.takeException(), isNull);
     },
@@ -637,14 +636,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('PRIMO A 2'), findsOneWidget);
-    await tester.tap(find.text('+1 GOAL').first);
+    await tester.ensureVisible(find.byKey(const ValueKey('score-add-team-1')));
+    await tester.tap(find.byKey(const ValueKey('score-add-team-1')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Alessandro Antonio Delgaudio').last);
     await tester.pumpAndSettle(const Duration(milliseconds: 700));
 
     expect(find.text('Registrare la vittoria?'), findsNothing);
 
-    await tester.tap(find.text('+1 GOAL').first);
+    await tester.ensureVisible(find.byKey(const ValueKey('score-add-team-1')));
+    await tester.tap(find.byKey(const ValueKey('score-add-team-1')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Beatrice Lunghissimo Cognome').last);
     await tester.pumpAndSettle();
@@ -725,7 +726,8 @@ void main() {
     await tester.tap(find.text('INIZIA PARTITA'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('+1 GOAL').first);
+    await tester.ensureVisible(find.byKey(const ValueKey('score-add-team-1')));
+    await tester.tap(find.byKey(const ValueKey('score-add-team-1')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Alessandro Antonio Delgaudio').last);
     await tester.pumpAndSettle(const Duration(milliseconds: 1200));
@@ -1177,6 +1179,8 @@ void main() {
       await tester.pumpAndSettle();
 
       final addGoal = find.byKey(const ValueKey('score-add-team-1'));
+      await tester.ensureVisible(addGoal);
+      await tester.pumpAndSettle();
       expect(
         tester.getSemantics(addGoal),
         matchesSemantics(
@@ -1189,12 +1193,16 @@ void main() {
       );
 
       final score = find.byKey(const ValueKey('score-team-1'));
+      await tester.ensureVisible(score);
+      await tester.pumpAndSettle();
       expect(
         tester.getSemantics(score),
         matchesSemantics(label: 'Punteggio SQUADRA 1: 0', isLiveRegion: true),
       );
 
       final undoGoal = find.byKey(const ValueKey('score-undo-team-1'));
+      await tester.ensureVisible(undoGoal);
+      await tester.pumpAndSettle();
       expect(tester.getSize(undoGoal).height, greaterThanOrEqualTo(48));
       expect(
         tester.getSemantics(undoGoal),

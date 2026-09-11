@@ -1,0 +1,163 @@
+{
+  "revision": "live-r1",
+  "approval": "approved",
+  "approvedOn": "2026-09-11",
+  "runtimeRegistered": true,
+  "runtimeAsset": "design/south-africa-2010/assets/live-r1/live-scene.png",
+  "dimensions": [
+    2172,
+    724
+  ],
+  "referenceSha256": "a5b2c1415025746a3dbe688fe4873043c6823424e01d862fd20d7e1d38b67492",
+  "files": {
+    "live-scene.png": "5350adfe5164f74d1da36a7c23ca1911f2b87bb62be9675888fe81a5273a184a",
+    "source-magenta.png": "be910d6873484291655d7e5bbca4b7752943935fd64278f62a3b019a09f81d98",
+    "remove_magenta.py": "a7f99c4208f4b8f5c6d3e4979e59def55139e6deacad1fe8d4341bc5e3b37e18",
+    "prompt.md": "68cabca4017d2610c25f81295505c7bd8385ef11ed7ca3381cfb2015414770f4",
+    "approved-preview.png": "5ccb59cfa8d49926ab453d8bb3c5c6ae32fd73e2fec2b100623c8de6963dbd5b",
+    "rod-centres.json": "de18826e4cc62feacf8c6d9d3db46704b729c4c29bb6d2c221d768aad1cb70c5",
+    "extraction.json": "980a0fdddc935fcd12720f4bfe912f8dafa12d396b63ef962d117fc05b70658b",
+    "head-review.png": "3cd12fa2cf757dec1475350e422d7c58ec09106b9f0035cf707cccf027bd9ce1",
+    "approval.md": "b571415059c75110ece9073b8e4ca891e21d28ba5afec2a4b0a4459e3df81324",
+    "approved-preview.dart.txt": "5029d039847c5457f3f1a68b73d1464378811197f0245b331cb680a2c606c80b",
+    "reference-board.png": "a5b2c1415025746a3dbe688fe4873043c6823424e01d862fd20d7e1d38b67492",
+    "runtime-review.png": "205ee1697bd164497dc28a434402f18f211e5bae3b002115ff328666512cc884",
+    "reference-comparison.png": "0efb2d5711db87396c3ec85a9ec5986c9f7feeffd2d385bd2b4e005fc1d857fe",
+    "refinement-review.png": "a75ae0ffd5672c7d971065f5d6db83ecb96669ef01b106abfabcc66e8de7a107",
+    "refinement-comparison.png": "505d42e5b30caf52d95642316c51ab72f61046cef569167e76fcd8104bffcb72",
+    "curves-review.png": "90ffbb46e28905e6b01a95d3d22049177f98081c9102bc966fa0543a1d990900",
+    "shoulders-review.png": "fc3e10a16219a1990c85af1ceea26930cbffca89966acac984c2d524a79d8189",
+    "midpoint-review.png": "cea74ce5b64691fa256c5eaefa45f5d10ff4ce3f495ab4b5c633b1bea44d2626",
+    "crests-review.png": "70bf8d933e0955135501cc754dc1542a031f30945f3905c1fc9cade5862a88d9",
+    "orange-header-review.png": "64916a7e16df1c641ae863c3ee20cde972cde98697baa51309d78cc9594a67f8",
+    "orange-header-detail.png": "21b8f26a4b14868c69fdeddbd269dd04a7545a861ccf4a53f551672d1f4bf37e"
+  },
+  "content": "Decorative figures, rods and football only; labels, controls and scores are Flutter widgets.",
+  "productionCompositionApproval": "approved",
+  "candidateRuntimeReview": {
+    "image": "orange-header-review.png",
+    "viewportLogical": [
+      440,
+      956
+    ],
+    "viewportPhysical": [
+      1320,
+      2868
+    ],
+    "app": "com.biliardino.southafrica.review",
+    "simulator": "293A02E2-FC2D-4D72-93E4-C1EE93CA537E",
+    "fixture": "2v2, 4-5, free rules; real widgets/Cubit with in-memory repositories",
+    "status": "approved"
+  },
+  "geometryImplementation": {
+    "file": "lib/screens/new_match/live_match_artwork.dart",
+    "sha256": "63f93d83bb55472afaa05b1b8b4da778ade6e6c960066f92d8234152f66356b8",
+    "provenance": "Lower-crest geometry unchanged; added stronger orangeHeader gradient for user-requested Squadra2 heading refinement. User approved final integrated composition after this refinement.",
+    "approval": "approved"
+  },
+  "previousGeometryImplementation": {
+    "file": "lib/screens/new_match/live_match_artwork.dart",
+    "sha256": "5d02c94f0133fcdf8a0a2146c96d4e337d36b2ac1d8e70651796d7fa83d56300",
+    "provenance": "Normalized paths copied from the user-approved preview; Dart formatting and class names changed only."
+  },
+  "previousCandidateRuntimeReview": {
+    "image": "runtime-review.png",
+    "comparison": "reference-comparison.png",
+    "viewportLogical": [
+      440,
+      956
+    ],
+    "viewportPhysical": [
+      1320,
+      2868
+    ],
+    "app": "com.biliardino.southafrica.review",
+    "simulator": "293A02E2-FC2D-4D72-93E4-C1EE93CA537E",
+    "fixture": "2v2, 4-5, free rules; real widgets/Cubit with in-memory repositories",
+    "status": "awaiting-final-user-approval"
+  },
+  "approvedRuntimeReview": {
+    "image": "orange-header-review.png",
+    "viewportLogical": [
+      440,
+      956
+    ],
+    "viewportPhysical": [
+      1320,
+      2868
+    ],
+    "app": "com.biliardino.southafrica.review",
+    "simulator": "293A02E2-FC2D-4D72-93E4-C1EE93CA537E",
+    "fixture": "2v2, 4-5, free rules; real widgets/Cubit with in-memory repositories",
+    "status": "approved",
+    "userApproval": "approved",
+    "sourceHashes": {
+      "lib/cubits/dashboard/dashboard_cubit.dart": "87dbdd8ce5891d27e13aafbb007d7b105816ee2ef222870f0123f2cf476700cd",
+      "lib/cubits/dashboard/dashboard_state.dart": "2fc283582d66b7900dda983333b8fdfb594517518b5019c2a87eb88b1e8051da",
+      "lib/cubits/history/history_cubit.dart": "31bf26aeb604a28f60358112c64271ebff38755a2a85532a35302195c520e12b",
+      "lib/cubits/history/history_filters.dart": "6d9396fd7000562d79ba522a794f2612af878c8a60cd966b334397931f79579d",
+      "lib/cubits/history/history_logic.dart": "3fb4cb4970242e637baf50c6478f5303ad646ff1ac678655208a643c3d37a59f",
+      "lib/cubits/history/history_state.dart": "ec3c0481e402bb49d48eb06d6cd94b97267b973d9bc2342311b7c994a11880d5",
+      "lib/cubits/home/home_cubit.dart": "4cffd30b11740093108d5bb17b90b184c706f3c097c3beb0cd704f6b26d880a1",
+      "lib/cubits/leaderboard/leaderboard_cubit.dart": "562be4b66c70173200d7c482172fb116ea450aeeab654c0bb41b4fcfbb401b60",
+      "lib/cubits/leaderboard/leaderboard_state.dart": "642f77ade68b25f556beb828f84eb39ef7553036974b1e23fb572c85140f7916",
+      "lib/cubits/new_match/new_match_cubit.dart": "d295464d6ef0dd429e45b7d48de4a8ea81cd993cd49f87c3ba71da8c00101ef8",
+      "lib/cubits/new_match/new_match_state.dart": "28876d1d49a73beccb4b60a0b2898ba11e55ac55aa8ac53d15db66d831d3c263",
+      "lib/cubits/players/players_cubit.dart": "5622ba0cfd8f63580213553a8e9f3ba1bf42a94232bfcd95134e2339a6e5bce0",
+      "lib/cubits/players/players_state.dart": "3bc1dfcea18bf9207214f96e3a6921aa6b578155fe53630849996b6c6a161574",
+      "lib/data/database_helper.dart": "5af70fc16598dcd77d2540e4e94245c7ea01061f108ac2a3014c2fa8757f1d7b",
+      "lib/main.dart": "825eea2f8f8dedd8bba339a76b9a0e7a21d8d1448443ce5b856ef944b307bba7",
+      "lib/models/game_match.dart": "574c79e8e7a4d3b837bbe5f07fed1207cb81c1170fb6272224bb094281306f39",
+      "lib/models/match_rules.dart": "4609cd45db803afd91bef906d5501274df1b8c59aaf11c959adcfa57646c34d2",
+      "lib/models/player.dart": "aae28780e542634e329cf2707ccde990cc2ccd70a52ef7ad8eaf67f30c5bd686",
+      "lib/models/player_badge.dart": "91e6563f78e764e53cc8a48ff458577b8872bfe512843311dd7ce4f6f8087e24",
+      "lib/models/player_profile_stats.dart": "a92a48532eb9c4f4a0e6f0c7068210c808b451bcd85469fe6a4b3d6cd10ab06b",
+      "lib/models/player_stats.dart": "bb4d981bc2cdf61a60d7b548c42fef627a2498935ca64557a10d762b0b40d565",
+      "lib/models/rivalry_overview.dart": "badbb0fd451ef3ce2b1ee00bfef98b7daedad8477ef4fdcbb085242fbd437a45",
+      "lib/navigation/app_navigation.dart": "03d541f0a099453335b7ded05b348e0176f6f4d51c306d70d5165fd8b78c8d34",
+      "lib/repositories/match_repository.dart": "d39109a2ca10b5733ee5e4ad7c0a7ca4a7b15be1464772ebbc339bf3fc928455",
+      "lib/repositories/match_rules_repository.dart": "9d85e861dbeeb0681342114d3e8b1b15997a0f46d86f9300e4959d41c76c2cba",
+      "lib/repositories/player_repository.dart": "545a502c70bdcdf538ce1d1f5b97cd7798e3be6572159ffed5f6626d4d730d4a",
+      "lib/screens/dashboard_screen.dart": "d02aaabf6400cbab4297f2fa9ad4173075f1207ea53cd920518b7080bc03ea6f",
+      "lib/screens/data_management_screen.dart": "b5476140be09619ec301dd469717334d320e93ac7c8163fd4a4a2d672b5016eb",
+      "lib/screens/history_screen.dart": "4581e42ae01ee28cfbe3f0f576aabb316dc019008468e3145e40c8f03ee69192",
+      "lib/screens/home_screen.dart": "d58e9eeac436f37dc760773be56ea0d5cd1127a2b42599f0d3d6f071e904e264",
+      "lib/screens/leaderboard_screen.dart": "39365920ca0bec142e86bcc0ffd907ecf2b8d7c973af930e64145ee8df6926c1",
+      "lib/screens/more_screen.dart": "8c144ff6462652c03cfb593eaed836edce48eb136b726fe8affa68980895e36b",
+      "lib/screens/new_match/live_match_artwork.dart": "63f93d83bb55472afaa05b1b8b4da778ade6e6c960066f92d8234152f66356b8",
+      "lib/screens/new_match/live_match_summary.dart": "487e7a11401fbde69a0b0d45255af96756b5195c89ccee4ec53975fec5993330",
+      "lib/screens/new_match/live_match_view.dart": "326c08b3be5d0c32d9ea39677dfe4c4db215b9c35c8725028905233f7987e5b4",
+      "lib/screens/new_match/live_score.dart": "70b3fc69e6a08e9b8562994856e1cb9905b998fc939d6c79d03c3c5997ecec7d",
+      "lib/screens/new_match/live_team_card.dart": "c10d2e160b0184aed7941aa9747386f06f4ae25f5a0dbf13f679cac24027ebfc",
+      "lib/screens/new_match/match_options_sheet.dart": "8cd0c39014e6b118626be39ecfc142f6a916399ac0e868b94f74b1fad47cd165",
+      "lib/screens/new_match/match_rivalry_summary.dart": "af4618739b5d0981cc3b83499b0c55658fb777e18224664f7698fc0875476a76",
+      "lib/screens/new_match/match_setup_controls.dart": "d97019aa765979290ee2a93f60f1115add8898d539c5e01aa8550258ddcc344e",
+      "lib/screens/new_match/match_setup_roster.dart": "003b268e8209e894bd5e031d7c0e79e481939bc40ae315f19e2c81e38037ad28",
+      "lib/screens/new_match/match_setup_view.dart": "a165b5ba62b568557dace647bcc6a52cfa00d4e788ea1b6d0ee719955b669239",
+      "lib/screens/new_match/match_team_stage.dart": "801ae6406dbbd749b4d56a01b853464daab42fe777ab25b79f26d01333652391",
+      "lib/screens/new_match_screen.dart": "01063524ad414ce931ea6833e2866758ebc9b39d884811dfc6d1d86528746f49",
+      "lib/screens/player_profile_screen.dart": "9572816e989bd939c7314035550b644ef08dc1f385494c548f8586a3346d454f",
+      "lib/screens/players_screen.dart": "ec20e797d8a7819ef3ae2c1475d21658615455e9a0d68f93c4a7f38d9756a110",
+      "lib/screens/splash_screen.dart": "ff1d03eb64b7ebf768537a44b7e23beeed57e422b6e49e09f89e4a3ae766bc54",
+      "lib/services/backup_file_picker.dart": "57cfadbd81bd6ae8f9570529ea3236a13811608b8497cf6154e47069d20d8f28",
+      "lib/services/csv_share_service.dart": "fb2fdbc1ea7f33e9493620245387b8d7002af5ecd91d8121b4f2d9da1f51a32f",
+      "lib/services/data_backup_service.dart": "d3779fa98a07b165281079d0c8e3081630e7ed4752b1aa4eb7b6d16bed39b10f",
+      "lib/services/data_file_share_service.dart": "d77f51869c13e2953e21bcbc2038f0ab70dced653f076349f791cbd35e5b66ce",
+      "lib/services/leaderboard_csv_service.dart": "7d442a528be27d2f238c667503c702e52fdc7131c5bc28c73a9777d8425205bf",
+      "lib/services/leaderboard_export_service.dart": "8b6dca51d5722cc189036c5faee469600ec806d8378df4aa4fe72859d03cef01",
+      "lib/services/stats_service.dart": "0594bed19137ef1425a3b080132d6144b6f1b3bd5b48d33aa34c5ef12a6a33cb",
+      "lib/theme/app_theme.dart": "535c51ab71ca26a65c292d6fcd6c2ba4fb427737d30aa7a5ff14559661597615",
+      "lib/theme/design_tokens.dart": "df88020238df21d89d8ede4f77374a0da5998541117b1c558ad9800c11851437",
+      "lib/theme/motion_policy.dart": "9f26085164702a782d7f6b3426b3e6bb247cadd0aad78ba6d24266f1a0a1d1a3",
+      "lib/widgets/avatar.dart": "a6dadba7db3130c560fd1c171ba6d5ce4198ddd78b4c98c0a9c508bf62ee12a4",
+      "lib/widgets/celebrations.dart": "65a98b689fa4a7abfad78947bb2f5372d9c63c9f569f75dcc288f4e1041f65c2",
+      "lib/widgets/design/adaptive_pair.dart": "f3e5498346ad49d1186ded4e3e8e7ff6bff95cda8f1811238d9278b11d48e7d6",
+      "lib/widgets/design/artwork_paths.dart": "a1b7ace4d395f13dd6f03f9415913a739502617c0d44147636b9bb3aa35b67dd",
+      "lib/widgets/design/brand_header.dart": "a63e91755ff9ab7df4c5b37c4a60b7a7020eecb7479f4e285132f910538afc13",
+      "lib/widgets/design/ranking_badges.dart": "7b5577f6c585a875e206ce03e370b7f6c1fed45cd6509636ceb3bacd629d7375",
+      "lib/widgets/design/ranking_podium.dart": "ccdba63273b37d4d05362719d2740313cb4d6b3eb55dbcd29d69804ffc70965e",
+      "lib/widgets/design/sheet_ribbon_accent.dart": "ae1fc6aa251a49cdda860e86dcb567a186dbd1f1128c6175ce5d9f3fe6dedc5b",
+      "lib/widgets/design/south_africa_artwork.dart": "7ea01ab1f379e36040e64aa65e86b938cf44279e5d6d91cf31781682bd8239f5"
+    }
+  }
+}

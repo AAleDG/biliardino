@@ -6,15 +6,13 @@ import '../cubits/home/home_cubit.dart';
 import '../cubits/new_match/new_match_cubit.dart';
 import '../cubits/new_match/new_match_state.dart';
 import '../models/game_match.dart';
-import '../models/match_rules.dart';
 import '../models/player.dart';
-import '../models/rivalry_overview.dart';
 import '../services/stats_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/avatar.dart';
 import '../widgets/celebrations.dart';
-import '../widgets/design/brand_header.dart';
-import '../widgets/design/score_panel.dart';
+import '../widgets/design/sheet_ribbon_accent.dart';
+import 'new_match/live_match_view.dart';
 import 'new_match/match_options_sheet.dart';
 import 'new_match/match_setup_roster.dart';
 import 'new_match/match_setup_view.dart';
@@ -164,33 +162,9 @@ class _NewMatchViewState extends State<_NewMatchView> {
           final showScoreboard = state.showScoreboard;
 
           return Scaffold(
-            appBar: showScoreboard
-                ? brandAppBar(
-                    context,
-                    compactTitle: true,
-                    title: 'PARTITA IN CORSO',
-                    leading: IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      tooltip: 'Torna alla composizione',
-                      onPressed: state.isSaving
-                          ? null
-                          : () => _confirmExit(context, cubit),
-                    ),
-                    actions: [
-                      IconButton(
-                        icon: const Icon(Icons.restart_alt),
-                        tooltip: 'Azzera punteggio',
-                        onPressed: state.isSaving
-                            ? null
-                            : () => _confirmResetScore(context, cubit),
-                      ),
-                    ],
-                  )
-                : null,
             body: showScoreboard
-                ? _Scoreboard(
+                ? LiveMatchView(
                     rules: state.rules,
-                    isRivalry: state.isRivalry,
                     rivalry: state.isRivalry
                         ? StatsService.rivalryOverview(
                             state.matches,
@@ -198,14 +172,28 @@ class _NewMatchViewState extends State<_NewMatchView> {
                             team2Ids: state.team2,
                           )
                         : null,
-                    team1Players: _matchPlayers(state.players, state.team1),
-                    team2Players: _matchPlayers(state.players, state.team2),
+                    team1Names: _matchPlayers(
+                      state.players,
+                      state.team1,
+                    ).map((p) => p.name).toList(),
+                    team2Names: _matchPlayers(
+                      state.players,
+                      state.team2,
+                    ).map((p) => p.name).toList(),
                     score1: state.score1,
                     score2: state.score2,
                     isSaving: state.isSaving,
                     awaitingConfirmation: state.pendingVictory != null,
-                    onAddGoal: (team, players) =>
-                        _handleAddGoal(context, team, players),
+                    onAddGoal: (team) => _handleAddGoal(
+                      context,
+                      team,
+                      _matchPlayers(
+                        state.players,
+                        team == 1 ? state.team1 : state.team2,
+                      ),
+                    ),
+                    onBack: () => _confirmExit(context, cubit),
+                    onReset: () => _confirmResetScore(context, cubit),
                     onRemoveGoal: cubit.removeGoal,
                     onSave: cubit.save,
                   )
@@ -320,41 +308,96 @@ Future<void> _handleAddGoal(
           context: context,
           isScrollControlled: true,
           useSafeArea: true,
-          builder: (ctx) => SafeArea(
-            top: false,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Chi ha segnato per la squadra $team?',
-                    style: AppType.player,
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Assegna il gol al giocatore corretto.',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  ...players.map(
-                    (player) => Card(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      child: ListTile(
-                        leading: PlayerAvatar(name: player.name),
-                        title: Text(player.name),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () => Navigator.pop(ctx, player),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+          backgroundColor: AppColors.background,
+          clipBehavior: Clip.antiAlias,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppRadius.sheet),
             ),
+          ),
+          sheetAnimationStyle: shouldReduceMotion(context)
+              ? AnimationStyle.noAnimation
+              : const AnimationStyle(
+                  duration: AppMotion.navigation,
+                  reverseDuration: AppMotion.navigation,
+                ),
+          builder: (ctx) => Stack(
+            children: [
+              const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 64,
+                child: SheetRibbonAccent(),
+              ),
+              SafeArea(
+                top: false,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: ExcludeSemantics(
+                          child: Container(
+                            width: 36,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: AppColors.divider,
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.small,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Chi ha segnato per la squadra $team?',
+                              style: AppType.player,
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'Chiudi selezione marcatore',
+                            onPressed: () => Navigator.pop(ctx),
+                            icon: const Icon(Icons.close),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      const Text(
+                        'Assegna il gol al giocatore corretto.',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      ...players.map(
+                        (player) => Card(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          child: ListTile(
+                            leading: PlayerAvatar(
+                              name: player.name,
+                              color: team == 1
+                                  ? AppColors.teamOne
+                                  : AppColors.teamTwo,
+                            ),
+                            title: Text(player.name),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: () => Navigator.pop(ctx, player),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         );
 
@@ -426,240 +469,4 @@ Future<bool> _confirmDialog(
     ),
   );
   return result ?? false;
-}
-
-class _Scoreboard extends StatelessWidget {
-  const _Scoreboard({
-    required this.rules,
-    required this.isRivalry,
-    required this.rivalry,
-    required this.team1Players,
-    required this.team2Players,
-    required this.score1,
-    required this.score2,
-    required this.isSaving,
-    required this.awaitingConfirmation,
-    required this.onAddGoal,
-    required this.onRemoveGoal,
-    required this.onSave,
-  });
-
-  final MatchRules rules;
-  final bool isRivalry;
-  final RivalryOverview? rivalry;
-  final List<_MatchPlayer> team1Players;
-  final List<_MatchPlayer> team2Players;
-  final int score1;
-  final int score2;
-  final bool isSaving;
-  final bool awaitingConfirmation;
-  final Future<void> Function(int team, List<_MatchPlayer> players) onAddGoal;
-  final void Function(int team) onRemoveGoal;
-  final Future<void> Function() onSave;
-
-  @override
-  Widget build(BuildContext context) {
-    final canSave =
-        !isSaving &&
-        !awaitingConfirmation &&
-        rules.isFree &&
-        score1 != score2 &&
-        (score1 > 0 || score2 > 0);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final compact = constraints.maxHeight < 360;
-        final panels = Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: ScorePanel(
-                  teamNumber: 1,
-                  label: 'SQUADRA 1',
-                  color: AppColors.teamOne,
-                  playerNames: team1Players
-                      .map((player) => player.name)
-                      .toList(),
-                  score: score1,
-                  enabled: !isSaving && !awaitingConfirmation,
-                  onAddGoal: () => onAddGoal(1, team1Players),
-                  onRemoveGoal: () => onRemoveGoal(1),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ScorePanel(
-                  teamNumber: 2,
-                  label: 'SQUADRA 2',
-                  color: AppColors.teamTwo,
-                  playerNames: team2Players
-                      .map((player) => player.name)
-                      .toList(),
-                  score: score2,
-                  enabled: !isSaving && !awaitingConfirmation,
-                  onAddGoal: () => onAddGoal(2, team2Players),
-                  onRemoveGoal: () => onRemoveGoal(2),
-                ),
-              ),
-            ],
-          ),
-        );
-        final content = Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-              child: _RulesScoreboardBanner(rules: rules),
-            ),
-            if (isRivalry &&
-                rivalry != null &&
-                team1Players.isNotEmpty &&
-                team2Players.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                child: _RivalryScoreboardBanner(
-                  overview: rivalry!,
-                  team1Name: team1Players
-                      .map((player) => player.name)
-                      .join(' / '),
-                  team2Name: team2Players
-                      .map((player) => player.name)
-                      .join(' / '),
-                ),
-              ),
-            if (compact)
-              SizedBox(height: 360, child: panels)
-            else
-              Expanded(child: panels),
-            SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: canSave ? onSave : null,
-                    icon: isSaving
-                        ? const SizedBox.square(
-                            dimension: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.flag),
-                    label: Text(
-                      isSaving ? 'SALVATAGGIO...' : 'REGISTRA RISULTATO',
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      textStyle: AppType.action,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-        return compact ? SingleChildScrollView(child: content) : content;
-      },
-    );
-  }
-}
-
-class _RulesScoreboardBanner extends StatelessWidget {
-  const _RulesScoreboardBanner({required this.rules});
-
-  final MatchRules rules;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = rules.mode == MatchRuleMode.free
-        ? 'PUNTEGGIO LIBERO'
-        : rules.winByTwo
-        ? 'PRIMO A ${rules.targetScore} · +2'
-        : 'PRIMO A ${rules.targetScore}';
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.18)),
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: AppColors.primary,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1.6,
-        ),
-      ),
-    );
-  }
-}
-
-class _RivalryScoreboardBanner extends StatelessWidget {
-  const _RivalryScoreboardBanner({
-    required this.overview,
-    required this.team1Name,
-    required this.team2Name,
-  });
-
-  final RivalryOverview overview;
-  final String team1Name;
-  final String team2Name;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.ink.withValues(alpha: 0.22)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'RIVALITA ATTIVA',
-            style: TextStyle(
-              color: AppColors.ink,
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.8,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _rivalryHeadline(overview, team1Name, team2Name),
-            style: const TextStyle(
-              color: AppColors.ink,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-String _rivalryHeadline(
-  RivalryOverview overview,
-  String team1Name,
-  String team2Name,
-) {
-  if (!overview.hasMatches) {
-    return 'Nessun precedente tra $team1Name e $team2Name.';
-  }
-  if (overview.isTied) {
-    return '$team1Name e $team2Name sono in parita: ${overview.team1Wins}-${overview.team2Wins} nei duelli diretti.';
-  }
-  final leaderName = overview.team1Wins > overview.team2Wins
-      ? team1Name
-      : team2Name;
-  return '$leaderName conduce ${overview.team1Wins}-${overview.team2Wins}, con ${overview.team1Goals}-${overview.team2Goals} nei gol assegnati.';
 }

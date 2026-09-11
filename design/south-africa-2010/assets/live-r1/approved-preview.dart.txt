@@ -1,0 +1,151 @@
+// Review-only composition: no application wiring, persistence or product actions.
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:biliardino/theme/app_theme.dart';
+
+void main() => runApp(MaterialApp(
+  debugShowCheckedModeBanner: false,
+  theme: AppTheme.southAfrica(),
+  home: const _Preview(),
+));
+
+class _Preview extends StatelessWidget {
+  const _Preview();
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    body: Stack(children: [
+      const Positioned.fill(child: CustomPaint(painter: _EdgeRibbonPainter())),
+      SafeArea(
+      bottom: false,
+      child: Column(children: [
+        SizedBox(height: 48, child: Row(children: [
+          const SizedBox(width: 48, child: Icon(Icons.arrow_back)),
+          Expanded(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Text('PARTITA IN CORSO', style: AppType.section),
+            Text('DIVERTITI, GIOCA LEALE, SEMPRE', style: AppType.caption.copyWith(fontSize: 10, letterSpacing: 1)),
+          ])),
+          const SizedBox(width: 48, child: Icon(Icons.more_horiz)),
+        ])),
+        Expanded(child: SingleChildScrollView(child: Column(children: [
+          SizedBox(height: 390, child: Stack(children: [
+            const Positioned.fill(child: CustomPaint(painter: _FieldPainter())),
+            Positioned(left: 0, right: 0, top: 0, height: 165,
+              child: Image.file(File('${Directory.systemTemp.path}/live-scene.png'), fit: BoxFit.contain,
+                errorBuilder: (_, error, stack) => const Center(child: Text('Artwork not loaded')))),
+            Positioned(left: 10, right: 10, top: 160, bottom: 0,
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Expanded(child: _score('SQUADRA 1', '4', Colors.white)),
+                SizedBox(width: 32, child: Padding(padding: const EdgeInsets.only(top: 66),
+                  child: Text('–', textAlign: TextAlign.center, style: AppType.event.copyWith(color: Colors.white)))),
+                Expanded(child: _score('SQUADRA 2', '5', AppColors.ink)),
+              ])),
+          ])),
+          const SizedBox(height: 12),
+          Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Row(children: [
+            Expanded(child: _team(1, ['Andrea', 'Luca'], AppColors.teamOne)),
+            const SizedBox(width: 28),
+            Expanded(child: _team(2, ['Marco', 'Paolo'], AppColors.teamTwo)),
+          ])),
+          const SizedBox(height: 10),
+          Container(height: 40, padding: const EdgeInsets.symmetric(horizontal: 24),
+            decoration: BoxDecoration(color: AppColors.divider.withValues(alpha: .25), borderRadius: BorderRadius.circular(24)),
+            child: Center(widthFactor: 1, child: Text('PUNTEGGIO LIBERO', style: AppType.utility))),
+          const SizedBox(height: 10),
+        ]))),
+        Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12), child: Container(
+          height: 64,
+          decoration: BoxDecoration(color: AppColors.primary, border: Border.all(color: Colors.white, width: 4), borderRadius: BorderRadius.circular(40)),
+          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            const Icon(Icons.flag, color: Colors.white), const SizedBox(width: 10),
+            Text('REGISTRA RISULTATO', style: AppType.action.copyWith(color: Colors.white, fontSize: 25)),
+          ]))),
+      ]),
+    ),
+    ]),
+    bottomNavigationBar: NavigationBar(selectedIndex: 2, destinations: const [
+      NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Home'),
+      NavigationDestination(icon: Icon(Icons.people_outline), label: 'Giocatori'),
+      NavigationDestination(icon: Icon(Icons.sports_soccer), label: 'Partita'),
+      NavigationDestination(icon: Icon(Icons.bar_chart), label: 'Classifica'),
+      NavigationDestination(icon: Icon(Icons.more_horiz), label: 'Altro'),
+    ]),
+  );
+
+  Widget _score(String label, String value, Color foreground) => Column(children: [
+    Text(label, style: AppType.section.copyWith(color: foreground)),
+    SizedBox(height: 200, child: FittedBox(child: Text(value, style: AppType.score.copyWith(fontSize: 200, color: foreground)))),
+  ]);
+
+  Widget _team(int number, List<String> names, Color color) => Container(
+    decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(20), border: Border.all(color: color.withValues(alpha: .35))),
+    clipBehavior: Clip.antiAlias,
+    child: Column(children: [
+      Container(height: 34, width: double.infinity, color: color,
+        child: Center(child: Text('SQUADRA $number', style: AppType.section.copyWith(color: AppColors.onTeam(color))))),
+      for (final name in names) Container(height: 48, padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(border: Border(bottom: BorderSide(color: color.withValues(alpha: .15)))),
+        child: Row(children: [
+          CircleAvatar(radius: 15, backgroundColor: color.withValues(alpha: .1), child: Text(name[0], style: AppType.action.copyWith(color: color))),
+          const SizedBox(width: 8), Expanded(child: Text(name, style: AppType.bodyStrong)),
+        ])),
+      Padding(padding: const EdgeInsets.all(5), child: Row(children: [
+        Expanded(child: Container(height: 48, decoration: BoxDecoration(color: color.withValues(alpha: .12), borderRadius: BorderRadius.circular(8)),
+          child: Center(child: Text('+1', style: AppType.section.copyWith(fontSize: 30, color: number == 1 ? color : AppColors.ink))))),
+        const SizedBox(width: 48, height: 48, child: Icon(Icons.undo, size: 22)),
+      ])),
+    ]),
+  );
+}
+
+class _FieldPainter extends CustomPainter {
+  const _FieldPainter();
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save(); canvas.scale(size.width / 440, size.height / 310);
+    final silhouette = Path()..moveTo(0, 64)..cubicTo(95, 110, 148, 74, 218, 94)
+      ..cubicTo(305, 75, 361, 108, 440, 60)..lineTo(440, 238)
+      ..cubicTo(403, 295, 348, 310, 246, 310)..lineTo(194, 310)
+      ..cubicTo(100, 310, 35, 289, 0, 238)..close();
+    canvas.save(); canvas.clipPath(silhouette);
+    canvas.drawRect(const Rect.fromLTWH(0, 0, 440, 310), Paint()..color=AppColors.teamOne);
+    canvas.drawPath(Path()..moveTo(220, 0)..lineTo(440,0)..lineTo(440,310)..lineTo(225,310)
+      ..cubicTo(243,237,238,167,220,110)..close(), Paint()..color=AppColors.teamTwo);
+    canvas.drawPath(Path()..moveTo(204,78)..lineTo(230,78)..cubicTo(243,157,259,227,232,310)
+      ..lineTo(196,310)..cubicTo(201,220,187,141,204,78)..close(), Paint()..color=AppColors.ink);
+    final white=Paint()..color=AppColors.background..style=PaintingStyle.stroke..strokeWidth=5;
+    canvas.drawPath(Path()..moveTo(-10,229)..cubicTo(32,278,68,295,113,308),white);
+    canvas.drawPath(Path()..moveTo(450,232)..cubicTo(410,279,375,297,330,309),white);
+    canvas.restore(); canvas.restore();
+  }
+  @override
+  bool shouldRepaint(_FieldPainter oldDelegate) => false;
+}
+
+class _EdgeRibbonPainter extends CustomPainter {
+  const _EdgeRibbonPainter();
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save(); canvas.scale(size.width / 440, 1);
+    void fill(Path path, Color color) => canvas.drawPath(path, Paint()..color = color);
+    fill(Path()..moveTo(0,0)..lineTo(190,0)..cubicTo(125,47,47,103,0,179)..close(), AppColors.yellow);
+    fill(Path()..moveTo(242,0)..lineTo(440,0)..lineTo(440,171)
+      ..cubicTo(411,111,338,65,242,0)..close(), AppColors.yellow);
+    fill(Path()..moveTo(0,160)..cubicTo(30,118,58,85,89,63)
+      ..cubicTo(51,121,30,157,23,182)..lineTo(0,189)..close(), AppColors.primary);
+    fill(Path()..moveTo(440,192)..cubicTo(421,159,411,140,384,117)
+      ..cubicTo(421,138,434,157,440,166)..close(), AppColors.success);
+    final h=size.height;
+    fill(Path()..moveTo(0,h-175)..cubicTo(31,h-94,71,h-37,184,h)
+      ..lineTo(117,h)..cubicTo(38,h-43,18,h-88,0,h-114)..close(), AppColors.success);
+    fill(Path()..moveTo(440,h-185)..lineTo(440,h-125)
+      ..cubicTo(409,h-70,370,h-39,324,h-14)..lineTo(293,h-12)
+      ..cubicTo(360,h-63,398,h-109,440,h-185)..close(), AppColors.yellow);
+    fill(Path()..moveTo(0,h-54)..cubicTo(133,h+3,300,h-10,440,h-40)
+      ..lineTo(440,h-20)..cubicTo(313,h+11,178,h+24,0,h-20)..close(), AppColors.primary);
+    fill(Path()..moveTo(287,h-3)..cubicTo(348,h-10,400,h-23,440,h-52)
+      ..lineTo(440,h-36)..cubicTo(384,h-11,334,h-4,287,h-3)..close(), AppColors.teamTwo);
+    canvas.restore();
+  }
+  @override
+  bool shouldRepaint(_EdgeRibbonPainter oldDelegate) => false;
+}

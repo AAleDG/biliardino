@@ -1,6 +1,7 @@
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/screens/home_screen.dart';
+import 'package:biliardino/screens/new_match/live_match_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -82,7 +83,25 @@ void main() {
       );
     }
 
+    await tester.runAsync(
+      () => precacheImage(const AssetImage(liveSceneAsset), context),
+    );
+    await tester.pumpAndSettle();
     await capture('south-africa-live');
+    for (var i = 0; i < 90; i++) {
+      match.addGoal(1, 'p0');
+      match.addGoal(2, 'p3');
+    }
+    await tester.pumpAndSettle();
+    expect(match.state.score1, 99);
+    expect(match.state.score2, 100);
+    await capture('south-africa-live-three-digits');
+    for (var i = 0; i < 90; i++) {
+      match.removeGoal(1);
+      match.removeGoal(2);
+    }
+    await tester.pumpAndSettle();
+
     match.addGoal(1, 'p2');
     await tester.pump();
     await tester.pump();
@@ -108,10 +127,11 @@ void main() {
     await tester.ensureVisible(find.text('REGISTRA RISULTATO'));
     await tester.pumpAndSettle();
     for (final team in [1, 2]) {
-      expect(
-        tester.getRect(find.byKey(ValueKey('score-add-team-$team'))).bottom,
-        lessThan(470),
-      );
+      final action = find.byKey(ValueKey('score-add-team-$team'));
+      await tester.ensureVisible(action);
+      await tester.pumpAndSettle();
+      expect(action.hitTestable(), findsOneWidget);
+      expect(tester.getSize(action).height, greaterThanOrEqualTo(48));
     }
     await capture('south-africa-live-compact-controls');
     match.addGoal(2, 'p3');

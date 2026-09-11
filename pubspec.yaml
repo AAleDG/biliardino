@@ -81,6 +81,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - design/south-africa-2010/assets/live-r1/live-scene.png
     - assets/fonts/Barlow-OFL.txt
     - assets/fonts/BarlowCondensed-OFL.txt
     - design/south-africa-2010/assets/home-h2/png/home-hero-transparent.png

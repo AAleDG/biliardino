@@ -1,0 +1,11 @@
+{
+  "sourceSha256": "be910d6873484291655d7e5bbca4b7752943935fd64278f62a3b019a09f81d98",
+  "outputSha256": "5350adfe5164f74d1da36a7c23ca1911f2b87bb62be9675888fe81a5273a184a",
+  "method": "flat magenta key, boundary alpha and magenta decontamination; unchanged interiors",
+  "dimensionsUnchanged": true,
+  "interiorRgbUnchanged": true,
+  "transparentPixels": 1143518,
+  "partialAlphaPixels": 17964,
+  "opaquePixels": 411046,
+  "approval": "pending-user-review"
+}
