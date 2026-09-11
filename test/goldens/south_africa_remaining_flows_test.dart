@@ -65,6 +65,8 @@ void main() {
         await tester.pumpAndSettle();
         home.select(HomeDestination.leaderboard);
         await capture('standings');
+        await tester.ensureVisible(find.text('Marcatori'));
+        await tester.pumpAndSettle();
         await tester.tap(find.text('Marcatori'));
         await capture('scorers');
         home.select(HomeDestination.more);

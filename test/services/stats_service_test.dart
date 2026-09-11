@@ -165,6 +165,56 @@ void main() {
   });
 
   group('StatsService computeLeaderboard', () {
+    test('orders by points, then win rate, then case-insensitive name', () {
+      final players = [
+        for (final name in ['Zeta', 'Bea', 'anna', 'Carlo', 'Opponent', 'Idle'])
+          Player(
+            id: name,
+            name: name,
+            createdAt: DateTime(2026),
+            isPresent: true,
+          ),
+      ];
+      final matches = <GameMatch>[];
+      void result(String player, bool won) {
+        matches.add(
+          GameMatch(
+            id: 'm${matches.length}',
+            playedAt: DateTime(2026, 1, matches.length + 1),
+            mode: MatchMode.oneVsOne,
+            t1p1: player,
+            t1p2: '',
+            t2p1: 'Opponent',
+            t2p2: '',
+            t1Score: won ? 2 : 0,
+            t2Score: won ? 0 : 2,
+            winningTeam: won ? 1 : 2,
+            scorerIds: const [],
+          ),
+        );
+      }
+
+      for (final won in [true, true, false, false]) {
+        result('Zeta', won);
+      }
+      result('Bea', true);
+      result('anna', true);
+      result('Carlo', true);
+      result('Carlo', false);
+      final ranked = StatsService.computeLeaderboard(players, matches);
+      expect(ranked.map((s) => s.player.name), [
+        'Opponent',
+        'Zeta',
+        'anna',
+        'Bea',
+        'Carlo',
+        'Idle',
+      ]);
+      expect(ranked.map((s) => s.points), [9, 6, 3, 3, 3, 0]);
+      expect(ranked.map((s) => s.games), [8, 4, 1, 1, 2, 0]);
+      expect(ranked.map((s) => s.winRate), [3 / 8, .5, 1, 1, .5, 0]);
+    });
+
     test('assigns badges from ranking, goals, streaks and rivalry wins', () {
       final players = [
         Player(

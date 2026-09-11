@@ -7,10 +7,11 @@ import '../navigation/app_navigation.dart';
 import '../services/csv_share_service.dart';
 import '../services/leaderboard_csv_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/avatar.dart';
+import 'leaderboard/ranking_row.dart';
+import '../widgets/design/south_africa_artwork.dart';
 import '../widgets/design/brand_header.dart';
+import '../widgets/design/brand_choice_selector.dart';
 import '../widgets/design/ranking_podium.dart';
-import '../widgets/design/ranking_badges.dart';
 
 class LeaderboardScreen extends StatelessWidget {
   const LeaderboardScreen({super.key});
@@ -19,105 +20,115 @@ class LeaderboardScreen extends StatelessWidget {
     BuildContext context,
   ) => BlocBuilder<LeaderboardCubit, LeaderboardState>(
     builder: (context, state) {
-      final rankedByPoints = state.stats.where((s) => s.games > 0).toList();
-      final rankedByGoals = state.stats.where((s) => s.goalsScored > 0).toList()
-        ..sort((a, b) {
-          final byGoals = b.goalsScored.compareTo(a.goalsScored);
-          if (byGoals != 0) return byGoals;
-          final byGames = b.games.compareTo(a.games);
-          if (byGames != 0) return byGames;
-          return a.player.name.toLowerCase().compareTo(
-            b.player.name.toLowerCase(),
-          );
-        });
-      return DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          appBar: brandAppBar(
-            context,
-            title: 'CLASSIFICA',
-            actions: [
-              Builder(
-                builder: (buttonContext) => IconButton(
-                  key: const ValueKey('leaderboard-export-csv'),
-                  icon: const Icon(Icons.ios_share),
-                  tooltip: 'Esporta CSV',
-                  onPressed: rankedByPoints.isEmpty
-                      ? null
-                      : () => _shareLeaderboardCsv(
-                          context: buttonContext,
-                          ranked: rankedByPoints,
-                        ),
-                ),
-              ),
-            ],
+      final rankedByPoints = state.general;
+      final rankedByGoals = state.scorers;
+      final compact =
+          MediaQuery.sizeOf(context).height < 650 ||
+          MediaQuery.textScalerOf(context).scale(1) > 1.3;
+      final header = Column(
+        children: [
+          SizedBox(
+            height: compact ? 12 : 36,
+            width: double.infinity,
+            child: const SouthAfricaArtwork(
+              mark: ArtworkMark.headerRibbon,
+              fit: BoxFit.fill,
+            ),
           ),
-          body: RibbonBackdrop(
-            child: Column(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+            child: Row(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppRadius.control),
-                      border: Border.all(color: AppColors.outline),
-                    ),
-                    child: TabBar(
-                      isScrollable:
-                          MediaQuery.textScalerOf(context).scale(1) > 1.3,
-                      tabAlignment:
-                          MediaQuery.textScalerOf(context).scale(1) > 1.3
-                          ? TabAlignment.start
-                          : TabAlignment.fill,
-                      dividerColor: Colors.transparent,
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      labelColor: AppColors.onPrimary,
-                      unselectedLabelColor: AppColors.textSecondary,
-                      labelStyle: AppType.bodyStrong,
-                      unselectedLabelStyle: AppType.bodyStrong,
-                      indicator: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(AppRadius.control),
-                      ),
-                      tabs: const [
-                        Tab(text: 'Generale'),
-                        Tab(text: 'Marcatori'),
-                      ],
+                if (!compact) const SizedBox(width: 48),
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    child: Text(
+                      'CLASSIFICA',
+                      textAlign: compact ? TextAlign.start : TextAlign.center,
+                      style: compact ? AppType.section : AppType.screen,
                     ),
                   ),
                 ),
-                Expanded(
-                  child: TabBarView(
-                    children: [
-                      _LeaderboardPane(
-                        ranked: rankedByPoints,
-                        sectionLabel: 'CLASSIFICA COMPLETA',
-                        podiumMetric: (stats) => '${stats.points} pt',
-                        rowMetric: (stats) => '${stats.points}',
-                        rowDetail: (stats) =>
-                            '${stats.wins}V · ${stats.losses}P · ${stats.games} partite',
-                        emptyTitle: 'Nessuna partita giocata',
-                        emptyDescription:
-                            'Registra una partita per vedere la classifica.',
-                      ),
-                      _LeaderboardPane(
-                        ranked: rankedByGoals,
-                        sectionLabel: 'CLASSIFICA MARCATORI',
-                        podiumMetric: (stats) => '${stats.goalsScored} gol',
-                        rowMetric: (stats) => '${stats.goalsScored}',
-                        rowDetail: (stats) =>
-                            '${stats.games} partite · ${stats.wins} vittorie',
-                        emptyTitle: 'Nessun marcatore disponibile',
-                        emptyDescription:
-                            'I gol compariranno qui dalle partite salvate con assegnazione marcatore.',
-                        emptyIcon: Icons.sports_soccer,
-                      ),
-                    ],
+                Builder(
+                  builder: (buttonContext) => IconButton(
+                    key: const ValueKey('leaderboard-export-csv'),
+                    icon: const Icon(Icons.ios_share),
+                    tooltip: 'Esporta CSV',
+                    onPressed: rankedByPoints.isEmpty
+                        ? null
+                        : () => _shareLeaderboardCsv(
+                            context: buttonContext,
+                            ranked: rankedByPoints,
+                          ),
                   ),
                 ),
               ],
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+            child: Builder(
+              builder: (context) {
+                final controller = DefaultTabController.of(context);
+                return AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, _) => BrandChoiceSelector<int>(
+                    selected: controller.index,
+                    onChanged: controller.animateTo,
+                    choices: const [
+                      BrandChoice(value: 0, label: 'Generale'),
+                      BrandChoice(value: 1, label: 'Marcatori'),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+      final panes = TabBarView(
+        children: [
+          _LeaderboardPane(
+            ranked: rankedByPoints,
+            sectionLabel: 'CLASSIFICA COMPLETA',
+            metricLabel: (stats) => '${stats.points} pt',
+            rowDetail: (stats) =>
+                '${stats.wins}V · ${stats.losses}P · ${stats.games} partite',
+            emptyTitle: 'Nessuna partita giocata',
+            emptyDescription: 'Registra una partita per vedere la classifica.',
+          ),
+          _LeaderboardPane(
+            ranked: rankedByGoals,
+            sectionLabel: 'CLASSIFICA MARCATORI',
+            metricLabel: (stats) => '${stats.goalsScored} gol',
+            rowDetail: (stats) =>
+                '${stats.games} partite · ${stats.wins} vittorie',
+            emptyTitle: 'Nessun marcatore disponibile',
+            emptyDescription:
+                'I gol compariranno qui dalle partite salvate con assegnazione marcatore.',
+            emptyIcon: Icons.sports_soccer,
+          ),
+        ],
+      );
+      return DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          body: SafeArea(
+            bottom: false,
+            child: MediaQuery.sizeOf(context).height < 450
+                ? NestedScrollView(
+                    headerSliverBuilder: (context, innerScrolled) => [
+                      SliverToBoxAdapter(child: header),
+                    ],
+                    body: panes,
+                  )
+                : Column(
+                    children: [
+                      header,
+                      Expanded(child: panes),
+                    ],
+                  ),
           ),
         ),
       );
@@ -131,7 +142,7 @@ Future<void> _shareLeaderboardCsv({
 }) async {
   try {
     final csv = LeaderboardCsvService.build(ranked);
-    await CsvShareService.platform().shareCsv(
+    await context.read<CsvShareService>().shareCsv(
       csv: csv,
       fileName: 'classifica-biliardino.csv',
       subject: 'Classifica Biliardino',
@@ -171,8 +182,7 @@ class _LeaderboardPane extends StatelessWidget {
   const _LeaderboardPane({
     required this.ranked,
     required this.sectionLabel,
-    required this.podiumMetric,
-    required this.rowMetric,
+    required this.metricLabel,
     required this.rowDetail,
     required this.emptyTitle,
     required this.emptyDescription,
@@ -180,7 +190,7 @@ class _LeaderboardPane extends StatelessWidget {
   });
   final List<PlayerStats> ranked;
   final String sectionLabel, emptyTitle, emptyDescription;
-  final String Function(PlayerStats) podiumMetric, rowMetric, rowDetail;
+  final String Function(PlayerStats) metricLabel, rowDetail;
   final IconData emptyIcon;
   @override
   Widget build(BuildContext context) {
@@ -209,99 +219,45 @@ class _LeaderboardPane extends StatelessWidget {
         ),
       );
     }
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-      children: [
-        RankingPodium(
-          top: ranked.take(3).toList(),
-          metricLabel: podiumMetric,
-          onOpen: (id) => openPlayerProfile(context, id),
-        ),
-        if (ranked.length > 3) ...[
-          const SizedBox(height: 24),
-          Semantics(
-            header: true,
-            child: Text(sectionLabel, style: AppType.section),
-          ),
-          const SizedBox(height: 10),
-          for (var i = 3; i < ranked.length; i++)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _LeaderRow(
-                rank: i + 1,
-                stats: ranked[i],
-                metric: rowMetric(ranked[i]),
-                detail: rowDetail(ranked[i]),
-              ),
-            ),
-        ],
-      ],
-    );
-  }
-}
-
-class _LeaderRow extends StatelessWidget {
-  const _LeaderRow({
-    required this.rank,
-    required this.stats,
-    required this.metric,
-    required this.detail,
-  });
-  final int rank;
-  final PlayerStats stats;
-  final String metric, detail;
-  @override
-  Widget build(BuildContext context) => Semantics(
-    key: ValueKey('leaderboard-row-${stats.player.id}'),
-    container: true,
-    button: true,
-    enabled: true,
-    label: 'Posizione $rank: ${stats.player.name}. $metric. $detail.',
-    onTap: () => openPlayerProfile(context, stats.player.id),
-    child: ExcludeSemantics(
-      child: Material(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.panel),
-        child: InkWell(
-          onTap: () => openPlayerProfile(context, stats.player.id),
-          borderRadius: BorderRadius.circular(AppRadius.panel),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('$rank', style: AppType.section),
-                const SizedBox(width: 12),
-                if (MediaQuery.textScalerOf(context).scale(1) <= 1.3) ...[
-                  PlayerAvatar(name: stats.player.name),
-                  const SizedBox(width: 12),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(stats.player.name, style: AppType.player),
-                      Text(
-                        detail,
-                        style: AppType.caption.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      if (stats.badges.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: RankingBadges(badges: stats.badges),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(metric, style: AppType.section),
-              ],
-            ),
-          ),
-        ),
+    final list = ListView.builder(
+      key: PageStorageKey(sectionLabel),
+      padding: EdgeInsets.only(
+        top: 8,
+        bottom: 24 + MediaQuery.paddingOf(context).bottom,
       ),
-    ),
-  );
+      itemCount: ranked.length > 3 ? ranked.length - 1 : 1,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return RankingPodium(
+            top: ranked.take(3).toList(),
+            metricLabel: metricLabel,
+            onOpen: (id) => openPlayerProfile(context, id),
+          );
+        }
+        if (index == 1) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 10),
+            child: Semantics(
+              header: true,
+              child: Text(sectionLabel, style: AppType.section),
+            ),
+          );
+        }
+        final i = index + 1;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: RankingRow(
+            rank: i + 1,
+            stats: ranked[i],
+            metric: metricLabel(ranked[i]),
+            detail: rowDetail(ranked[i]),
+            onOpen: () => openPlayerProfile(context, ranked[i].player.id),
+          ),
+        );
+      },
+    );
+    return MediaQuery.textScalerOf(context).scale(1) > 1.3
+        ? list
+        : RibbonBackdrop(child: list);
+  }
 }

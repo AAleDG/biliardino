@@ -1,3 +1,4 @@
+import 'services/csv_share_service.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -130,6 +131,9 @@ class BiliardinoApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider<CsvShareService>(
+          create: (_) => CsvShareService.platform(),
+        ),
         RepositoryProvider<PlayerRepository>.value(value: playerRepository),
         RepositoryProvider<MatchRepository>.value(value: matchRepository),
         RepositoryProvider<MatchRulesRepository>.value(

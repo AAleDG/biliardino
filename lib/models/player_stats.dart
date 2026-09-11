@@ -12,23 +12,20 @@ class PlayerStats extends Equatable {
   final int currentWinStreak;
   final List<PlayerBadge> badges;
 
-  const PlayerStats({
+  PlayerStats({
     required this.player,
     required this.games,
     required this.wins,
     required this.losses,
     required this.goalsScored,
     this.currentWinStreak = 0,
-    this.badges = const [],
-  });
+    List<PlayerBadge> badges = const [],
+  }) : badges = List.unmodifiable(badges);
 
   int get points => wins * 3;
   double get winRate => games == 0 ? 0 : wins / games;
 
-  PlayerStats copyWith({
-    int? currentWinStreak,
-    List<PlayerBadge>? badges,
-  }) {
+  PlayerStats copyWith({int? currentWinStreak, List<PlayerBadge>? badges}) {
     return PlayerStats(
       player: player,
       games: games,
@@ -42,12 +39,13 @@ class PlayerStats extends Equatable {
 
   @override
   List<Object?> get props => [
-        player.id,
-        games,
-        wins,
-        losses,
-        goalsScored,
-        currentWinStreak,
-        badges,
-      ];
+    player.id,
+    player.name,
+    games,
+    wins,
+    losses,
+    goalsScored,
+    currentWinStreak,
+    badges,
+  ];
 }

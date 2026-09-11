@@ -1,4 +1,6 @@
 import 'package:biliardino/models/player.dart';
+import 'package:biliardino/models/player_badge.dart';
+import '../support/design_fixture.dart';
 import 'package:biliardino/models/player_stats.dart';
 import 'package:biliardino/theme/app_theme.dart';
 import 'package:biliardino/widgets/design/ranking_podium.dart';
@@ -47,6 +49,49 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+  testWidgets(
+    'six badges and a long metric use the readable stacked fallback',
+    (tester) async {
+      await loadDesignFonts();
+      tester.view.physicalSize = const Size(402, 874);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final labels = [
+        'Capoclassifica',
+        'Bomber',
+        'Presenza Fissa',
+        'Implacabile',
+        'Hot Streak',
+        'Re delle Rivalita',
+      ];
+      final stats = entrants.first.copyWith(
+        badges: [
+          for (final label in labels)
+            PlayerBadge(code: label, label: label, description: label),
+        ],
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.southAfrica(),
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: RankingPodium(
+                top: [stats],
+                metricLabel: (_) => '12345678901234567890 pt',
+                onOpen: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('podium-block-1')), findsNothing);
+      for (final label in labels) {
+        expect(find.text(label), findsOneWidget);
+      }
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets(
     'Podium waits for first visibility and settles on live reduced motion',
     (tester) async {

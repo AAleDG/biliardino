@@ -1,0 +1,45 @@
+{
+  "status": "artwork-components-and-integrated-screen-approved",
+  "approvedPodium": {
+    "revision": "P1-candidate-2",
+    "reference": "approved-podium-review.png",
+    "referenceSha256": "004cfdd74ff710d80711163b5dbee0d4b6bfddc1d8a2886cfe96929eac2863cc",
+    "reviewPainterSha256": "ad0ad668ad9104d2e68a48d234f6a59814f51a7a8bf785768119c36822a88d17",
+    "approval": "User approved perspective/shading revision, then selected B Nastri components with flat ranking rows and existing yellow trophy."
+  },
+  "runtimeRaster": {
+    "path": "design/south-africa-2010/assets/live-r1/live-scene.png",
+    "sha256": "5350adfe5164f74d1da36a7c23ca1911f2b87bb62be9675888fe81a5273a184a",
+    "newRaster": false
+  },
+  "runtimePainter": {
+    "path": "lib/widgets/design/ranking_podium_artwork.dart",
+    "sha256": "3c359f543a114004ad59611166503120a3cf8fbb1a89eddc138ba1197347a0e4",
+    "adaptation": "Class/import naming and nullable image while approved source loads; coordinates and shading preserved."
+  },
+  "componentDirection": {
+    "avatars": "shared multicolour ring with live initial; Classifica only",
+    "badges": "folded ribbon geometry, live icon/label; yellow leader and red bomber",
+    "trophy": "existing emoji_events icon in AppColors.yellow",
+    "rows": "flat blue angular ends, ivory/white body and live metrics; no gradients"
+  },
+  "runtimeApproval": {
+    "revision": "shared-setup-selector",
+    "approval": "User explicitly approved the final screen visually and reported no visual issues.",
+    "captures": {
+      "selector-general.png": "28b43f937ac2e6a9dfe5e4b9ea92b133d5bbe26577d6b52a3dd6359ba5dd05e2",
+      "selector-scorers.png": "9019c003f3ee58854b2b6539783cf2b723a61e8a46c9afdab37aebb7bef1e3d1"
+    }
+  },
+  "integratedReview": {
+    "status": "approved-user-review",
+    "device": "293A02E2-FC2D-4D72-93E4-C1EE93CA537E",
+    "bundle": "com.biliardino.southafrica.review",
+    "build": "debug; production widgets with isolated in-memory fixture",
+    "captures": {
+      "selector-general.png": "28b43f937ac2e6a9dfe5e4b9ea92b133d5bbe26577d6b52a3dd6359ba5dd05e2",
+      "selector-scorers.png": "9019c003f3ee58854b2b6539783cf2b723a61e8a46c9afdab37aebb7bef1e3d1"
+    },
+    "revision": "shared-setup-selector"
+  }
+}

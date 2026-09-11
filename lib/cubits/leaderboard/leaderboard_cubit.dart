@@ -13,9 +13,9 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
   LeaderboardCubit({
     required PlayerRepository playerRepository,
     required MatchRepository matchRepository,
-  })  : _playerRepo = playerRepository,
-        _matchRepo = matchRepository,
-        super(const LeaderboardState()) {
+  }) : _playerRepo = playerRepository,
+       _matchRepo = matchRepository,
+       super(LeaderboardState()) {
     _players = _playerRepo.players;
     _matches = _matchRepo.matches;
     _recompute();

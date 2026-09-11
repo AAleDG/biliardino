@@ -1393,7 +1393,8 @@ void main() {
         expect(
           tester.getSemantics(podium),
           matchesSemantics(
-            label: 'Posizione 1: Beatrice Lunghissimo Cognome. 6 pt.',
+            label:
+                'Posizione 1: Beatrice Lunghissimo Cognome. 6 pt. Capoclassifica, Bomber',
             isButton: true,
             hasEnabledState: true,
             isEnabled: true,

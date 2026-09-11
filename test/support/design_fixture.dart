@@ -1,3 +1,4 @@
+import 'package:biliardino/services/csv_share_service.dart';
 import 'package:biliardino/main.dart';
 import 'package:biliardino/models/game_match.dart';
 import 'package:biliardino/models/player.dart';
@@ -23,6 +24,7 @@ import 'fake_database.dart';
 class DesignFixture {
   DesignFixture({
     bool empty = false,
+    this.csvShareService,
     PlayerRepository Function(FakeDatabaseHelper)? playerRepositoryFactory,
     bool longRoster = false,
     bool populatedDashboard = false,
@@ -91,6 +93,7 @@ class DesignFixture {
     matchesRepository = MatchRepository(database);
     rulesRepository = MatchRulesRepository(database);
   }
+  final CsvShareService? csvShareService;
   late final FakeDatabaseHelper database;
   late final PlayerRepository playersRepository;
   late final MatchRepository matchesRepository;
@@ -109,6 +112,9 @@ class DesignFixture {
   /// Isolates screen checks from the separately tested bootstrap/splash route.
   Widget get home => MultiRepositoryProvider(
     providers: [
+      RepositoryProvider<CsvShareService>(
+        create: (_) => csvShareService ?? CsvShareService.platform(),
+      ),
       RepositoryProvider<PlayerRepository>.value(value: playersRepository),
       RepositoryProvider<MatchRepository>.value(value: matchesRepository),
       RepositoryProvider<MatchRulesRepository>.value(value: rulesRepository),
