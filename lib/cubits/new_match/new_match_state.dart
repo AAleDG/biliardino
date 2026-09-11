@@ -48,13 +48,13 @@ class VictoryEvent extends Equatable {
 
   @override
   List<Object?> get props => [
-        winningTeam,
-        winnerIds,
-        winnerNames,
-        winnerScore,
-        loserScore,
-        signalId,
-      ];
+    winningTeam,
+    winnerIds,
+    winnerNames,
+    winnerScore,
+    loserScore,
+    signalId,
+  ];
 }
 
 class FeedbackEvent extends Equatable {
@@ -126,6 +126,14 @@ class NewMatchState extends Equatable {
 
   bool get showScoreboard => teamsValid && kickedOff;
 
+  bool get canRegisterResult =>
+      showScoreboard &&
+      !isSaving &&
+      pendingVictory == null &&
+      rules.isFree &&
+      score1 != score2 &&
+      (score1 > 0 || score2 > 0);
+
   NewMatchState copyWith({
     List<Player>? players,
     List<GameMatch>? matches,
@@ -162,31 +170,33 @@ class NewMatchState extends Equatable {
       isSaving: isSaving ?? this.isSaving,
       isPersistingRules: isPersistingRules ?? this.isPersistingRules,
       lastGoal: clearLastGoal ? null : lastGoal ?? this.lastGoal,
-      pendingVictory:
-          clearPendingVictory ? null : pendingVictory ?? this.pendingVictory,
+      pendingVictory: clearPendingVictory
+          ? null
+          : pendingVictory ?? this.pendingVictory,
       lastVictory: clearLastVictory ? null : lastVictory ?? this.lastVictory,
-      lastFeedback:
-          clearLastFeedback ? null : lastFeedback ?? this.lastFeedback,
+      lastFeedback: clearLastFeedback
+          ? null
+          : lastFeedback ?? this.lastFeedback,
     );
   }
 
   @override
   List<Object?> get props => [
-        players,
-        matches,
-        mode,
-        rules,
-        isRivalry,
-        assignment,
-        scorerIds,
-        score1,
-        score2,
-        kickedOff,
-        isSaving,
-        isPersistingRules,
-        lastGoal,
-        pendingVictory,
-        lastVictory,
-        lastFeedback,
-      ];
+    players,
+    matches,
+    mode,
+    rules,
+    isRivalry,
+    assignment,
+    scorerIds,
+    score1,
+    score2,
+    kickedOff,
+    isSaving,
+    isPersistingRules,
+    lastGoal,
+    pendingVictory,
+    lastVictory,
+    lastFeedback,
+  ];
 }

@@ -219,6 +219,7 @@ void main() {
               score2: 100,
               isSaving: false,
               awaitingConfirmation: false,
+              canRegisterResult: false,
               onAddGoal: taps.add,
               onRemoveGoal: (_) {},
               onSave: () {},

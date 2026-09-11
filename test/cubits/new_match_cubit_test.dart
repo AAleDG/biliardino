@@ -14,6 +14,38 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  group('NewMatchState', () {
+    test(
+      'exposes result registration eligibility from authoritative state',
+      () {
+        final ready = NewMatchState(
+          players: _players(),
+          mode: MatchMode.oneVsOne,
+          assignment: const {'p1': 1, 'p2': 2},
+          kickedOff: true,
+          score1: 1,
+        );
+
+        expect(ready.canRegisterResult, isTrue);
+        expect(ready.copyWith(isSaving: true).canRegisterResult, isFalse);
+        expect(ready.copyWith(score2: 1).canRegisterResult, isFalse);
+        expect(
+          ready
+              .copyWith(
+                rules: const MatchRules(
+                  mode: MatchRuleMode.firstTo,
+                  targetScore: 10,
+                  winByTwo: false,
+                ),
+              )
+              .canRegisterResult,
+          isFalse,
+        );
+        expect(ready.copyWith(kickedOff: false).canRegisterResult, isFalse);
+      },
+    );
+  });
+
   group('NewMatchCubit', () {
     test('excludes archived players even when presence is stale', () async {
       final initial = _players();

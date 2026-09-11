@@ -184,6 +184,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
                     score2: state.score2,
                     isSaving: state.isSaving,
                     awaitingConfirmation: state.pendingVictory != null,
+                    canRegisterResult: state.canRegisterResult,
                     onAddGoal: (team) => _handleAddGoal(
                       context,
                       team,

@@ -20,6 +20,7 @@ class LiveMatchView extends StatelessWidget {
     required this.score2,
     required this.isSaving,
     required this.awaitingConfirmation,
+    required this.canRegisterResult,
     required this.onAddGoal,
     required this.onRemoveGoal,
     required this.onSave,
@@ -30,7 +31,7 @@ class LiveMatchView extends StatelessWidget {
   final RivalryOverview? rivalry;
   final List<String> team1Names, team2Names;
   final int score1, score2;
-  final bool isSaving, awaitingConfirmation;
+  final bool isSaving, awaitingConfirmation, canRegisterResult;
   final ValueChanged<int> onAddGoal, onRemoveGoal;
   final VoidCallback onSave, onBack, onReset;
 
@@ -43,16 +44,11 @@ class LiveMatchView extends StatelessWidget {
           largeText ||
           constraints.maxWidth < 360;
       final enabled = !isSaving && !awaitingConfirmation;
-      final canSave =
-          enabled &&
-          rules.isFree &&
-          score1 != score2 &&
-          (score1 > 0 || score2 > 0);
       final footer = Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         child: _ResultButton(
           isSaving: isSaving,
-          onSave: canSave ? onSave : null,
+          onSave: canRegisterResult ? onSave : null,
         ),
       );
       final content = <Widget>[
@@ -308,11 +304,13 @@ class _Scoreboard extends StatelessWidget {
               top: 0,
               height: 165 * ratio,
               child: IgnorePointer(
-                child: Image.asset(
-                  liveSceneAsset,
-                  excludeFromSemantics: true,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
+                child: RepaintBoundary(
+                  child: Image.asset(
+                    liveSceneAsset,
+                    excludeFromSemantics: true,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                  ),
                 ),
               ),
             ),

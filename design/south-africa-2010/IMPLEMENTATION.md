@@ -1,6 +1,6 @@
 # South Africa 2010 implementation receipt
 
-Updated 10 September 2026. Issue #11. Branch: `codex/south-africa-2010-design-implementation`.
+Updated 11 September 2026. Issue #11. Branch: `codex/south-africa-2010-design-implementation`.
 
 ## Home dashboard extension checkpoint — 9 September 2026
 
@@ -68,7 +68,7 @@ Retained images: [current Players](verification/players-pro-max.png), [corrected
 - **Native reduced motion:** Settings navigation was unstable and toggle attempts continued to read `0`; no native on/off/runtime replay pass is claimed. Automated production-widget tests prove runtime settlement, static goal hold, immediate actions and splash handoff. The user explicitly accepted the native toggle/replay as deferred and non-blocking for the current feature branch.
 - Debug simulator recordings establish visual sequencing, not physical-device frame-budget performance. No 60fps or profile-mode certification is claimed.
 
-No implementation scope was waived. The user accepted the two unavailable native accessibility checks as deferred release-hardening work and confirmed the feature complete. P9-P13 and the full South Africa refactor are complete; the final feature branch is ready for review after push. No MR, merge or release action was performed.
+No implementation scope was waived. The user accepted the two unavailable native accessibility checks as deferred release-hardening work and confirmed the Home feature complete. P9-P13 are complete; later Nuova Partita and Partita in corso checkpoints are recorded below. No MR, merge or release action was performed.
 
 ## Ownership and provenance
 
@@ -110,7 +110,7 @@ The approved PNG and source/extraction evidence are retained in [live-r1](assets
 
 Normal 440×956 logical viewport: safe top62, header48, stage390 (y110–500), cards188 (y512–700), rules pill40 (y712–752), result capsule64 (y775–839). The capsule ends12 logical pixels above the navigation indicator. Long names/rivalry scroll; compact/large text removes decoration and stacks cards, and score panels stack when labels need full width. Multi-digit scores fit without truncation and stay inside the curved field.
 
-Validation against the final implementation: Flutter 3.44.9 / Dart 3.12.2, `/opt/homebrew/bin/flutter`; full `flutter test --no-pub`:196 passed; `flutter analyze --no-pub`:no issues. Production debug simulator build with `-t lib/main.dart` passed (21.7s Xcode); isolated review build passed (17.6s). Existing R1/Home/setup asset checks and new live checker pass; pinned DESIGN linter reports zero errors/warnings. Changed Dart files are formatted, and `git diff --check` passes. Live/goal goldens were individually inspected; PNG loading is awaited before capture. Home/setup and domain source files were not changed.
+Validation against the accepted implementation checkpoint: Flutter 3.44.9 / Dart 3.12.2, `/opt/homebrew/bin/flutter`; full `flutter test --no-pub`:196 passed; `flutter analyze --no-pub`:no issues. The normal app entrypoint debug simulator build with `-t lib/main.dart` passed (21.7s Xcode); the isolated debug review build passed (17.6s). Existing R1/Home/setup asset checks and the new live checker pass; pinned DESIGN linter reports zero errors/warnings. Changed Dart files are formatted, and `git diff --check` passes. Live/goal goldens were individually inspected; PNG loading is awaited before capture. Home/setup and domain source files were not changed.
 
 Actual runtime evidence uses only iPhone 17 Pro Max 26.0 AppStore / iOS26.0, UDID `293A02E2-FC2D-4D72-93E4-C1EE93CA537E`, review bundle `com.biliardino.southafrica.review`. Observed: 2v2 scorer selection/close and undo; 1v1 direct scoring; free save failure/retry; saving-disabled controls; reset/exit cancel/confirm; target9–10/+2 confirmation/correction/save; victory/rematch/change teams; 99–100 with long names/rivalry; largest native content size and lower CTA reachability. Failures/delays were injected only into the ignored in-memory fixture. A 10-second recording captures goal feedback, undo, victory/confetti and rematch. Automated interaction scripts initially miscompared the setup AX label, which combines heading and subtitle; captured AX confirms correct navigation.
 
@@ -146,3 +146,15 @@ User explicitly replied “approved” to the final orange-header refinement. Fi
 ## Partita in corso commit checkpoint — 2026-09-11
 
 The accepted implementation and retained review evidence were committed as `b11a3b70ed2a6959a498d5a4e936953c03e1a622` (`feat: refine South Africa live match screen`). A fresh post-commit closeout run passed all 196 Flutter tests, `flutter analyze --no-pub`, the R1, Home H2, setup and live asset checkers, the pinned DESIGN lint and `git diff --check`. This receipt correction is documentation-only; no push, MR, merge or release was performed as part of the plan closeout.
+
+## Partita in corso final hardening and P5 reconciliation — 2026-09-11
+
+The feature plan was reopened because the earlier hardening receipt had substituted a local review for the required complete-diff companion pass after later adaptive and painter refinements. The new P4 reviewed the entire feature from baseline `3ab83f1ddabfddee214975f99f0d78a80f4333ef` through commit `4f9a1d0dc98edea4a90cc0538d8f321db8f27ccb` and the resulting worktree. Correctness, state ownership, failure paths, lifecycle, architecture boundaries, reuse, efficiency, clarity and maintainability were covered.
+
+Two high-confidence, behavior-preserving fixes resulted. Result-registration eligibility now derives once from `NewMatchState` and is injected into `LiveMatchView`; the Cubit retains its defensive save validation. This removes duplicated product policy without changing free-score, tie, pending-victory or saving behavior. The static live-scene PNG now has its own `RepaintBoundary`, isolating it from score-pulse repaint work. A proposed display-size decode was rejected after it caused a 4.21% image-only golden difference: the full approximately 6 MB decode is retained because preserving the approved raster is the safer tradeoff on the target device.
+
+The exact post-fix source passed the 41-test live/state/motion gate, the 90-test feature behavior/navigation gate and the complete 197-test suite. `flutter analyze --no-pub` reported no issues. All R1, Home, setup and live asset/provenance checkers passed; the pinned DESIGN linter reported zero errors and warnings; scoped Dart formatting changed no files; `git diff --check` passed. Only simulator debug builds were performed: the normal `lib/main.dart` entrypoint and the isolated review entrypoint. No release or production build was requested or run.
+
+The isolated `com.biliardino.southafrica.review` bundle was updated in place on the sole authorized iPhone 17 Pro Max 26.0 AppStore simulator, without uninstall, erase or production-data access. The 2v2 free-score 4–5 runtime exposed the full score/action/navigation accessibility tree and an enabled `REGISTRA RISULTATO`. The fresh capture `qa/runtime/p4-review-after.png` has SHA-256 `df7c80d398126a672a77fba2ff793420f17a30085bc9e4ce1606c63edd264436`; application rows y=300 through 2699 have zero differing pixels against the approved `orange-header-review.png`. Only system-owned clock and home-indicator pixels differ outside that comparison region, so the prior user composition approval remains valid.
+
+P5 reconciles the accepted composition, exact manifest source hashes, requirements, regression risks and guardrails against this post-fix state. No domain, repository, persistence, scoring, navigation, artwork pixel, painter geometry, copy or motion-policy change remains. Manual VoiceOver traversal and native Reduce Motion replay remain the explicitly accepted release-hardening deferrals and are not claimed as passes. No other known defect or unowned gap remains. The feature is ready for its local checkpoint commit and later push/review; no push, MR, merge, publication or release is implied by this receipt.
