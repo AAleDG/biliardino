@@ -142,3 +142,7 @@ Orange team-card header: existing gradient was too subtle; user requested more e
 ## Final user approval
 
 User explicitly replied “approved” to the final orange-header refinement. Final integrated composition accepted at orange-header-review.png / orange-header-detail.png and source hashes retained in live-r1 manifest. P5 visual approval complete; feature awaiting merge. Latest196 tests pass and analysis is clean. Existing native VoiceOver/Reduce Motion deferrals remain unchanged. No application changes, commits, pushes or publication performed for this approval.
+
+## Partita in corso commit checkpoint — 2026-09-11
+
+The accepted implementation and retained review evidence were committed as `b11a3b70ed2a6959a498d5a4e936953c03e1a622` (`feat: refine South Africa live match screen`). A fresh post-commit closeout run passed all 196 Flutter tests, `flutter analyze --no-pub`, the R1, Home H2, setup and live asset checkers, the pinned DESIGN lint and `git diff --check`. This receipt correction is documentation-only; no push, MR, merge or release was performed as part of the plan closeout.
