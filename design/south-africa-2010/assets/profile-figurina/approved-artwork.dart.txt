@@ -1,0 +1,266 @@
+import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
+import 'package:biliardino/theme/app_theme.dart';
+
+// Preview only: unchanged approved paths, proposed gradient refinement.
+class ProfileHeroArtwork extends CustomPainter {
+  const ProfileHeroArtwork({required this.scene});
+  final ui.Image scene;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.clipRect(Offset.zero & size);
+    canvas.scale(size.width / 402, size.height / 232);
+    _fill(
+      canvas,
+      Path()
+        ..moveTo(183, 0)
+        ..lineTo(231, 0)
+        ..cubicTo(270, 33, 276, 90, 322, 109)
+        ..cubicTo(355, 123, 380, 120, 402, 126)
+        ..lineTo(402, 148)
+        ..cubicTo(338, 130, 295, 153, 266, 109)
+        ..cubicTo(235, 62, 231, 23, 183, 0)
+        ..close(),
+      AppColors.success,
+    );
+    _fill(
+      canvas,
+      Path()
+        ..moveTo(232, 53)
+        ..cubicTo(291, 29, 348, 3, 402, 0)
+        ..lineTo(402, 18)
+        ..cubicTo(343, 20, 296, 51, 246, 70)
+        ..close(),
+      AppColors.yellow,
+    );
+    _fill(
+      canvas,
+      Path()
+        ..moveTo(249, 77)
+        ..cubicTo(309, 50, 361, 27, 402, 26)
+        ..lineTo(402, 57)
+        ..cubicTo(354, 58, 311, 80, 261, 98)
+        ..close(),
+      AppColors.primary,
+    );
+    _fill(
+      canvas,
+      Path()
+        ..moveTo(265, 113)
+        ..cubicTo(319, 99, 361, 76, 402, 69)
+        ..lineTo(402, 86)
+        ..cubicTo(348, 98, 325, 122, 280, 132)
+        ..close(),
+      AppColors.error,
+    );
+    _fill(
+      canvas,
+      Path()
+        ..moveTo(185, 8)
+        ..cubicTo(242, 23, 238, 106, 290, 141)
+        ..cubicTo(332, 170, 370, 169, 402, 193)
+        ..lineTo(402, 229)
+        ..cubicTo(359, 194, 300, 194, 264, 151)
+        ..cubicTo(224, 103, 228, 43, 185, 8)
+        ..close(),
+      AppColors.primary,
+    );
+    _fill(
+      canvas,
+      Path()
+        ..moveTo(16, 0)
+        ..lineTo(157, 0)
+        ..cubicTo(232, 0, 224, 88, 265, 139)
+        ..cubicTo(306, 187, 349, 170, 376, 232)
+        ..lineTo(328, 232)
+        ..cubicTo(298, 232, 287, 204, 265, 204)
+        ..lineTo(16, 204)
+        ..quadraticBezierTo(0, 204, 0, 188)
+        ..lineTo(0, 16)
+        ..quadraticBezierTo(0, 0, 16, 0)
+        ..close(),
+      AppColors.yellow,
+      hero: true,
+    );
+    canvas.save();
+    canvas.translate(348, 98);
+    canvas.rotate(-.20);
+    canvas.translate(-348, -98);
+    canvas.drawImageRect(
+      scene,
+      const Rect.fromLTWH(1430, 0, 742, 695),
+      const Rect.fromLTWH(309, 0, 218, 204),
+      Paint()..filterQuality = FilterQuality.high,
+    );
+    canvas.restore();
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant ProfileHeroArtwork oldDelegate) =>
+      scene != oldDelegate.scene;
+}
+
+// Normalized 160x70 detail, independent of the card's content and height.
+class ProfileCornerSweep extends CustomPainter {
+  const ProfileCornerSweep();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.scale(size.width / 160, size.height / 70);
+    final yellow = Path()
+      ..moveTo(0, 70)
+      ..cubicTo(64, 56, 116, 32, 160, 0)
+      ..lineTo(160, 17)
+      ..cubicTo(104, 49, 49, 64, 0, 70)
+      ..close();
+    final green = Path()
+      ..moveTo(27, 70)
+      ..cubicTo(83, 57, 126, 38, 160, 23)
+      ..lineTo(160, 36)
+      ..cubicTo(112, 58, 66, 67, 27, 70)
+      ..close();
+    final blue = Path()
+      ..moveTo(64, 70)
+      ..cubicTo(106, 59, 137, 49, 160, 41)
+      ..lineTo(160, 53)
+      ..cubicTo(123, 67, 101, 70, 64, 70)
+      ..close();
+    final red = Path()
+      ..moveTo(112, 70)
+      ..cubicTo(135, 65, 148, 61, 160, 58)
+      ..lineTo(160, 70)
+      ..close();
+    _fill(canvas, yellow, AppColors.yellow, light: .12, dark: .08);
+    _fill(canvas, green, AppColors.success, light: .12, dark: .16);
+    _fill(canvas, blue, AppColors.primary, light: .12, dark: .16);
+    _fill(canvas, red, AppColors.error, light: .12, dark: .16);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant ProfileCornerSweep oldDelegate) => false;
+}
+
+class ProfileFooterArtwork extends CustomPainter {
+  const ProfileFooterArtwork({required this.scene});
+  final ui.Image scene;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    canvas.clipRect(Offset.zero & size);
+    canvas.scale(size.width / 402, size.height / 76);
+    _baselineFill(
+      canvas,
+      Path()
+        ..moveTo(0, 12)
+        ..cubicTo(115, 55, 279, 1, 402, 44)
+        ..lineTo(402, 52)
+        ..cubicTo(257, 15, 112, 65, 0, 26)
+        ..close(),
+      AppColors.yellow,
+    );
+    _baselineFill(
+      canvas,
+      Path()
+        ..moveTo(0, 33)
+        ..cubicTo(102, 73, 271, 20, 402, 58)
+        ..lineTo(402, 68)
+        ..cubicTo(259, 35, 109, 87, 0, 48)
+        ..close(),
+      AppColors.success,
+    );
+    _baselineFill(
+      canvas,
+      Path()
+        ..moveTo(0, 58)
+        ..cubicTo(115, 90, 272, 32, 402, 74)
+        ..lineTo(402, 76)
+        ..lineTo(285, 76)
+        ..cubicTo(172, 65, 69, 94, 0, 72)
+        ..close(),
+      AppColors.primary,
+    );
+    _baselineFill(
+      canvas,
+      Path()
+        ..moveTo(230, 66)
+        ..cubicTo(307, 60, 353, 66, 402, 76)
+        ..lineTo(285, 76)
+        ..close(),
+      AppColors.error,
+    );
+    canvas.drawImageRect(
+      scene,
+      const Rect.fromLTWH(957, 428, 263, 264),
+      const Rect.fromLTWH(249, 0, 88, 88),
+      Paint()..filterQuality = FilterQuality.high,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant ProfileFooterArtwork oldDelegate) =>
+      scene != oldDelegate.scene;
+}
+
+void _fill(
+  Canvas canvas,
+  Path path,
+  Color color, {
+  double light = .22,
+  double dark = .22,
+  bool hero = false,
+}) {
+  canvas.drawPath(
+    path,
+    Paint()
+      ..shader = (hero ? RadialGradient(
+        center: const Alignment(-.5, -.35),
+        radius: 1.2,
+        colors: [
+          Color.lerp(color, AppColors.surface, .40)!,
+          color,
+          Color.lerp(color, AppColors.teamTwo, .20)!,
+        ],
+        stops: const [0, .58, 1],
+      ) : LinearGradient(
+        begin: Alignment.bottomLeft,
+        end: Alignment.topRight,
+        colors: [
+          Color.lerp(color, color == AppColors.yellow ? AppColors.teamTwo : AppColors.ink, dark)!,
+          color,
+          Color.lerp(color, AppColors.surface, light)!,
+          color,
+        ],
+        stops: const [0, .38, .72, 1],
+      )).createShader(path.getBounds()),
+  );
+}
+
+void _baselineFill(
+  Canvas canvas,
+  Path path,
+  Color color, {
+  double light = .12,
+  double dark = .12,
+}) {
+  canvas.drawPath(
+    path,
+    Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color.lerp(color, AppColors.surface, light)!,
+          color,
+          Color.lerp(color, AppColors.ink, dark)!,
+        ],
+        stops: const [0, .52, 1],
+      ).createShader(path.getBounds()),
+  );
+}

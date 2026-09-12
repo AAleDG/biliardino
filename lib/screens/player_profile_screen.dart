@@ -1,492 +1,178 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import '../widgets/design/brand_header.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 
-import '../models/game_match.dart';
-import '../models/player.dart';
-import '../models/player_stats.dart';
-import '../models/player_profile_stats.dart';
+import '../cubits/player_profile/player_profile_cubit.dart';
+import '../cubits/player_profile/player_profile_state.dart';
 import '../repositories/match_repository.dart';
 import '../repositories/player_repository.dart';
-import '../services/stats_service.dart';
 import '../theme/app_theme.dart';
-import '../widgets/design/adaptive_pair.dart';
-import '../widgets/avatar.dart';
+import '../widgets/design/brand_header.dart';
+import 'player_profile/profile_artwork.dart';
+import 'player_profile/profile_identity.dart';
+import 'player_profile/profile_scene.dart';
+import 'player_profile/profile_sections.dart';
 
-class PlayerProfileScreen extends StatefulWidget {
+class PlayerProfileScreen extends StatelessWidget {
   const PlayerProfileScreen({super.key, required this.playerId});
-
   final String playerId;
 
   @override
-  State<PlayerProfileScreen> createState() => _PlayerProfileScreenState();
+  Widget build(BuildContext context) => BlocProvider(
+    key: ValueKey(playerId),
+    create: (context) => PlayerProfileCubit(
+      playerId: playerId,
+      playerRepository: context.read<PlayerRepository>(),
+      matchRepository: context.read<MatchRepository>(),
+    ),
+    child: BlocBuilder<PlayerProfileCubit, PlayerProfileState>(
+      builder: (context, state) => _ProfileView(state: state),
+    ),
+  );
 }
 
-class _PlayerProfileScreenState extends State<PlayerProfileScreen> {
-  late final PlayerRepository _playerRepository;
-  late final MatchRepository _matchRepository;
-  late final StreamSubscription<List<Player>> _playersSub;
-  late final StreamSubscription<List<GameMatch>> _matchesSub;
-
-  List<Player> _players = const [];
-  List<GameMatch> _matches = const [];
-
+class _ProfileView extends StatelessWidget {
+  const _ProfileView({required this.state});
+  final PlayerProfileState state;
   @override
-  void initState() {
-    super.initState();
-    _playerRepository = context.read<PlayerRepository>();
-    _matchRepository = context.read<MatchRepository>();
-    _players = _playerRepository.players;
-    _matches = _matchRepository.matches;
-    _playersSub = _playerRepository.watchPlayers().listen((players) {
-      if (mounted) {
-        setState(() => _players = players);
-      }
-    });
-    _matchesSub = _matchRepository.watchMatches().listen((matches) {
-      if (mounted) {
-        setState(() => _matches = matches);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    unawaited(_playersSub.cancel());
-    unawaited(_matchesSub.cancel());
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final player = _findPlayer(_players, widget.playerId);
-    if (player == null) {
-      return Scaffold(
-        appBar: brandAppBar(context, title: 'PROFILO'),
-        body: const Center(child: Text('Giocatore non trovato.')),
-      );
-    }
-
-    final stats = StatsService.computeLeaderboard(
-      _players,
-      _matches,
-    ).firstWhere((item) => item.player.id == player.id);
-    final personalMatches = StatsService.matchesForPlayer(_matches, player.id);
-    final profile = StatsService.computePlayerProfile(_matches, player.id);
-
-    return Scaffold(
-      appBar: brandAppBar(context, title: 'PROFILO'),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        children: [
-          _Header(player: player, stats: stats),
-          const SizedBox(height: 16),
-          _StatsGrid(stats: stats),
-          const SizedBox(height: 18),
-          const _SectionLabel('FORMA RECENTE'),
-          const SizedBox(height: 8),
-          _RecentForm(results: profile.recentResults),
-          const SizedBox(height: 18),
-          const _SectionLabel('INTESA E RIVALITÀ'),
-          const SizedBox(height: 8),
-          _Relationships(profile: profile, players: _players),
-          const SizedBox(height: 18),
-          const _SectionLabel('TESTA A TESTA'),
-          const SizedBox(height: 8),
-          _HeadToHead(profile: profile, players: _players),
-          const SizedBox(height: 18),
-          const _SectionLabel('STORICO PERSONALE'),
-          const SizedBox(height: 8),
-          if (personalMatches.isEmpty)
-            const _EmptyHistory()
-          else
-            ...personalMatches.map(
-              (match) => _PersonalMatchRow(
-                match: match,
-                players: _players,
-                playerId: player.id,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RecentForm extends StatelessWidget {
-  const _RecentForm({required this.results});
-
-  final List<bool> results;
-
-  @override
-  Widget build(BuildContext context) {
-    if (results.isEmpty) {
-      return const _EmptyCard('La forma comparirà dopo la prima partita.');
-    }
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            for (final entry in results.asMap().entries) ...[
-              Semantics(
-                key: ValueKey('profile-recent-result-${entry.key}'),
-                container: true,
-                label: entry.value ? 'Vittoria' : 'Sconfitta',
-                child: ExcludeSemantics(
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color:
-                          (entry.value
-                                  ? AppColors.success
-                                  : AppColors.textSecondary)
-                              .withValues(alpha: 0.18),
-                    ),
-                    child: Text(
-                      entry.value ? 'V' : 'P',
-                      style: TextStyle(
-                        color: entry.value
-                            ? AppColors.success
-                            : AppColors.textSecondary,
-                        fontWeight: FontWeight.w900,
+  Widget build(BuildContext context) => Scaffold(
+    appBar: brandAppBar(
+      context,
+      title: 'PROFILO',
+      compactTitle: true,
+      showArtwork: false,
+    ),
+    body: SafeArea(
+      top: false,
+      bottom: false,
+      child: state.stats == null
+          ? const Center(child: Text('Giocatore non trovato.'))
+          : ProfileScene(
+              builder: (context, scene) {
+                final stats = state.stats!;
+                Widget section(String title) => Padding(
+                  padding: const EdgeInsets.only(
+                    top: AppSpace.section,
+                    bottom: AppSpace.medium,
+                  ),
+                  child: ProfileSectionHeading(title),
+                );
+                return CustomScrollView(
+                  key: const ValueKey('profile-scroll'),
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpace.page,
+                        AppSpace.medium,
+                        AppSpace.page,
+                        0,
+                      ),
+                      sliver: SliverList.list(
+                        children: [
+                          ProfileIdentity(stats: stats, scene: scene),
+                          const SizedBox(height: AppSpace.page),
+                          ProfileStatistics(
+                            stats: stats,
+                            results: state.profile.recentResults,
+                          ),
+                          section('INTESA E RIVALITÀ'),
+                          ProfileRelationships(
+                            profile: state.profile,
+                            players: state.players,
+                          ),
+                          section('TESTA A TESTA'),
+                          if (state.profile.headToHead.isEmpty)
+                            const ProfilePanel(
+                              child: Text(
+                                'Nessun confronto diretto disponibile.',
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Relationships extends StatelessWidget {
-  const _Relationships({required this.profile, required this.players});
-
-  final PlayerProfileStats profile;
-  final List<Player> players;
-
-  String relationshipNames(PlayerFrequency relationship) {
-    final names = relationship.playerIds
-        .map((id) => StatsService.playerName(players, id))
-        .toList();
-    names.sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-    return names.join(', ');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final teammate = profile.mostFrequentTeammate;
-    final opponent = profile.mostPlayedOpponent;
-    if (teammate == null && opponent == null) {
-      return const _EmptyCard(
-        'Servono partite in squadra o contro altri giocatori.',
-      );
-    }
-    return AdaptivePair(
-      first: _RelationshipCard(
-        icon: Icons.group,
-        label: 'Compagno abituale',
-        value: teammate == null
-            ? 'Non disponibile'
-            : relationshipNames(teammate),
-        matches: teammate?.matches,
-      ),
-      second: _RelationshipCard(
-        icon: Icons.sports_martial_arts,
-        label: 'Avversario abituale',
-        value: opponent == null
-            ? 'Non disponibile'
-            : relationshipNames(opponent),
-        matches: opponent?.matches,
-      ),
-    );
-  }
-}
-
-class _RelationshipCard extends StatelessWidget {
-  const _RelationshipCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.matches,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final int? matches;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: AppColors.primary, size: 20),
-            const SizedBox(height: 8),
-            Text(label, style: const TextStyle(color: AppColors.textSecondary)),
-            const SizedBox(height: 4),
-            Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
-            if (matches != null)
-              Text('$matches partite', style: const TextStyle(fontSize: 12)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HeadToHead extends StatelessWidget {
-  const _HeadToHead({required this.profile, required this.players});
-
-  final PlayerProfileStats profile;
-  final List<Player> players;
-
-  @override
-  Widget build(BuildContext context) {
-    if (profile.headToHead.isEmpty) {
-      return const _EmptyCard('Nessun confronto diretto disponibile.');
-    }
-    return Card(
-      child: Column(
-        children: profile.headToHead.map((item) {
-          final name = StatsService.playerName(players, item.opponentId);
-          return ListTile(
-            leading: PlayerAvatar(name: name, size: 36),
-            title: Text(name),
-            subtitle: Text('${item.games} partite'),
-            trailing: Text(
-              '${item.wins}V · ${item.losses}P',
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-}
-
-class _EmptyCard extends StatelessWidget {
-  const _EmptyCard(this.message);
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text(
-          message,
-          style: const TextStyle(color: AppColors.textSecondary),
-        ),
-      ),
-    );
-  }
-}
-
-Player? _findPlayer(List<Player> players, String playerId) {
-  for (final player in players) {
-    if (player.id == playerId) {
-      return player;
-    }
-  }
-  return null;
-}
-
-class _Header extends StatelessWidget {
-  const _Header({required this.player, required this.stats});
-
-  final Player player;
-  final PlayerStats stats;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            PlayerAvatar(name: player.name, size: 58),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(player.name, style: AppType.section),
-                  const SizedBox(height: 6),
-                  Text(
-                    player.isArchived
-                        ? 'Archiviato'
-                        : player.isPresent
-                        ? 'In ufficio'
-                        : 'Assente',
-                    style: TextStyle(
-                      color: player.isArchived
-                          ? AppColors.textSecondary
-                          : player.isPresent
-                          ? AppColors.success
-                          : AppColors.textSecondary,
-                      fontWeight: FontWeight.w700,
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpace.page,
+                      ),
+                      sliver: SliverList.separated(
+                        itemCount: state.profile.headToHead.length,
+                        itemBuilder: (context, index) => ProfileHeadToHeadRow(
+                          item: state.profile.headToHead[index],
+                          players: state.players,
+                        ),
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: AppSpace.small),
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpace.page,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: section('STORICO PERSONALE'),
+                      ),
+                    ),
+                    if (state.personalMatches.isEmpty)
+                      const SliverPadding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSpace.page,
+                        ),
+                        sliver: SliverToBoxAdapter(
+                          child: ProfilePanel(
+                            child: Text('Nessuna partita giocata.'),
+                          ),
+                        ),
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpace.page,
+                        ),
+                        sliver: SliverList.separated(
+                          itemCount: state.personalMatches.length,
+                          itemBuilder: (context, index) => ProfileMatchRow(
+                            key: ValueKey(
+                              'profile-match-${state.personalMatches[index].id}',
+                            ),
+                            match: state.personalMatches[index],
+                            players: state.players,
+                            playerId: stats.player.id,
+                          ),
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: AppSpace.small),
+                        ),
+                      ),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          top: AppSpace.section,
+                          bottom: MediaQuery.paddingOf(context).bottom,
+                        ),
+                        child:
+                            MediaQuery.textScalerOf(context).scale(1) > 1.3 ||
+                                MediaQuery.sizeOf(context).height < 450
+                            ? const SizedBox(height: AppSpace.page)
+                            : SizedBox(
+                                height: 76,
+                                child: ExcludeSemantics(
+                                  child: IgnorePointer(
+                                    child: RepaintBoundary(
+                                      child: CustomPaint(
+                                        painter: scene == null
+                                            ? null
+                                            : ProfileFooterArtwork(
+                                                scene: scene,
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
-            Text(
-              '${stats.points} pt',
-              style: AppType.section.copyWith(color: AppColors.primary),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StatsGrid extends StatelessWidget {
-  const _StatsGrid({required this.stats});
-
-  final PlayerStats stats;
-
-  @override
-  Widget build(BuildContext context) {
-    final metrics = [
-      _Metric(label: 'Partite', value: '${stats.games}'),
-      _Metric(label: 'Vittorie', value: '${stats.wins}'),
-      _Metric(label: 'Sconfitte', value: '${stats.losses}'),
-      _Metric(label: 'Gol', value: '${stats.goalsScored}'),
-      _Metric(label: 'Win rate', value: '${(stats.winRate * 100).round()}%'),
-      _Metric(label: 'Serie', value: '${stats.currentWinStreak}'),
-    ];
-    return Column(
-      children: [
-        for (var i = 0; i < metrics.length; i += 2) ...[
-          AdaptivePair(first: metrics[i], second: metrics[i + 1]),
-          if (i < metrics.length - 2) const SizedBox(height: 12),
-        ],
-      ],
-    );
-  }
-}
-
-class _Metric extends StatelessWidget {
-  const _Metric({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(value, style: AppType.section),
-            Text(
-              label,
-              style: AppType.utility.copyWith(color: AppColors.textSecondary),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PersonalMatchRow extends StatelessWidget {
-  const _PersonalMatchRow({
-    required this.match,
-    required this.players,
-    required this.playerId,
-  });
-
-  final GameMatch match;
-  final List<Player> players;
-  final String playerId;
-
-  @override
-  Widget build(BuildContext context) {
-    final won = match.winners.contains(playerId);
-    final teamLabel = match.winners.contains(playerId)
-        ? 'Vittoria'
-        : 'Sconfitta';
-    final dateLabel = DateFormat('dd/MM/yyyy HH:mm').format(match.playedAt);
-    final opponentIds = match.team1.contains(playerId)
-        ? match.team2
-        : match.team1;
-    final opponents = opponentIds
-        .map((id) => StatsService.playerName(players, id))
-        .join(' / ');
-    return Card(
-      child: ListTile(
-        leading: Icon(
-          won ? Icons.emoji_events : Icons.close,
-          color: won ? AppColors.success : AppColors.textSecondary,
-        ),
-        title: Text(
-          '$teamLabel · ${match.t1Score}-${match.t2Score}',
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
-        subtitle: Text('$dateLabel · vs $opponents'),
-        trailing: Text('${match.goalsByPlayer(playerId)} gol'),
-      ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      header: true,
-      child: Text(
-        text,
-        style: const TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 11,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 2,
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyHistory extends StatelessWidget {
-  const _EmptyHistory();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 28),
-      child: Center(child: Text('Nessuna partita giocata.')),
-    );
-  }
+    ),
+  );
 }

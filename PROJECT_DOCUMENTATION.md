@@ -322,3 +322,9 @@ Per riprodurre splash/gol/vittoria senza aprire il database, usare `tool/motion_
 La logica Cubit, le regole, lo schema SQLite, i repository, i calcoli e i servizi di import/export restano i proprietari dei comportamenti. Questa migrazione non introduce un nuovo modello dati, una selezione di temi o il timer della mood board.
 
 Stato della consegna e limiti delle verifiche: [ricevuta South Africa 2010](design/south-africa-2010/IMPLEMENTATION.md). I test automatici coprono il cambio di movimento ridotto a runtime; la verifica nativa e la navigazione VoiceOver restano non verificate e sono state esplicitamente rinviate dall'utente a un successivo hardening di rilascio, senza bloccare il completamento di questo branch.
+
+## Profilo Figurina — South Africa 2010
+
+Il profilo riunisce identita', presenza o stato archiviato, punti e badge in un hero giallo. Un pannello raggruppa le sei statistiche esistenti e la forma recente; seguono intesa e rivalita', confronti diretti e storico personale completo. Nomi, valori e badge restano widget; l'illustrazione e i nastri sono decorativi. Testi ingranditi, nomi lunghi e aree sicure laterali fanno adattare il contenuto senza limitare lo storico.
+
+`PlayerProfileCubit`, limitato alla route e chiuso all'uscita, combina gli aggiornamenti dei repository esistenti usando `StatsService`. Il profilo mantiene formule, criteri di parita', gol effettivamente registrati, ordinamento e navigazione precedenti. I punteggi nello storico conservano l'ordine squadra 1–squadra 2 anche quando il giocatore appartiene alla seconda squadra. Le righe di confronto e storico non introducono nuove azioni.

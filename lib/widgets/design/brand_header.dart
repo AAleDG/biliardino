@@ -11,6 +11,7 @@ PreferredSizeWidget brandAppBar(
   List<Widget>? actions,
   Widget? leading,
   bool compactTitle = false,
+  bool showArtwork = true,
 }) {
   final media = MediaQuery.of(context);
   final compact = media.size.height < 650 || media.textScaler.scale(1) > 1.3;
@@ -38,7 +39,7 @@ PreferredSizeWidget brandAppBar(
     actions: actions,
     leading: leading,
     toolbarHeight: toolbarHeight,
-    bottom: compactTitle && compact
+    bottom: !showArtwork || (compactTitle && compact)
         ? null
         : PreferredSize(
             preferredSize: Size.fromHeight(compact ? 12 : 56),

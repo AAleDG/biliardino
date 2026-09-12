@@ -1,0 +1,19 @@
+{
+  "revision": "profile-figurina-r2",
+  "approval": "approved",
+  "approvedOn": "2026-09-12",
+  "userApproval": "Approved (B gradient refinement)",
+  "scope": "Approved original geometry and PNG reuse, plus B hero and relationship gradients; footer unchanged.",
+  "runtimeAsset": "design/south-africa-2010/assets/live-r1/live-scene.png",
+  "runtimeAssetSha256": "5350adfe5164f74d1da36a7c23ca1911f2b87bb62be9675888fe81a5273a184a",
+  "files": {
+    "approved-artwork-r1.dart.txt": "fe9d658f7dc6c36215f22415bf347cdd820b2c411d46dc2612fbdcba54f4c842",
+    "figurina-artwork-context.png": "c553d598eff0e4c2714bca1cb20747b3e9f8a5e85fd0f82d2187d16084121354",
+    "decorative-masters.png": "8850a7fc80b86aad189fec089e119d6f20a7534cbd4fc327eaee4ae397574208",
+    "approved-artwork.dart.txt": "ca1f648138841024e6b70d20e3cc61735be73a93e404f16cb05c6dc75948e38c",
+    "approved-gradients-comparison.png": "3cc10919601d43966d9a89f60a701b07a89c4e6a34abb8a091b683b302536e73"
+  },
+  "integratedScreenApproval": "Original full screen accepted; B gradient refinement approved for integration.",
+  "runtimePainter": "lib/screens/player_profile/profile_artwork.dart",
+  "runtimePainterSha256": "112e00a8dff7d295e3d230aec6fe99a56da2460f0cf2141f312bdef9ec739725"
+}
