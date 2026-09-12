@@ -1,0 +1,13 @@
+{
+  "approval": "approved",
+  "approvedAt": "2026-09-12",
+  "approvalEvidence": "User replied approved to the actual Flutter header/card/footer ribbon preview. This is artwork approval only; running-screen approval remains separate.",
+  "runtimePainter": "lib/screens/history/history_artwork.dart",
+  "runtimePainterSha256": "b73664f2eab380c7446a9e5b4098c48920a4b7f98a3e87475c291231b318fccd",
+  "files": {
+    "tabellone-artwork-masters.png": "c0cac07261561efdd014e1402eea9e715dc4ea5e1fef4cf7a99350001f937d19",
+    "approved-artwork.dart.txt": "b73664f2eab380c7446a9e5b4098c48920a4b7f98a3e87475c291231b318fccd",
+    "tabellone-artwork-context.png": "2ffad5cd87919595949232fcf6daeb3ae30fded3654e5b72f5ed7871f1a82ee9"
+  },
+  "runtimeRasterAssets": []
+}

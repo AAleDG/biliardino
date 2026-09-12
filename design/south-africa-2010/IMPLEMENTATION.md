@@ -1,6 +1,6 @@
 # South Africa 2010 implementation receipt
 
-Updated 11 September 2026. Issue #11. Branch: `codex/south-africa-2010-design-implementation`.
+Updated 12 September 2026. Issue #11. Branch: `codex/south-africa-2010-design-implementation`.
 
 ## Home dashboard extension checkpoint — 9 September 2026
 
@@ -233,3 +233,18 @@ Actual VoiceOver traversal and native Reduce Motion toggle/replay remain the exi
 Profilo P0–P4 are complete. The final post-hardening debug build is running on the selected simulator; the accepted B appearance was inspected again. Delivery is a handoff-ready uncommitted delta over 0148c846e6943887c4ae0a2745869c7c68d634d6. Separate precommit review and publication authorization remain outside this implementation receipt.
 
 The user subsequently authorized autoreview, commit and push, explicitly excluding images from automated review. A byte-verified snapshot of all12 changed Dart/Python files passed the required P0 precommit gate with no findings. Approved image/golden files remain part of the delivery; the scoped result does not claim an automated visual review or replace completed P3 hardening.
+
+
+## Storico Tabellone — 12 September 2026
+
+The user separately approved the Flutter ribbon masters and the integrated running Storico screen. Tabellone has a compact filter summary with live singular/plural counts, date-grouped white cards, flat central blue/orange scores and gradient ribbon decoration without a foosball figure. All information and controls remain live widgets. The approved painter and retained preview identities are in assets/history-tabellone/manifest.json; the PNGs are review evidence, not runtime artwork.
+
+The refresh preserves filters and route-return retention, reactive updates, team ordering, winner semantics, details, scorer correction and confirmed deletion with existing failure feedback. HistoryScreen keeps its public contract; screen-private parts separate the existing editor, filter and details code from the new presentation. Day groups come from the existing HistoryCubit state, while individual match cards build lazily. No repository, domain, schema, navigation, shared-component or dependency change was required.
+
+P3 completed the integrated code review using review-and-simplify-changes with a read-only companion and local efficiency/clarity checks. Cleanup removed an unused empty-state parameter, limited word measurement to the stacked fallback and reused the existing date groups. These changes preserve the approved pixels. The complete 263-test suite passed, followed by 15 affected History owner/widget/golden tests after the final grouping reuse; no second full-suite run is claimed. Final flutter analyze --no-pub is clean. Approved artwork verification, scoped formatting, diff checks and the pinned DESIGN.md linter pass. Flutter 3.44.9 / Dart 3.12.2 was used.
+
+Reference, sparse, compact portrait and landscape real-font captures include 200% text, safe areas and scrolled content. Runtime review used only the authorized iPhone 17 Pro Max 26.0 AppStore simulator, UDID 293A02E2-FC2D-4D72-93E4-C1EE93CA537E, with in-memory repositories in com.biliardino.southafrica.review. Filters/reset, details, editor/delete cancellation, back navigation and native enlarged text were exercised. Existing review Documents hashes stayed unchanged, the production bundle remained absent, and native text size was restored. The running build predates the behavior-equivalent P3 cleanup; unchanged golden comparisons and source review cover that delta, without claiming a rebuilt final binary.
+
+P0–P4 are complete and the ignored Storico packet retains the exact uncommitted delivery identity over bb4980c6208176c74f736ee2fd0f61c7939e3811 until verified primary-branch landing. Actual VoiceOver traversal and native Reduce Motion toggle/replay remain the established user-deferred release-hardening gaps. No release build, autoreview, commit, push or public operation is included in this delivery.
+
+The user subsequently authorized code-only autoreview, commit and push for Storico. The byte-verified snapshot of all 12 changed Dart/Python files passed the required P0 precommit gate with no findings. Image files were excluded from automated review; approved artwork evidence and goldens remain included in the delivery. This scoped code result does not claim automated visual acceptance or replace the completed P3 hardening and runtime approval.
