@@ -67,7 +67,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('more-data')));
     await tester.pumpAndSettle();
-    expect(find.text('Backup e ripristino'), findsOneWidget);
+    expect(find.text('ESPORTA'), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
   });
 

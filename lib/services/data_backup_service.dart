@@ -4,19 +4,8 @@ import '../data/database_helper.dart';
 import '../models/game_match.dart';
 import '../models/player.dart';
 
-class BackupData {
-  const BackupData({required this.players, required this.matches});
-
-  final List<Player> players;
-  final List<GameMatch> matches;
-}
-
-class ImportSummary {
-  const ImportSummary({required this.players, required this.matches});
-
-  final int players;
-  final int matches;
-}
+export '../models/backup_data.dart';
+import '../models/backup_data.dart';
 
 class DataBackupService {
   const DataBackupService(this._database);
@@ -52,7 +41,9 @@ class DataBackupService {
     final playersJson = _list(decoded, 'players');
     final matchesJson = _list(decoded, 'matches');
     final players = playersJson
-        .map((item) => version == 0 ? _legacyPlayer(item) : _player(item, version))
+        .map(
+          (item) => version == 0 ? _legacyPlayer(item) : _player(item, version),
+        )
         .toList(growable: false);
     final matches = matchesJson
         .map((item) => version == 0 ? _legacyMatch(item) : _match(item))

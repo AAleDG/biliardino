@@ -1,0 +1,19 @@
+{
+  "revision": "pass-r3-spacing",
+  "approval": "approved",
+  "approvedOn": "2026-09-13",
+  "scope": "Shared Altro/Dati header, ticket and footer; final blue/red spacing explicitly approved. Integrated screen review separate.",
+  "previewSha256": "a5f1e8912a3108c66c4bbcfdf7f1b6e16e15df0ca28febfbc39018ce7bb6f224",
+  "previewSourceHashes": {
+    "pass_preview.dart": "04b57d206685eab8e8524cdce034ff966fe7a37cbe55ffab8a46e524fce05c20",
+    "pass_contours.dart": "06a6287a3024765a0942daab8a10769f217d901650e6d0bb1d108bf28122ec71",
+    "pass_preview_test.dart": "d64ee5b8402e15868d2ca73aad589878b04c26719a091c6558e51826abf1ebee",
+    "geometry-r3/shared-preview.png": "a5f1e8912a3108c66c4bbcfdf7f1b6e16e15df0ca28febfbc39018ce7bb6f224"
+  },
+  "runtime": {
+    "lib/widgets/design/pass_contours.dart": "aa04f1d535f7fe92ce851ef055bbd3af40a20604afea1f9de034d43f1c4f5a86",
+    "lib/widgets/design/pass_artwork.dart": "31f0682a6549b6c4455063b2b1483b39e1157ede22420a64ab5fdfdb0dfcfeef",
+    "design/south-africa-2010/assets/live-r1/live-scene.png": "5350adfe5164f74d1da36a7c23ca1911f2b87bb62be9675888fe81a5273a184a"
+  },
+  "integratedScreenApproval": "User accepted running Altro and Dati on 2026-09-13: perfect."
+}

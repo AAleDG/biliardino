@@ -1,3 +1,4 @@
+import 'support/fake_data_management.dart';
 import 'dart:async';
 
 import 'package:biliardino/cubits/dashboard/dashboard_cubit.dart';
@@ -57,6 +58,7 @@ void main() {
         playerRepository: repos.playerRepo,
         matchRepository: repos.matchRepo,
         matchRulesRepository: repos.matchRulesRepo,
+        dataManagementRepository: FakeData(),
       ),
     );
     await tester.pump();

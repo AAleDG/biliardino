@@ -1,3 +1,4 @@
+import 'support/fake_data_management.dart';
 import 'package:biliardino/main.dart';
 import 'package:biliardino/models/game_match.dart';
 import 'package:biliardino/models/match_rules.dart';
@@ -13,6 +14,7 @@ void main() {
     tester,
   ) async {
     final players = _PlayerRepositoryFake()..loadError = StateError('offline');
+    final data = FakeData();
     final matches = _MatchRepositoryFake();
     final rules = _MatchRulesRepositoryFake();
 
@@ -21,6 +23,7 @@ void main() {
         playerRepository: players,
         matchRepository: matches,
         matchRulesRepository: rules,
+        dataManagementRepository: data,
       ),
     );
     await tester.pumpAndSettle();
@@ -34,6 +37,12 @@ void main() {
     await tester.pump();
 
     expect(find.byType(BiliardinoApp), findsOneWidget);
+    expect(
+      tester
+          .widget<BiliardinoApp>(find.byType(BiliardinoApp))
+          .dataManagementRepository,
+      same(data),
+    );
     expect(players.loadCalls, 2);
     expect(matches.loadCalls, 2);
     expect(rules.loadCalls, 2);

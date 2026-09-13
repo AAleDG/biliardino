@@ -1,3 +1,7 @@
+import 'repositories/data_management_repository.dart';
+import 'services/data_management_coordinator.dart';
+import 'services/data_file_share_service.dart';
+import 'services/backup_file_picker.dart';
 import 'services/csv_share_service.dart';
 import 'dart:async';
 
@@ -39,15 +43,18 @@ class BiliardinoBootstrap extends StatefulWidget {
     this.playerRepository,
     this.matchRepository,
     this.matchRulesRepository,
+    this.dataManagementRepository,
   }) : assert(
          (playerRepository == null) == (matchRepository == null) &&
-             (playerRepository == null) == (matchRulesRepository == null),
-         'Inject all repositories or none.',
+             (playerRepository == null) == (matchRulesRepository == null) &&
+             (playerRepository == null) == (dataManagementRepository == null),
+         'Inject all repositories, including data management, or none.',
        );
 
   final PlayerRepository? playerRepository;
   final MatchRepository? matchRepository;
   final MatchRulesRepository? matchRulesRepository;
+  final DataManagementRepository? dataManagementRepository;
 
   @override
   State<BiliardinoBootstrap> createState() => _BiliardinoBootstrapState();
@@ -57,6 +64,7 @@ class _BiliardinoBootstrapState extends State<BiliardinoBootstrap> {
   late final PlayerRepository _playerRepository;
   late final MatchRepository _matchRepository;
   late final MatchRulesRepository _matchRulesRepository;
+  late final DataManagementRepository _dataManagementRepository;
   late Future<void> _loadFuture;
 
   @override
@@ -69,6 +77,17 @@ class _BiliardinoBootstrapState extends State<BiliardinoBootstrap> {
     _matchRulesRepository =
         widget.matchRulesRepository ??
         MatchRulesRepository(DatabaseHelper.instance);
+    _dataManagementRepository =
+        widget.dataManagementRepository ??
+        DataManagementCoordinator(
+          database: DatabaseHelper.instance,
+          refresh: () async {
+            await Future.wait([
+              _playerRepository.load(),
+              _matchRepository.load(),
+            ]);
+          },
+        );
     _loadFuture = _loadRepositories();
   }
 
@@ -104,6 +123,7 @@ class _BiliardinoBootstrapState extends State<BiliardinoBootstrap> {
             playerRepository: _playerRepository,
             matchRepository: _matchRepository,
             matchRulesRepository: _matchRulesRepository,
+            dataManagementRepository: _dataManagementRepository,
           );
         }
 
@@ -121,16 +141,27 @@ class BiliardinoApp extends StatelessWidget {
     required this.playerRepository,
     required this.matchRepository,
     required this.matchRulesRepository,
+    required this.dataManagementRepository,
   });
 
   final PlayerRepository playerRepository;
   final MatchRepository matchRepository;
   final MatchRulesRepository matchRulesRepository;
+  final DataManagementRepository dataManagementRepository;
 
   @override
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider<DataManagementRepository>.value(
+          value: dataManagementRepository,
+        ),
+        RepositoryProvider<BackupFilePicker>(
+          create: (_) => const BackupFilePicker(),
+        ),
+        RepositoryProvider<DataFileShareService>(
+          create: (_) => DataFileShareService.platform(),
+        ),
         RepositoryProvider<CsvShareService>(
           create: (_) => CsvShareService.platform(),
         ),

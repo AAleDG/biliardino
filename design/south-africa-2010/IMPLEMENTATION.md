@@ -266,3 +266,17 @@ P0–P4 are complete. Delivery remains an uncommitted delta over f7d4b5cd24b8b07
 Distinta follow-up: at the user’s request, time selection is now numeric input only, with no dial/toggle, ivory idle fields and brand-blue selected fields. Italian labels/actions replace picker defaults. All13 focused editor checks and analysis pass; the isolated debug build was refreshed for this scoped change. Prior full-suite evidence remains as recorded above.
 
 The user subsequently authorized final P0 autoreview, commit and push for Distinta. A byte-verified snapshot covering all17 changed Dart/JSON paths passed the P0 precommit gate with no actionable findings. Images were excluded from automated review; approved goldens remain part of delivery. This scoped result is code-only and does not replace prior visual acceptance or completed hardening.
+
+## Altro / Dati — Pass, 13 September 2026
+
+The user approved the shared Flutter artwork and both running Pass screens. One page, ticket and ribbon composition serves Altro and Dati; all labels, icons and operations are live widgets. The existing approved ball is reused. The asset manifest records the accepted preview and exact painter/source identities.
+
+DataManagementCubit owns route effects and busy state; an injected app-scoped coordinator reuses existing export, validation and atomic restore services. Refresh failure after committed restoration remains retryable across route disposal without repeating the write. Bootstrap supplies the same data repository alongside the player/match repositories, preventing injected configurations from falling back to another database. Normal back navigation is blocked only while an operation is busy.
+
+P3 used review-and-simplify-changes with a code-only read-only companion. Both ownership/lifecycle findings were fixed and rechecked with no remaining findings; shared test helpers were consolidated. The regression run passed 307 tests with three History-title golden failures. Inspection isolated those differences to 639–641 heading pixels; six affected comparisons passed after scoped baseline updates. Following the hardening fixes, all 60 affected tests and three Pass real-font golden cases passed. This evidence is not claimed as a second full-suite run. Final analysis, formatting, diff and approved-asset checks pass; the pinned DESIGN linter reports no errors or warnings.
+
+Debug review used only the authorized iPhone 17 Pro Max simulator and isolated in-memory review bundle. Native share/picker cancellation and a confirmed synthetic restore were exercised; the synthetic file was removed, original Documents hashes remain identical, and normal text size was restored. The refreshed post-hardening debug build is installed. Native VoiceOver traversal and Reduce Motion replay remain user-deferred release-hardening gaps, not automated passes.
+
+P0–P4 are complete. The ignored Pass packet retains validation logs and final candidate hashes in awaiting-merge state over e62b4ac791a4b5d610e8704bb6969e2643f4a32e. No autoreview, commit, push or public operation is included in this delivery.
+
+The user subsequently authorized autoreview, commit and push for Pass. The byte-verified snapshot of all 29 changed code paths passed the required P0 precommit gate with no actionable findings. Images were excluded from automated review; approved artwork and goldens remain part of the delivery. This scoped result does not replace completed P3 hardening or visual acceptance.

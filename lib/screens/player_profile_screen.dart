@@ -9,7 +9,7 @@ import '../theme/app_theme.dart';
 import '../widgets/design/brand_header.dart';
 import '../widgets/design/profile_artwork.dart';
 import 'player_profile/profile_identity.dart';
-import 'player_profile/profile_scene.dart';
+import '../widgets/design/foosball_scene.dart';
 import 'player_profile/profile_sections.dart';
 
 class PlayerProfileScreen extends StatelessWidget {
@@ -46,7 +46,7 @@ class _ProfileView extends StatelessWidget {
       bottom: false,
       child: state.stats == null
           ? const Center(child: Text('Giocatore non trovato.'))
-          : ProfileScene(
+          : FoosballScene(
               builder: (context, scene) {
                 final stats = state.stats!;
                 Widget section(String title) => Padding(

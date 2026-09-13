@@ -1,3 +1,7 @@
+import 'package:biliardino/repositories/data_management_repository.dart';
+import 'package:biliardino/services/data_management_coordinator.dart';
+import 'package:biliardino/services/data_file_share_service.dart';
+import 'package:biliardino/services/backup_file_picker.dart';
 import 'package:biliardino/services/csv_share_service.dart';
 import 'package:biliardino/main.dart';
 import 'package:biliardino/models/game_match.dart';
@@ -107,11 +111,28 @@ class DesignFixture {
     playerRepository: playersRepository,
     matchRepository: matchesRepository,
     matchRulesRepository: rulesRepository,
+    dataManagementRepository: dataCoordinator,
+  );
+
+  DataManagementRepository get dataCoordinator => DataManagementCoordinator(
+    database: database,
+    refresh: () async {
+      await Future.wait([playersRepository.load(), matchesRepository.load()]);
+    },
   );
 
   /// Isolates screen checks from the separately tested bootstrap/splash route.
   Widget get home => MultiRepositoryProvider(
     providers: [
+      RepositoryProvider<DataManagementRepository>(
+        create: (_) => dataCoordinator,
+      ),
+      RepositoryProvider<BackupFilePicker>(
+        create: (_) => const BackupFilePicker(),
+      ),
+      RepositoryProvider<DataFileShareService>(
+        create: (_) => DataFileShareService.platform(),
+      ),
       RepositoryProvider<CsvShareService>(
         create: (_) => csvShareService ?? CsvShareService.platform(),
       ),

@@ -3,7 +3,7 @@ import 'package:biliardino/models/game_match.dart';
 import 'package:biliardino/repositories/match_repository.dart';
 import 'package:biliardino/repositories/player_repository.dart';
 import 'package:biliardino/screens/player_profile_screen.dart';
-import 'package:biliardino/screens/player_profile/profile_scene.dart';
+import 'package:biliardino/widgets/design/foosball_scene.dart';
 import 'package:biliardino/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -120,7 +120,7 @@ void main() {
       );
       await tester.runAsync(
         () => precacheImage(
-          const AssetImage(ProfileScene.asset),
+          const AssetImage(FoosballScene.asset),
           tester.element(find.byType(PlayerProfileScreen)),
         ),
       );
