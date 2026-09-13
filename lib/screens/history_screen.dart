@@ -15,8 +15,8 @@ import '../theme/app_theme.dart';
 import '../widgets/design/adaptive_pair.dart';
 
 import 'history/history_artwork.dart';
+import 'match_editor/match_editor_screen.dart';
 
-part 'history/history_editor.dart';
 part 'history/history_filters_sheet.dart';
 part 'history/history_details.dart';
 part 'history/history_match_card.dart';
@@ -109,7 +109,7 @@ class HistoryScreen extends StatelessWidget {
                             match: match,
                             players: state.players,
                             onOpen: () => _openMatchDetails(context, match),
-                            onEdit: () => _openEditMatchDialog(context, match),
+                            onEdit: () => _openMatchEditor(context, match),
                             onDelete: () => _confirmDeleteMatch(context, match),
                           ),
                         ],
@@ -162,33 +162,24 @@ Future<void> _openMatchDetails(
   }
   switch (action) {
     case _MatchAction.edit:
-      await _openEditMatchDialog(rootContext, match);
+      await _openMatchEditor(rootContext, match);
     case _MatchAction.delete:
       await _confirmDeleteMatch(rootContext, match);
   }
 }
 
-Future<void> _openEditMatchDialog(
-  BuildContext rootContext,
-  GameMatch match,
-) async {
+Future<void> _openMatchEditor(BuildContext rootContext, GameMatch match) async {
   final cubit = rootContext.read<HistoryCubit>();
-  final state = cubit.state;
-  final updatedMatch = await showDialog<GameMatch>(
-    context: rootContext,
-    builder: (dialogContext) =>
-        _EditMatchDialog(match: match, players: state.players),
+  await Navigator.of(rootContext).push<void>(
+    MaterialPageRoute<void>(
+      fullscreenDialog: true,
+      builder: (_) => MatchEditorScreen(
+        match: match,
+        players: cubit.state.players,
+        onSave: cubit.updateMatch,
+      ),
+    ),
   );
-  if (updatedMatch == null || !rootContext.mounted) {
-    return;
-  }
-  try {
-    await cubit.updateMatch(updatedMatch);
-  } on Object {
-    if (rootContext.mounted) {
-      _showHistoryMessage(rootContext, 'Impossibile modificare la partita.');
-    }
-  }
 }
 
 Future<void> _confirmDeleteMatch(

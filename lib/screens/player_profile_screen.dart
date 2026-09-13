@@ -7,7 +7,7 @@ import '../repositories/match_repository.dart';
 import '../repositories/player_repository.dart';
 import '../theme/app_theme.dart';
 import '../widgets/design/brand_header.dart';
-import 'player_profile/profile_artwork.dart';
+import '../widgets/design/profile_artwork.dart';
 import 'player_profile/profile_identity.dart';
 import 'player_profile/profile_scene.dart';
 import 'player_profile/profile_sections.dart';

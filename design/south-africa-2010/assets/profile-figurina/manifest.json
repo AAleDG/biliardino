@@ -14,6 +14,6 @@
     "approved-gradients-comparison.png": "3cc10919601d43966d9a89f60a701b07a89c4e6a34abb8a091b683b302536e73"
   },
   "integratedScreenApproval": "Original full screen accepted; B gradient refinement approved for integration.",
-  "runtimePainter": "lib/screens/player_profile/profile_artwork.dart",
+  "runtimePainter": "lib/widgets/design/profile_artwork.dart",
   "runtimePainterSha256": "112e00a8dff7d295e3d230aec6fe99a56da2460f0cf2141f312bdef9ec739725"
 }

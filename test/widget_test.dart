@@ -789,10 +789,10 @@ void main() {
     await tester.tap(find.text('Correggi'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Marcatori squadra 1'), findsOneWidget);
-    expect(_scorerDropdown('Gol 1'), findsOneWidget);
+    expect(find.byKey(const ValueKey('edit-confirm-scorer-1')), findsOneWidget);
+    expect(find.byType(DropdownButtonFormField<String>), findsNothing);
 
-    await tester.tap(find.text('Salva'));
+    await tester.tap(find.byKey(const ValueKey('edit-match-save')));
     await tester.pumpAndSettle();
 
     expect(
@@ -801,15 +801,11 @@ void main() {
     );
     expect(repos.updatedMatches, isEmpty);
 
-    await tester.ensureVisible(_scorerDropdown('Gol 1'));
+    await tester.tap(find.byKey(const ValueKey('edit-confirm-scorer-1')));
     await tester.pumpAndSettle();
-    await tester.tap(_scorerDropdown('Gol 1'));
+    await tester.ensureVisible(find.byKey(const ValueKey('edit-match-save')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ale').last);
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Salva'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Salva'));
+    await tester.tap(find.byKey(const ValueKey('edit-match-save')));
     await tester.pumpAndSettle();
 
     expect(repos.updatedMatches, hasLength(1));
@@ -826,10 +822,10 @@ void main() {
     await tester.pumpAndSettle();
     await _openFirstMatchEditDialog(tester);
 
-    expect(_scorerDropdown('Gol 1'), findsOneWidget);
-    expect(_scorerDropdown('Gol 2'), findsOneWidget);
+    expect(find.text('1 gol assegnato'), findsOneWidget);
+    expect(find.byKey(const ValueKey('edit-confirm-scorer-1')), findsOneWidget);
 
-    await tester.tap(find.text('Salva'));
+    await tester.tap(find.byKey(const ValueKey('edit-match-save')));
     await tester.pumpAndSettle();
 
     expect(
@@ -838,14 +834,11 @@ void main() {
     );
     expect(repos.updatedMatches, isEmpty);
 
-    await _selectDropdownValue(
-      tester,
-      dropdown: _scorerDropdown('Gol 2'),
-      valueText: 'Ale',
-    );
-    await tester.ensureVisible(find.text('Salva'));
+    await tester.tap(find.byKey(const ValueKey('edit-confirm-scorer-1')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Salva'));
+    await tester.ensureVisible(find.byKey(const ValueKey('edit-match-save')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('edit-match-save')));
     await tester.pumpAndSettle();
 
     expect(repos.updatedMatches, hasLength(1));
@@ -864,10 +857,9 @@ void main() {
       await tester.pumpAndSettle();
       await _openFirstMatchEditDialog(tester);
 
-      final scoreFields = find.byType(TextField);
-      await tester.enterText(scoreFields.at(2), '10');
-      await tester.enterText(scoreFields.at(3), '10');
-      await tester.tap(find.text('Salva'));
+      await _editScore(tester, 1, '10');
+      await _editScore(tester, 2, '10');
+      await tester.tap(find.byKey(const ValueKey('edit-match-save')));
       await tester.pumpAndSettle();
 
       const errorMessage = 'La partita deve avere un vincitore.';
@@ -894,14 +886,13 @@ void main() {
     await tester.pumpAndSettle();
     await _openFirstMatchEditDialog(tester);
 
-    await _selectDropdownValue(
-      tester,
-      dropdown: _dropdownByLabel('Giocatore 1').first,
-      valueText: 'Nora',
-    );
-    await tester.ensureVisible(find.text('Salva'));
+    await tester.tap(find.byKey(const ValueKey('edit-player-1-0')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Salva'));
+    await tester.tap(find.text('Sostituisci'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('edit-match-save')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('edit-match-save')));
     await tester.pumpAndSettle();
 
     expect(
@@ -910,14 +901,11 @@ void main() {
     );
     expect(repos.updatedMatches, isEmpty);
 
-    await _selectDropdownValue(
-      tester,
-      dropdown: _scorerDropdown('Gol 1'),
-      valueText: 'Bea',
-    );
-    await tester.ensureVisible(find.text('Salva'));
+    await tester.tap(find.byTooltip('Aumenta Gol di Bea, squadra 1'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Salva'));
+    await tester.ensureVisible(find.byKey(const ValueKey('edit-match-save')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('edit-match-save')));
     await tester.pumpAndSettle();
 
     expect(repos.updatedMatches, hasLength(1));
@@ -1545,16 +1533,15 @@ class _Repos {
   }
 }
 
-Finder _scorerDropdown(String label) {
-  return _dropdownByLabel(label);
-}
-
-Finder _dropdownByLabel(String label) {
-  return find.byWidgetPredicate(
-    (widget) =>
-        widget is DropdownButtonFormField<String> &&
-        widget.decoration.labelText == label,
-  );
+Future<void> _editScore(WidgetTester tester, int team, String score) async {
+  final field = find.byKey(ValueKey('edit-score-$team'));
+  await tester.ensureVisible(field);
+  await tester.pumpAndSettle();
+  await tester.tap(field);
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byKey(const ValueKey('edit-score-input')), score);
+  await tester.tap(find.text('Conferma'));
+  await tester.pumpAndSettle();
 }
 
 Future<void> _setTallTestViewport(WidgetTester tester) async {
@@ -1568,19 +1555,6 @@ Future<void> _openFirstMatchEditDialog(WidgetTester tester) async {
   await tester.tap(find.byTooltip('Azioni partita').first);
   await tester.pumpAndSettle();
   await tester.tap(find.text('Correggi'));
-  await tester.pumpAndSettle();
-}
-
-Future<void> _selectDropdownValue(
-  WidgetTester tester, {
-  required Finder dropdown,
-  required String valueText,
-}) async {
-  await tester.ensureVisible(dropdown);
-  await tester.pumpAndSettle();
-  await tester.tap(dropdown);
-  await tester.pumpAndSettle();
-  await tester.tap(find.text(valueText).last);
   await tester.pumpAndSettle();
 }
 

@@ -8,7 +8,7 @@ import '../../services/stats_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/avatar.dart';
 import '../../widgets/design/adaptive_pair.dart';
-import 'profile_artwork.dart';
+import '../../widgets/design/profile_artwork.dart';
 
 class ProfilePanel extends StatelessWidget {
   const ProfilePanel({

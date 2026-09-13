@@ -217,6 +217,10 @@ Prompt per questa documentazione, noto:
 
 ### Storico partite
 
+La correzione usa la schermata **Distinta**, accessibile dalle azioni della card e dal dettaglio partita. Ogni squadra riunisce giocatori, risultato finale e gol attribuiti. In 2v2 si modificano i conteggi dei singoli marcatori; in 1v1 i gol mancanti richiedono una conferma esplicita. Cambiare punteggio o giocatore non assegna automaticamente i gol mancanti. Le incongruenze devono essere risolte prima del salvataggio. Rivalità rimane visibile per 1v1 e può essere rimossa dai record 2v2 già contrassegnati.
+
+Le modifiche restano in una bozza fino al salvataggio tramite HistoryCubit e MatchRepository. Annullare una bozza modificata richiede conferma; un errore di salvataggio mantiene la bozza per riprovare. La data e l'ora hanno selettori dedicati, i punteggi consentono anche l'inserimento numerico e la sostituzione dei giocatori usa un elenco ricercabile. Non è presente un menu Altre opzioni.
+
 - Registro risultati con header riepilogativo:
   - numero partite filtrate;
   - ultima partita;

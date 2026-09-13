@@ -4,7 +4,7 @@ import '../../models/player_stats.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/design/ranking_avatar.dart';
 import '../../widgets/design/ranking_badges.dart';
-import 'profile_artwork.dart';
+import '../../widgets/design/profile_artwork.dart';
 
 class ProfileIdentity extends StatelessWidget {
   const ProfileIdentity({super.key, required this.stats, required this.scene});
