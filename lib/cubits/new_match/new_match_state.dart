@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../models/game_match.dart';
 import '../../models/match_rules.dart';
 import '../../models/player.dart';
+import '../../models/rivalry_overview.dart';
 
 enum NewMatchFeedback {
   noWinner,
@@ -73,6 +74,7 @@ class NewMatchState extends Equatable {
     this.mode = MatchMode.twoVsTwo,
     this.rules = MatchRules.defaultRules,
     this.isRivalry = false,
+    this.rivalry,
     this.assignment = const {},
     this.scorerIds = const [],
     this.score1 = 0,
@@ -91,6 +93,7 @@ class NewMatchState extends Equatable {
   final MatchMode mode;
   final MatchRules rules;
   final bool isRivalry;
+  final RivalryOverview? rivalry;
   final Map<String, int> assignment;
   final List<String> scorerIds;
   final int score1;
@@ -140,6 +143,8 @@ class NewMatchState extends Equatable {
     MatchMode? mode,
     MatchRules? rules,
     bool? isRivalry,
+    RivalryOverview? rivalry,
+    bool clearRivalry = false,
     Map<String, int>? assignment,
     List<String>? scorerIds,
     int? score1,
@@ -162,6 +167,7 @@ class NewMatchState extends Equatable {
       mode: mode ?? this.mode,
       rules: rules ?? this.rules,
       isRivalry: isRivalry ?? this.isRivalry,
+      rivalry: clearRivalry ? null : rivalry ?? this.rivalry,
       assignment: assignment ?? this.assignment,
       scorerIds: scorerIds ?? this.scorerIds,
       score1: score1 ?? this.score1,
@@ -187,6 +193,7 @@ class NewMatchState extends Equatable {
     mode,
     rules,
     isRivalry,
+    rivalry,
     assignment,
     scorerIds,
     score1,

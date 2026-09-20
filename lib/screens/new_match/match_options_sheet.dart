@@ -254,12 +254,10 @@ class _MatchOptionsSheet extends StatelessWidget {
                                     }
                                   },
                           ),
-                          if (state.isRivalry)
+                          if (state.rivalry case final overview?)
                             MatchRivalrySummary(
-                              matches: state.matches,
+                              overview: overview,
                               players: state.players,
-                              team1: state.team1,
-                              team2: state.team2,
                             ),
                         ],
                       ],

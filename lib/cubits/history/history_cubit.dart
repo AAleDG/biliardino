@@ -17,18 +17,20 @@ class HistoryCubit extends Cubit<HistoryState> {
     required PlayerRepository playerRepository,
     required MatchRepository matchRepository,
     ClockFn? clock,
-  })  : _playerRepo = playerRepository,
-        _matchRepo = matchRepository,
-        _clock = clock ?? DateTime.now,
-        super(const HistoryState()) {
+  }) : _playerRepo = playerRepository,
+       _matchRepo = matchRepository,
+       _clock = clock ?? DateTime.now,
+       super(const HistoryState()) {
     _players = _playerRepo.players;
     _matches = _matchRepo.matches;
     _recompute();
     _playersSub = _playerRepo.watchPlayers().listen((players) {
+      if (identical(players, _players)) return;
       _players = players;
       _recompute();
     });
     _matchesSub = _matchRepo.watchMatches().listen((matches) {
+      if (identical(matches, _matches)) return;
       _matches = matches;
       _recompute();
     });
@@ -67,13 +69,15 @@ class HistoryCubit extends Cubit<HistoryState> {
     final filtered = filterMatches(_matches, activeFilters, now);
     final groups = groupMatchesByDay(filtered);
     final label = filterSummaryLabel(_players, activeFilters);
-    emit(state.copyWith(
-      players: _players,
-      filters: activeFilters,
-      filteredMatches: filtered,
-      groups: groups,
-      filterLabel: label,
-    ));
+    emit(
+      state.copyWith(
+        players: _players,
+        filters: activeFilters,
+        filteredMatches: filtered,
+        groups: groups,
+        filterLabel: label,
+      ),
+    );
   }
 
   @override

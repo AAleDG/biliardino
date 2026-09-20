@@ -20,10 +20,12 @@ class DashboardCubit extends Cubit<DashboardState> {
     _matches = _matchRepo.matches;
     _recompute();
     _playersSubscription = _playerRepo.watchPlayers().listen((players) {
+      if (identical(players, _players)) return;
       _players = players;
       _recompute();
     });
     _matchesSubscription = _matchRepo.watchMatches().listen((matches) {
+      if (identical(matches, _matches)) return;
       _matches = matches;
       _recompute();
     });

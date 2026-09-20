@@ -165,13 +165,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
             body: showScoreboard
                 ? LiveMatchView(
                     rules: state.rules,
-                    rivalry: state.isRivalry
-                        ? StatsService.rivalryOverview(
-                            state.matches,
-                            team1Ids: state.team1,
-                            team2Ids: state.team2,
-                          )
-                        : null,
+                    rivalry: state.rivalry,
                     team1Names: _matchPlayers(
                       state.players,
                       state.team1,
