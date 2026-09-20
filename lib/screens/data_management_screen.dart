@@ -26,9 +26,9 @@ class _DataView extends StatelessWidget {
       case DataEffectKind.pick:
         try {
           final source = await context.read<BackupFilePicker>().pickJson();
-          cubit.picked(effect.id, source);
+          await cubit.picked(effect.id, source);
         } on Object {
-          cubit.picked(effect.id, null, failed: true);
+          await cubit.picked(effect.id, null, failed: true);
         }
       case DataEffectKind.share:
         final file = effect.export!;

@@ -23,7 +23,7 @@ void main() {
         expect(json.fileName, 'biliardino_backup_20260913_123456.json');
         expect(json.mimeType, 'application/json');
         expect(jsonDecode(json.content)['version'], 2);
-        final parsed = coordinator.parse(json.content);
+        final parsed = await coordinator.parse(json.content);
         expect(parsed.players.length, fixture.database.players.length);
         expect(parsed.matches.length, fixture.database.matches.length);
         final csv = await coordinator.export(csv: true);
@@ -37,8 +37,8 @@ void main() {
         await coordinator.refresh();
         expect(refreshed, 1);
         expect(coordinator.needsRefresh, isFalse);
-        expect(
-          () => coordinator.parse('{"version":999}'),
+        await expectLater(
+          coordinator.parse('{"version":999}'),
           throwsFormatException,
         );
       },

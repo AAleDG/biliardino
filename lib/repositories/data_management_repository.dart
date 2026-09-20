@@ -4,7 +4,7 @@ import '../models/backup_data.dart';
 abstract interface class DataManagementRepository {
   bool get needsRefresh;
   Future<DataExport> export({required bool csv});
-  BackupData parse(String source);
+  Future<BackupData> parse(String source);
   Future<void> restore(BackupData data);
   Future<void> refresh();
 }
