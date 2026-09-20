@@ -16,11 +16,11 @@ class DatabaseHelper {
   Future<Database> get _database async => _db ??= await _open();
 
   Future<Database> _open() async => openDatabase(
-        join(await getDatabasesPath(), 'biliardino.db'),
-        version: databaseVersion,
-        onCreate: _onCreate,
-        onUpgrade: _onUpgrade,
-      );
+    join(await getDatabasesPath(), 'biliardino.db'),
+    version: databaseVersion,
+    onCreate: _onCreate,
+    onUpgrade: _onUpgrade,
+  );
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
@@ -141,11 +141,8 @@ class DatabaseHelper {
   }) async {
     final db = await _database;
     await db.transaction(
-      (txn) => replacePlayersAndMatchesIn(
-        txn,
-        players: players,
-        matches: matches,
-      ),
+      (txn) =>
+          replacePlayersAndMatchesIn(txn, players: players, matches: matches),
     );
   }
 
@@ -156,12 +153,36 @@ class DatabaseHelper {
   }) async {
     await db.delete('matches');
     await db.delete('players');
-    for (final player in players) {
-      await db.insert('players', player.toMap());
+    await _insertInBatches(
+      db,
+      'players',
+      players.map((player) => player.toMap()),
+    );
+    await _insertInBatches(
+      db,
+      'matches',
+      matches.map((match) => match.toMap()),
+    );
+  }
+
+  static Future<void> _insertInBatches(
+    DatabaseExecutor db,
+    String table,
+    Iterable<Map<String, Object?>> rows,
+  ) async {
+    const batchSize = 500;
+    var batch = db.batch();
+    var count = 0;
+    for (final row in rows) {
+      batch.insert(table, row);
+      if (++count == batchSize) {
+        // Transaction batches execute here; only the outer transaction commits.
+        await batch.commit(noResult: true);
+        batch = db.batch();
+        count = 0;
+      }
     }
-    for (final match in matches) {
-      await db.insert('matches', match.toMap());
-    }
+    if (count > 0) await batch.commit(noResult: true);
   }
 
   static Future<void> _createIndexes(DatabaseExecutor db) async {
@@ -289,10 +310,10 @@ class DatabaseHelper {
   }
 
   Future<void> insertMatch(GameMatch m) async => (await _database).insert(
-        'matches',
-        m.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.abort,
-      );
+    'matches',
+    m.toMap(),
+    conflictAlgorithm: ConflictAlgorithm.abort,
+  );
 
   Future<void> updateMatch(GameMatch m) async {
     final updatedRows = await (await _database).update(
@@ -340,13 +361,10 @@ class DatabaseHelper {
     final db = await _database;
     await db.transaction((txn) async {
       for (final entry in values.entries) {
-        await txn.insert(
-            'settings',
-            {
-              'key': entry.key,
-              'value': entry.value,
-            },
-            conflictAlgorithm: ConflictAlgorithm.replace);
+        await txn.insert('settings', {
+          'key': entry.key,
+          'value': entry.value,
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
       }
     });
   }
@@ -354,8 +372,10 @@ class DatabaseHelper {
 
 Future<void> _validateIntegrity(DatabaseExecutor db) async {
   final playerRows = await db.query('players', columns: const ['id']);
-  final playerIds =
-      playerRows.map((row) => row['id']).whereType<String>().toSet();
+  final playerIds = playerRows
+      .map((row) => row['id'])
+      .whereType<String>()
+      .toSet();
   final matches = await db.query('matches');
 
   for (final match in matches) {
@@ -536,7 +556,8 @@ List<_PlayerRow> _uniquePlayerNames(List<Map<String, Object?>> players) {
       continue;
     }
     usedNames.remove(entry.key);
-    final sorted = [...group]..sort((a, b) {
+    final sorted = [...group]
+      ..sort((a, b) {
         final byCreatedAt = a.createdAt.compareTo(b.createdAt);
         if (byCreatedAt != 0) {
           return byCreatedAt;
