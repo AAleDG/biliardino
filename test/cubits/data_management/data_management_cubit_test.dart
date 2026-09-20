@@ -13,38 +13,41 @@ void main() {
   tearDown(() async {
     if (!cubit.isClosed) await cubit.close();
   });
-  int prepare() {
+  Future<int> prepare() async {
     cubit.restore();
-    cubit.picked(cubit.state.effect!.id, '{}');
+    await cubit.picked(cubit.state.effect!.id, '{}');
     return cubit.state.effect!.id;
   }
 
-  test('busy covers picker and ignores repeat intents and stale results', () {
+  test(
+    'busy covers picker and ignores repeat intents and stale results',
+    () async {
+      cubit.restore();
+      final id = cubit.state.effect!.id;
+      expect(cubit.state.busy, isTrue);
+      cubit.restore();
+      expect(cubit.state.effect!.id, id);
+      await cubit.picked(id + 1, '{}');
+      expect(cubit.state.effect!.kind, DataEffectKind.pick);
+      await cubit.picked(id, null);
+      expect(cubit.state.busy, isFalse);
+      await cubit.picked(id, '{}');
+      expect(cubit.state.effect, isNull);
+      expect(data.writes, 0);
+    },
+  );
+  test('picker and validation failures leave no pending write', () async {
     cubit.restore();
-    final id = cubit.state.effect!.id;
-    expect(cubit.state.busy, isTrue);
-    cubit.restore();
-    expect(cubit.state.effect!.id, id);
-    cubit.picked(id + 1, '{}');
-    expect(cubit.state.effect!.kind, DataEffectKind.pick);
-    cubit.picked(id, null);
-    expect(cubit.state.busy, isFalse);
-    cubit.picked(id, '{}');
-    expect(cubit.state.effect, isNull);
-    expect(data.writes, 0);
-  });
-  test('picker and validation failures leave no pending write', () {
-    cubit.restore();
-    cubit.picked(cubit.state.effect!.id, null, failed: true);
+    await cubit.picked(cubit.state.effect!.id, null, failed: true);
     expect(cubit.state.effect!.message, contains('aprire'));
     cubit.restore();
-    cubit.picked(cubit.state.effect!.id, 'bad');
+    await cubit.picked(cubit.state.effect!.id, 'bad');
     expect(cubit.state.effect!.message, contains('non valido'));
     expect(cubit.state.busy, isFalse);
     expect(data.writes, 0);
   });
   test('confirmation cancel leaves storage untouched', () async {
-    final id = prepare();
+    final id = await prepare();
     await cubit.confirmed(id, false);
     expect(data.writes, 0);
     expect(cubit.state.busy, isFalse);
@@ -52,7 +55,7 @@ void main() {
     expect(data.writes, 0);
   });
   test('confirmed restore writes once and refreshes before success', () async {
-    final id = prepare();
+    final id = await prepare();
     data.barrier = Completer();
     final work = cubit.confirmed(id, true);
     await cubit.confirmed(id, true);
@@ -66,7 +69,7 @@ void main() {
   });
   test('write failure does not refresh', () async {
     data.failWrite = true;
-    await cubit.confirmed(prepare(), true);
+    await cubit.confirmed(await prepare(), true);
     expect(data.refreshes, 0);
     expect(cubit.state.effect!.message, contains('non sono stati modificati'));
   });
@@ -74,7 +77,7 @@ void main() {
     'post-commit failure retries only refresh and blocks new operations',
     () async {
       data.failRefresh = true;
-      await cubit.confirmed(prepare(), true);
+      await cubit.confirmed(await prepare(), true);
       expect(cubit.state.refreshRequired, isTrue);
       expect(cubit.state.effect!.message, contains('Backup ripristinato'));
       cubit.restore();
@@ -88,7 +91,7 @@ void main() {
     },
   );
   test('close during write still refreshes committed data', () async {
-    final id = prepare();
+    final id = await prepare();
     data.barrier = Completer();
     final work = cubit.confirmed(id, true);
     await cubit.close();
@@ -100,7 +103,7 @@ void main() {
     'refresh failure survives route close and retries without another write',
     () async {
       data.failRefresh = true;
-      final id = prepare();
+      final id = await prepare();
       data.barrier = Completer();
       final work = cubit.confirmed(id, true);
       await cubit.close();
@@ -120,9 +123,43 @@ void main() {
     cubit.restore();
     final id = cubit.state.effect!.id;
     await cubit.close();
-    cubit.picked(id, '{}');
+    await cubit.picked(id, '{}');
     expect(data.writes, 0);
   });
+  test(
+    'parse stays single flight and consumes duplicate picker completions',
+    () async {
+      data.parseBarrier = Completer();
+      cubit.restore();
+      final id = cubit.state.effect!.id;
+      final parsing = cubit.picked(id, '{}');
+      expect(cubit.state.busy, isTrue);
+      expect(cubit.state.effect, isNull);
+      await cubit.picked(id, 'bad');
+      cubit.restore();
+      await cubit.export(csv: false);
+      expect(data.parses, 1);
+      expect(data.exports, 0);
+      data.parseBarrier!.complete();
+      await parsing;
+      expect(cubit.state.effect!.kind, DataEffectKind.confirm);
+      expect(data.writes, 0);
+    },
+  );
+  for (final source in ['{}', 'bad']) {
+    test('close during parse ignores late result: $source', () async {
+      data.parseBarrier = Completer();
+      cubit.restore();
+      final parsing = cubit.picked(cubit.state.effect!.id, source);
+      await cubit.close();
+      data.parseBarrier!.complete();
+      await parsing;
+      expect(cubit.state.effect, isNull);
+      expect(data.writes, 0);
+      expect(data.refreshes, 0);
+    });
+  }
+
   test('export is single flight, share completion is consumed once', () async {
     data.barrier = Completer();
     final work = cubit.export(csv: false);

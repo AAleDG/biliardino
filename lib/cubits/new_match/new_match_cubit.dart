@@ -45,6 +45,28 @@ class NewMatchCubit extends Cubit<NewMatchState> {
 
   int _nextSignal() => ++_signal;
 
+  // Historical rivalry depends on saved matches and ordered teams, not scores.
+  void _emit(NewMatchState next) {
+    var overview = state.rivalry;
+    if (!next.isRivalry || !next.teamsValid) {
+      overview = null;
+    } else if (overview == null ||
+        !identical(next.matches, state.matches) ||
+        !_sameIds(next.team1, overview.team1Ids) ||
+        !_sameIds(next.team2, overview.team2Ids)) {
+      overview = StatsService.rivalryOverview(
+        next.matches,
+        team1Ids: next.team1,
+        team2Ids: next.team2,
+      );
+    }
+    emit(next.copyWith(rivalry: overview, clearRivalry: overview == null));
+  }
+
+  static bool _sameIds(List<String> first, List<String> second) =>
+      first.length == second.length &&
+      first.asMap().entries.every((entry) => second[entry.key] == entry.value);
+
   void _onPlayersChanged(List<Player> players) {
     if (isClosed) return;
     if (state.isSaving || state.lastVictory != null) {
@@ -55,8 +77,8 @@ class NewMatchCubit extends Cubit<NewMatchState> {
   }
 
   void _onMatchesChanged(List<GameMatch> matches) {
-    if (isClosed) return;
-    emit(state.copyWith(matches: List.unmodifiable(matches)));
+    if (isClosed || identical(matches, state.matches)) return;
+    _emit(state.copyWith(matches: matches));
   }
 
   void _reconcilePlayers(
@@ -83,7 +105,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         ? NewMatchFeedback.playersUnavailable
         : fallbackFeedback;
 
-    emit(
+    _emit(
       state.copyWith(
         players: players,
         assignment: assignment,
@@ -102,7 +124,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
   }
 
   void _feedback(NewMatchFeedback kind) {
-    emit(
+    _emit(
       state.copyWith(
         lastFeedback: FeedbackEvent(kind: kind, signalId: _nextSignal()),
       ),
@@ -150,7 +172,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
   }
 
   void _commitAssignment(Map<String, int> assignment) {
-    emit(
+    _emit(
       state.copyWith(
         assignment: Map.unmodifiable(assignment),
         isRivalry: false,
@@ -193,7 +215,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
       assignment = proposals[_random.nextInt(proposals.length)];
     }
 
-    emit(
+    _emit(
       state.copyWith(
         assignment: Map.unmodifiable(assignment),
         isRivalry: false,
@@ -315,7 +337,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         state.mode == mode) {
       return;
     }
-    emit(
+    _emit(
       state.copyWith(
         mode: mode,
         isRivalry: false,
@@ -356,7 +378,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
 
   Future<void> _setRules(MatchRules rules) async {
     final previousRules = state.rules;
-    emit(
+    _emit(
       state.copyWith(
         rules: rules,
         isPersistingRules: true,
@@ -367,7 +389,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
       await _rulesRepo.save(rules);
     } on Object {
       if (isClosed) return;
-      emit(
+      _emit(
         state.copyWith(
           rules: previousRules,
           isPersistingRules: false,
@@ -380,7 +402,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
       return;
     }
     if (isClosed) return;
-    emit(state.copyWith(isPersistingRules: false));
+    _emit(state.copyWith(isPersistingRules: false));
   }
 
   void setRivalry(bool enabled) {
@@ -390,7 +412,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         !state.teamsValid) {
       return;
     }
-    emit(state.copyWith(isRivalry: enabled));
+    _emit(state.copyWith(isRivalry: enabled));
   }
 
   void kickoff() {
@@ -400,7 +422,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
       return;
     }
     HapticFeedback.mediumImpact();
-    emit(
+    _emit(
       state.copyWith(
         kickedOff: true,
         score1: 0,
@@ -437,7 +459,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
           ).victory(signalId: _nextSignal());
 
     if (team == 1) {
-      emit(
+      _emit(
         state.copyWith(
           scorerIds: List.unmodifiable(scorerIds),
           score1: score1,
@@ -451,7 +473,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
         ),
       );
     } else if (team == 2) {
-      emit(
+      _emit(
         state.copyWith(
           scorerIds: List.unmodifiable(scorerIds),
           score2: score2,
@@ -481,14 +503,14 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     scorerIds.removeAt(removeIndex);
     HapticFeedback.selectionClick();
     if (team == 1 && state.score1 > 0) {
-      emit(
+      _emit(
         state.copyWith(
           scorerIds: List.unmodifiable(scorerIds),
           score1: state.score1 - 1,
         ),
       );
     } else if (team == 2 && state.score2 > 0) {
-      emit(
+      _emit(
         state.copyWith(
           scorerIds: List.unmodifiable(scorerIds),
           score2: state.score2 - 1,
@@ -499,7 +521,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
 
   void resetScore() {
     if (!state.kickedOff || state.isSaving) return;
-    emit(
+    _emit(
       state.copyWith(
         score1: 0,
         score2: 0,
@@ -511,7 +533,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
 
   void abortMatch() {
     if (state.isSaving) return;
-    emit(
+    _emit(
       state.copyWith(
         kickedOff: false,
         scorerIds: const [],
@@ -524,7 +546,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
 
   void correctScoreBeforeConfirmation() {
     if (state.isSaving || state.pendingVictory == null) return;
-    emit(state.copyWith(clearPendingVictory: true));
+    _emit(state.copyWith(clearPendingVictory: true));
   }
 
   Future<void> confirmAndSaveCompletedMatch() async {
@@ -549,7 +571,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     }
 
     final snapshot = _MatchSnapshot.fromState(state);
-    emit(
+    _emit(
       state.copyWith(
         isSaving: true,
         clearPendingVictory: true,
@@ -582,7 +604,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
           fallbackFeedback: NewMatchFeedback.saveFailed,
         );
         if (pendingVictory != null && state.kickedOff) {
-          emit(state.copyWith(pendingVictory: pendingVictory));
+          _emit(state.copyWith(pendingVictory: pendingVictory));
         }
       } else {
         _feedbackAfterSaveFailure(pendingVictory: pendingVictory);
@@ -592,7 +614,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
 
     if (isClosed) return;
 
-    emit(
+    _emit(
       state.copyWith(
         isSaving: false,
         lastVictory: snapshot.victory(signalId: _nextSignal()),
@@ -601,7 +623,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
   }
 
   void _feedbackAfterSaveFailure({VictoryEvent? pendingVictory}) {
-    emit(
+    _emit(
       state.copyWith(
         isSaving: false,
         pendingVictory: pendingVictory,
@@ -617,7 +639,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     if (state.isSaving || state.lastVictory == null) return;
     final players = _deferredPlayers ?? state.players;
     _deferredPlayers = null;
-    emit(
+    _emit(
       state.copyWith(
         players: players,
         assignment: const {},
@@ -637,7 +659,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
     if (state.isSaving) return;
     final players = _deferredPlayers ?? state.players;
     _deferredPlayers = null;
-    emit(
+    _emit(
       state.copyWith(
         players: players,
         assignment: const {},
@@ -676,7 +698,7 @@ class NewMatchCubit extends Cubit<NewMatchState> {
             state.mode.teamSize &&
         assignment.values.where((team) => team == 2).length ==
             state.mode.teamSize;
-    emit(
+    _emit(
       state.copyWith(
         players: players,
         assignment: assignment,

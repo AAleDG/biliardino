@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../data/database_helper.dart';
 import '../repositories/data_management_repository.dart';
@@ -46,7 +47,8 @@ class DataManagementCoordinator implements DataManagementRepository {
   }
 
   @override
-  BackupData parse(String source) => _backup.parse(source);
+  Future<BackupData> parse(String source) =>
+      compute(DataBackupService.parseJson, source, debugLabel: 'backup-parse');
   @override
   Future<void> restore(BackupData data) async {
     await _backup.restore(data);

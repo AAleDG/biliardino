@@ -32,8 +32,26 @@ class StatsService {
     List<GameMatch> matches,
     String playerId, {
     int recentLimit = 5,
+  }) => playerHistory(matches, playerId, recentLimit: recentLimit).profile;
+
+  /// Derives both profile sections from one chronologically ordered history.
+  static ({List<GameMatch> matches, PlayerProfileStats profile}) playerHistory(
+    List<GameMatch> matches,
+    String playerId, {
+    int recentLimit = 5,
   }) {
     final personalMatches = matchesForPlayer(matches, playerId);
+    return (
+      matches: List.unmodifiable(personalMatches),
+      profile: _profileFromHistory(personalMatches, playerId, recentLimit),
+    );
+  }
+
+  static PlayerProfileStats _profileFromHistory(
+    List<GameMatch> personalMatches,
+    String playerId,
+    int recentLimit,
+  ) {
     final teammateCounts = <String, int>{};
     final opponentCounts = <String, int>{};
     final opponentWins = <String, int>{};

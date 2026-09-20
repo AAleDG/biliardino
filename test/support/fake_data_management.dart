@@ -8,6 +8,8 @@ class FakeData implements DataManagementRepository {
   int writes = 0, refreshes = 0, exports = 0;
   bool failWrite = false, failRefresh = false, failExport = false;
   Completer<void>? barrier;
+  Completer<void>? parseBarrier;
+  int parses = 0;
   @override
   Future<DataExport> export({required bool csv}) async {
     exports++;
@@ -23,7 +25,9 @@ class FakeData implements DataManagementRepository {
   }
 
   @override
-  BackupData parse(String source) {
+  Future<BackupData> parse(String source) async {
+    parses++;
+    await parseBarrier?.future;
     if (source == 'bad') throw const FormatException();
     return const BackupData(players: [], matches: []);
   }

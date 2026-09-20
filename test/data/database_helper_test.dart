@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:biliardino/data/database_helper.dart';
 import 'package:biliardino/models/player.dart';
+import 'package:biliardino/models/game_match.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -21,6 +22,96 @@ void main() {
   tearDown(() async {
     await database.close();
   });
+
+  Future<void> seedRestoreDatabase() async {
+    await _createV1Schema(database);
+    await DatabaseHelper.migrateDatabase(
+      database,
+      1,
+      DatabaseHelper.databaseVersion,
+    );
+    await database.transaction(
+      (txn) => DatabaseHelper.replacePlayersAndMatchesIn(
+        txn,
+        players: _restorePlayers('old', 2),
+        matches: [_restoreMatch('old-match', 'old')],
+      ),
+    );
+    await database.insert('settings', {
+      'key': 'match_rules',
+      'value': 'preserve-me',
+    });
+  }
+
+  test(
+    'multi-batch restore replaces players and matches while retaining settings',
+    () async {
+      await seedRestoreDatabase();
+      final players = _restorePlayers('new', 601);
+      final matches = [
+        for (var i = 0; i < 1201; i++) _restoreMatch('new-$i', 'new'),
+      ];
+      await database.transaction(
+        (txn) => DatabaseHelper.replacePlayersAndMatchesIn(
+          txn,
+          players: players,
+          matches: matches,
+        ),
+      );
+      final savedPlayers = await database.query('players');
+      final savedMatches = await database.query('matches');
+      expect(savedPlayers, hasLength(601));
+      expect(savedMatches, hasLength(1201));
+      expect(savedPlayers.map((row) => row['id']), isNot(contains('old0')));
+      expect(
+        savedMatches.map((row) => row['id']),
+        isNot(contains('old-match')),
+      );
+      expect(savedMatches.last['scorer_ids_json'], '["new0"]');
+      expect((await database.query('settings')).single['value'], 'preserve-me');
+      await database.transaction(
+        (txn) => DatabaseHelper.replacePlayersAndMatchesIn(
+          txn,
+          players: [],
+          matches: [],
+        ),
+      );
+      expect(await database.query('players'), isEmpty);
+      expect(await database.query('matches'), isEmpty);
+      expect((await database.query('settings')).single['value'], 'preserve-me');
+    },
+  );
+
+  for (final failure in ['missing player', 'invalid scorer']) {
+    test(
+      'late batch trigger failure ($failure) rolls back all earlier batches and deletes',
+      () async {
+        await seedRestoreDatabase();
+        final oldPlayers = await database.query('players');
+        final oldMatches = await database.query('matches');
+        final oldSettings = await database.query('settings');
+        final matches = [
+          for (var i = 0; i < 701; i++) _restoreMatch('new-$i', 'new'),
+        ];
+        matches[650] = failure == 'missing player'
+            ? matches[650].copyWith(t2p1: 'missing')
+            : matches[650].copyWith(scorerIds: ['new1']);
+        await expectLater(
+          database.transaction(
+            (txn) => DatabaseHelper.replacePlayersAndMatchesIn(
+              txn,
+              players: _restorePlayers('new', 601),
+              matches: matches,
+            ),
+          ),
+          throwsA(isA<DatabaseException>()),
+        );
+        expect(await database.query('players'), oldPlayers);
+        expect(await database.query('matches'), oldMatches);
+        expect(await database.query('settings'), oldSettings);
+      },
+    );
+  }
 
   test('transactionally migrates a populated v1 database to v8', () async {
     final databasePath = path.join(
@@ -493,20 +584,45 @@ void main() {
     expect(players.single['is_archived'], 0);
   });
 
-  test('v9 name-key migration recomputes keys and resolves new collisions', () async {
-    await _createPlayersTable(database, withNameKey: true);
-    await _insertPlayer(database, id: 'c1', name: 'Č', createdAt: 1, withNameKey: true);
-    await _insertPlayer(database, id: 'c2', name: 'C\u030C', createdAt: 2, withNameKey: true);
-    await database.update('players', {'name_key': 'legacy-c1'}, where: 'id = ?', whereArgs: ['c1']);
-    await database.update('players', {'name_key': 'legacy-c2'}, where: 'id = ?', whereArgs: ['c2']);
-    await database.execute(
-      'CREATE UNIQUE INDEX idx_players_name_key ON players(name_key)',
-    );
-    await DatabaseHelper.migratePlayersToCurrentNameKeys(database);
+  test(
+    'v9 name-key migration recomputes keys and resolves new collisions',
+    () async {
+      await _createPlayersTable(database, withNameKey: true);
+      await _insertPlayer(
+        database,
+        id: 'c1',
+        name: 'Č',
+        createdAt: 1,
+        withNameKey: true,
+      );
+      await _insertPlayer(
+        database,
+        id: 'c2',
+        name: 'C\u030C',
+        createdAt: 2,
+        withNameKey: true,
+      );
+      await database.update(
+        'players',
+        {'name_key': 'legacy-c1'},
+        where: 'id = ?',
+        whereArgs: ['c1'],
+      );
+      await database.update(
+        'players',
+        {'name_key': 'legacy-c2'},
+        where: 'id = ?',
+        whereArgs: ['c2'],
+      );
+      await database.execute(
+        'CREATE UNIQUE INDEX idx_players_name_key ON players(name_key)',
+      );
+      await DatabaseHelper.migratePlayersToCurrentNameKeys(database);
 
-    final players = await database.query('players', orderBy: 'id');
-    expect(players.map((row) => row['name_key']), ['c', 'c (2)']);
-  });
+      final players = await database.query('players', orderBy: 'id');
+      expect(players.map((row) => row['name_key']), ['c', 'c (2)']);
+    },
+  );
 }
 
 Future<void> _createPlayersTable(
@@ -632,3 +748,26 @@ Future<void> _insertMatch(
     'is_rivalry': 0,
   });
 }
+
+List<Player> _restorePlayers(String prefix, int count) => [
+  for (var i = 0; i < count; i++)
+    Player(
+      id: '$prefix$i',
+      name: 'Player $prefix $i',
+      createdAt: DateTime(2026),
+      isPresent: true,
+    ),
+];
+GameMatch _restoreMatch(String id, String prefix) => GameMatch(
+  id: id,
+  playedAt: DateTime(2026),
+  mode: MatchMode.oneVsOne,
+  t1p1: '${prefix}0',
+  t1p2: '',
+  t2p1: '${prefix}1',
+  t2p2: '',
+  t1Score: 1,
+  t2Score: 0,
+  winningTeam: 1,
+  scorerIds: ['${prefix}0'],
+);

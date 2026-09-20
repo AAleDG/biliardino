@@ -7,6 +7,8 @@ import UIKit
   private static let maximumBackupBytes = 10 * 1024 * 1024
   private var backupPickerChannel: FlutterMethodChannel?
   private var pendingPickerResult: FlutterResult?
+  private var activePicker: UIDocumentPickerViewController?
+  private var isReadingBackup = false
 
   override func application(
     _ application: UIApplication,
@@ -53,6 +55,7 @@ import UIKit
     }
     pendingPickerResult = result
     let picker = UIDocumentPickerViewController(documentTypes: ["public.json"], in: .import)
+    activePicker = picker
     picker.delegate = self
     picker.allowsMultipleSelection = false
     presenter.present(picker, animated: true)
@@ -77,61 +80,71 @@ import UIKit
   }
 
   func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
-    finishPicker(with: nil)
+    guard !isReadingBackup else { return }
+    finishPicker(controller, with: nil)
   }
 
   func documentPicker(
     _ controller: UIDocumentPickerViewController,
     didPickDocumentsAt urls: [URL]
   ) {
-    guard let url = urls.first else {
-      finishPicker(with: nil)
+    guard activePicker === controller, pendingPickerResult != nil, !isReadingBackup else {
       return
     }
-    let accessed = url.startAccessingSecurityScopedResource()
-    defer {
-      if accessed { url.stopAccessingSecurityScopedResource() }
+    guard let url = urls.first else {
+      finishPicker(controller, with: nil)
+      return
     }
-    do {
-      let values = try url.resourceValues(forKeys: [.fileSizeKey])
-      if let size = values.fileSize, size > Self.maximumBackupBytes {
-        finishPicker(with: FlutterError(
-          code: "backup_too_large",
-          message: "The selected backup exceeds 10 MB.",
-          details: nil
-        ))
-        return
+    isReadingBackup = true
+    DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+      let value = readBackup(url, maximumBytes: Self.maximumBackupBytes)
+      DispatchQueue.main.async { [weak self] in
+        self?.finishPicker(controller, with: value)
       }
-      let data = try Data(contentsOf: url, options: [.mappedIfSafe])
-      guard data.count <= Self.maximumBackupBytes else {
-        finishPicker(with: FlutterError(
-          code: "backup_too_large",
-          message: "The selected backup exceeds 10 MB.",
-          details: nil
-        ))
-        return
-      }
-      guard let source = String(data: data, encoding: .utf8) else {
-        finishPicker(with: FlutterError(
-          code: "invalid_encoding",
-          message: "The selected backup is not valid UTF-8 text.",
-          details: nil
-        ))
-        return
-      }
-      finishPicker(with: source)
-    } catch {
-      finishPicker(with: FlutterError(
-        code: "backup_read_failed",
-        message: "Unable to read the selected backup.",
-        details: error.localizedDescription
-      ))
     }
   }
 
-  private func finishPicker(with value: Any?) {
+  private func finishPicker(_ controller: UIDocumentPickerViewController, with value: Any?) {
+    guard activePicker === controller else { return }
     let result = pendingPickerResult
     pendingPickerResult = nil
+    activePicker = nil
+    isReadingBackup = false
     result?(value)
+  }
+}
+
+// File metadata, security-scope lifetime and UTF-8 decoding all stay on the worker.
+private func readBackup(_ url: URL, maximumBytes: Int) -> Any {
+  let accessed = url.startAccessingSecurityScopedResource()
+  defer {
+    if accessed { url.stopAccessingSecurityScopedResource() }
+  }
+  func tooLarge() -> FlutterError {
+    FlutterError(
+      code: "backup_too_large",
+      message: "The selected backup exceeds 10 MB.",
+      details: nil
+    )
+  }
+  do {
+    let values = try url.resourceValues(forKeys: [.fileSizeKey])
+    if let size = values.fileSize, size > maximumBytes { return tooLarge() }
+    let data = try Data(contentsOf: url, options: [.mappedIfSafe])
+    guard data.count <= maximumBytes else { return tooLarge() }
+    guard let source = String(data: data, encoding: .utf8) else {
+      return FlutterError(
+        code: "invalid_encoding",
+        message: "The selected backup is not valid UTF-8 text.",
+        details: nil
+      )
+    }
+    return source
+  } catch {
+    return FlutterError(
+      code: "backup_read_failed",
+      message: "Unable to read the selected backup.",
+      details: error.localizedDescription
+    )
   }
 }

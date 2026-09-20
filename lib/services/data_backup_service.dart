@@ -24,7 +24,10 @@ class DataBackupService {
     });
   }
 
-  BackupData parse(String source) {
+  BackupData parse(String source) => parseJson(source);
+
+  // Static callback keeps database handles out of the worker isolate.
+  static BackupData parseJson(String source) {
     final Object? decoded;
     try {
       decoded = jsonDecode(source);

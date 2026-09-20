@@ -60,7 +60,7 @@ class DataManagementCubit extends Cubit<DataManagementState> {
     );
   }
 
-  void picked(int id, String? source, {bool failed = false}) {
+  Future<void> picked(int id, String? source, {bool failed = false}) async {
     if (!_accept(id, DataEffectKind.pick)) return;
     if (failed) {
       _message('Impossibile aprire il backup selezionato.');
@@ -70,8 +70,12 @@ class DataManagementCubit extends Cubit<DataManagementState> {
       emit(const DataManagementState());
       return;
     }
+    // Consume the picker effect before yielding so duplicate completions are ignored.
+    emit(const DataManagementState(busy: true));
     try {
-      _pending = _repository.parse(source);
+      final data = await _repository.parse(source);
+      if (isClosed) return;
+      _pending = data;
       emit(
         DataManagementState(
           busy: true,

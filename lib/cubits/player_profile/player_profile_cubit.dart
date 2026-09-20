@@ -21,10 +21,12 @@ class PlayerProfileCubit extends Cubit<PlayerProfileState> {
          _derive(playerId, playerRepository.players, matchRepository.matches),
        ) {
     _playersSub = playerRepository.watchPlayers().listen((players) {
+      if (identical(players, _players)) return;
       _players = players;
       _recompute();
     });
     _matchesSub = matchRepository.watchMatches().listen((matches) {
+      if (identical(matches, _matches)) return;
       _matches = matches;
       _recompute();
     });
@@ -50,11 +52,12 @@ class PlayerProfileCubit extends Cubit<PlayerProfileState> {
         break;
       }
     }
+    final history = StatsService.playerHistory(matches, playerId);
     return PlayerProfileState(
       players: players,
       stats: stats,
-      profile: StatsService.computePlayerProfile(matches, playerId),
-      personalMatches: StatsService.matchesForPlayer(matches, playerId),
+      profile: history.profile,
+      personalMatches: history.matches,
     );
   }
 

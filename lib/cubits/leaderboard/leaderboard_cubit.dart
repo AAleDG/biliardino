@@ -20,10 +20,12 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     _matches = _matchRepo.matches;
     _recompute();
     _playersSub = _playerRepo.watchPlayers().listen((players) {
+      if (identical(players, _players)) return;
       _players = players;
       _recompute();
     });
     _matchesSub = _matchRepo.watchMatches().listen((matches) {
+      if (identical(matches, _matches)) return;
       _matches = matches;
       _recompute();
     });
