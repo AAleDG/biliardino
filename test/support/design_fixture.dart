@@ -1,3 +1,5 @@
+import 'package:biliardino/presentation/app_presentation.dart';
+import 'package:biliardino/presentation/south_africa/south_africa_presentation.dart';
 import 'package:biliardino/repositories/app_style_repository.dart';
 import 'package:biliardino/repositories/data_management_repository.dart';
 import 'package:biliardino/services/data_management_coordinator.dart';
@@ -97,23 +99,26 @@ class DesignFixture {
         playerRepositoryFactory?.call(database) ?? PlayerRepository(database);
     matchesRepository = MatchRepository(database);
     rulesRepository = MatchRulesRepository(database);
+    styleRepository = AppStyleRepository(database);
   }
   final CsvShareService? csvShareService;
   late final FakeDatabaseHelper database;
   late final PlayerRepository playersRepository;
   late final MatchRepository matchesRepository;
   late final MatchRulesRepository rulesRepository;
+  late final AppStyleRepository styleRepository;
   Future<void> load() async => Future.wait([
     playersRepository.load(),
     matchesRepository.load(),
     rulesRepository.load(),
+    styleRepository.load(),
   ]);
   Widget get app => BiliardinoApp(
     playerRepository: playersRepository,
     matchRepository: matchesRepository,
     matchRulesRepository: rulesRepository,
     dataManagementRepository: dataCoordinator,
-    appStyleRepository: AppStyleRepository(database),
+    appStyleRepository: styleRepository,
   );
 
   DataManagementRepository get dataCoordinator => DataManagementCoordinator(
@@ -124,61 +129,68 @@ class DesignFixture {
   );
 
   /// Isolates screen checks from the separately tested bootstrap/splash route.
-  Widget get home => MultiRepositoryProvider(
-    providers: [
-      RepositoryProvider<DataManagementRepository>(
-        create: (_) => dataCoordinator,
-      ),
-      RepositoryProvider<BackupFilePicker>(
-        create: (_) => const BackupFilePicker(),
-      ),
-      RepositoryProvider<DataFileShareService>(
-        create: (_) => DataFileShareService.platform(),
-      ),
-      RepositoryProvider<CsvShareService>(
-        create: (_) => csvShareService ?? CsvShareService.platform(),
-      ),
-      RepositoryProvider<PlayerRepository>.value(value: playersRepository),
-      RepositoryProvider<MatchRepository>.value(value: matchesRepository),
-      RepositoryProvider<MatchRulesRepository>.value(value: rulesRepository),
-    ],
-    child: MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => HomeCubit()),
-        BlocProvider(
-          create: (_) => DashboardCubit(
-            playerRepository: playersRepository,
-            matchRepository: matchesRepository,
+  Widget get home => homeWithPresentation(const SouthAfricaPresentation());
+
+  Widget homeWithPresentation(AppPresentation presentation) =>
+      MultiRepositoryProvider(
+        providers: [
+          RepositoryProvider<DataManagementRepository>(
+            create: (_) => dataCoordinator,
+          ),
+          RepositoryProvider<BackupFilePicker>(
+            create: (_) => const BackupFilePicker(),
+          ),
+          RepositoryProvider<DataFileShareService>(
+            create: (_) => DataFileShareService.platform(),
+          ),
+          RepositoryProvider<CsvShareService>(
+            create: (_) => csvShareService ?? CsvShareService.platform(),
+          ),
+          RepositoryProvider<PlayerRepository>.value(value: playersRepository),
+          RepositoryProvider<MatchRepository>.value(value: matchesRepository),
+          RepositoryProvider<MatchRulesRepository>.value(
+            value: rulesRepository,
+          ),
+        ],
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => HomeCubit()),
+            BlocProvider(
+              create: (_) => DashboardCubit(
+                playerRepository: playersRepository,
+                matchRepository: matchesRepository,
+              ),
+            ),
+            BlocProvider(
+              create: (_) => HistoryCubit(
+                playerRepository: playersRepository,
+                matchRepository: matchesRepository,
+              ),
+            ),
+            BlocProvider(create: (_) => PlayersCubit(playersRepository)),
+            BlocProvider(
+              create: (_) => NewMatchCubit(
+                playerRepository: playersRepository,
+                matchRepository: matchesRepository,
+                matchRulesRepository: rulesRepository,
+              ),
+            ),
+            BlocProvider(
+              create: (_) => LeaderboardCubit(
+                playerRepository: playersRepository,
+                matchRepository: matchesRepository,
+              ),
+            ),
+          ],
+          child: MaterialApp(
+            builder: (context, child) =>
+                AppPresentationScope(presentation: presentation, child: child!),
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.southAfrica(),
+            home: const HomeScreen(),
           ),
         ),
-        BlocProvider(
-          create: (_) => HistoryCubit(
-            playerRepository: playersRepository,
-            matchRepository: matchesRepository,
-          ),
-        ),
-        BlocProvider(create: (_) => PlayersCubit(playersRepository)),
-        BlocProvider(
-          create: (_) => NewMatchCubit(
-            playerRepository: playersRepository,
-            matchRepository: matchesRepository,
-            matchRulesRepository: rulesRepository,
-          ),
-        ),
-        BlocProvider(
-          create: (_) => LeaderboardCubit(
-            playerRepository: playersRepository,
-            matchRepository: matchesRepository,
-          ),
-        ),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.southAfrica(),
-        home: const HomeScreen(),
-      ),
-    ),
-  );
+      );
   Future<void> dispose() async {
     await playersRepository.dispose();
     await matchesRepository.dispose();

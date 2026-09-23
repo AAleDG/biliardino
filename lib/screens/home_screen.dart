@@ -1,3 +1,4 @@
+import '../presentation/app_presentation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -5,11 +6,6 @@ import '../cubits/home/home_cubit.dart';
 import '../cubits/new_match/new_match_cubit.dart';
 import '../cubits/new_match/new_match_state.dart';
 import '../theme/app_theme.dart';
-import 'dashboard_screen.dart';
-import 'leaderboard_screen.dart';
-import 'more_screen.dart';
-import 'new_match_screen.dart';
-import 'players_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -207,7 +203,7 @@ class _HomeEntry {
 const _homeEntries = [
   _HomeEntry(
     destination: HomeDestination.home,
-    page: DashboardScreen(),
+    page: PresentationPage(AppPage.dashboard),
     navigation: NavigationDestination(
       icon: Icon(Icons.home_outlined),
       selectedIcon: Icon(Icons.home),
@@ -216,7 +212,7 @@ const _homeEntries = [
   ),
   _HomeEntry(
     destination: HomeDestination.players,
-    page: PlayersScreen(),
+    page: PresentationPage(AppPage.players),
     navigation: NavigationDestination(
       icon: Icon(Icons.people_outline),
       selectedIcon: Icon(Icons.people),
@@ -225,7 +221,7 @@ const _homeEntries = [
   ),
   _HomeEntry(
     destination: HomeDestination.match,
-    page: NewMatchScreen(),
+    page: PresentationPage(AppPage.match),
     navigation: NavigationDestination(
       icon: Icon(Icons.sports_soccer_outlined),
       selectedIcon: Icon(Icons.sports_soccer),
@@ -234,7 +230,7 @@ const _homeEntries = [
   ),
   _HomeEntry(
     destination: HomeDestination.leaderboard,
-    page: LeaderboardScreen(),
+    page: PresentationPage(AppPage.leaderboard),
     navigation: NavigationDestination(
       icon: Icon(Icons.leaderboard_outlined),
       selectedIcon: Icon(Icons.leaderboard),
@@ -243,7 +239,7 @@ const _homeEntries = [
   ),
   _HomeEntry(
     destination: HomeDestination.more,
-    page: MoreScreen(),
+    page: PresentationPage(AppPage.more),
     navigation: NavigationDestination(
       icon: Icon(Icons.more_horiz),
       label: 'Altro',

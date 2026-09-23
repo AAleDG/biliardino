@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/design/south_africa_artwork.dart';
-import 'home_screen.dart';
+import '../presentation/app_presentation.dart';
 
 /// Bootstrap creates this route only after repositories are ready.
 class SplashScreen extends StatefulWidget {
@@ -50,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen>
         PageRouteBuilder<void>(
           transitionDuration: duration,
           reverseTransitionDuration: duration,
-          pageBuilder: (_, _, _) => const HomeScreen(),
+          pageBuilder: (_, _, _) => const PresentationPage(AppPage.home),
           transitionsBuilder: (context, animation, _, child) =>
               shouldReduceMotion(context)
               ? child

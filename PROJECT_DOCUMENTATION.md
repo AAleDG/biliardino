@@ -65,7 +65,17 @@ La fondazione implementata per l'estensione Home usa cinque voci primarie tipizz
 
 `HomeCubit` espone `HomeDestination` invece di indici numerici. `HistoryCubit` vive sopra le route, cosi' i filtri sopravvivono alle visite da **Altro**. `DashboardCubit` e' alimentato direttamente dagli stream di `PlayerRepository` e `MatchRepository`: riusa `StatsService.sortedByMostRecent` e `StatsService.computeLeaderboard`, limita i risultati a cinque e le posizioni giocate a quattro, e non possiede persistenza, filtri dello storico o una nuova formula punti. La Home usa l'hero H2 approvato come PNG trasparente decorativo: e' l'unico elemento a tutta larghezza, conserva il rapporto intrinseco 1516:1038 e non usa crop. Wordmark, tagline, azione avvia/riprendi, righe, link e navigazione restano widget Flutter. L'azione Home e' una variante locale a capsula da 72dp con bordo bianco, ombra contenuta e lockup Barlow Condensed; non modifica i pulsanti condivisi delle altre schermate. Le righe hanno target da almeno 48dp, quindi la pagina scorre invece di comprimere la classifica sotto i risultati; con testo ingrandito le intestazioni si impilano e la barra primaria mantiene cinque destinazioni stabili.
 
-All'avvio `main.dart` carica `PlayerRepository` e `MatchRepository`, poi espone i repository tramite `MultiRepositoryProvider` e crea i Cubit globali principali, inclusi `DashboardCubit` e il `HistoryCubit` condiviso dalle route.
+All'avvio `BiliardinoBootstrap` carica giocatori, partite, regole e preferenza di presentazione; in caso di errore permette di ritentare con gli stessi repository. `BiliardinoApp` espone i repository tramite `MultiRepositoryProvider` e crea i Cubit globali principali, inclusi `DashboardCubit` e il `HistoryCubit` condiviso dalle route.
+
+### Fondazione per la selezione della presentazione
+
+La presentazione passa da `AppPresentation`, risolta dal registro `presentationFor(AppStyle)`. Il solo valore disponibile è `southAfrica2010`: `SouthAfricaPresentation` restituisce tema, chrome di sistema e schermate South Africa esistenti, senza ridisegnarle. Non è presente un selettore visibile e Italia ’90 non è ancora integrata.
+
+`AppStyleRepository` usa la chiave `appearance.style` nella tabella settings esistente, senza migrazione. Valori mancanti o sconosciuti mostrano South Africa; il caricamento non riscrive valori sconosciuti. Una scelta esplicita viene pubblicata da `AppStyleCubit` solo dopo il salvataggio riuscito. Errori di scrittura restano osservabili, richieste sovrapposte sono rifiutate e il completamento dopo la chiusura non emette nuovo stato. Il ripristino dei dati di gioco preserva le impostazioni locali, inclusa questa preferenza.
+
+Repository e Cubit globali restano sopra il confine di presentazione. `AppPresentationScope` avvolge `MaterialApp`; le route osservano lo scope al proprio interno tramite `PresentationPage` o `PresentationBuilder`. Non usare lo stile come chiave di `MaterialApp` o del Navigator: ricreare questi proprietari perderebbe navigazione e partita attiva. I fixture standalone devono fornire esplicitamente lo scope.
+
+La copertura verifica persistenza SQLite, errori e retry, ricostruzione della composizione reale, identità dei proprietari, route, filtri, salvataggi in corso e bozze dell’editor con la presentazione South Africa. L’integrazione di un secondo renderer richiederà verifiche dedicate del trasferimento di stato locale e delle finestre modali durante il cambio: la fondazione con un solo stile non dimostra ancora il cambio completo tra due UI.
 
 ## Motivazioni delle scelte tecniche
 

@@ -21,19 +21,14 @@ import 'data/database_helper.dart';
 import 'repositories/match_repository.dart';
 import 'repositories/match_rules_repository.dart';
 import 'repositories/player_repository.dart';
-import 'screens/splash_screen.dart';
-import 'theme/app_theme.dart';
+import 'models/app_style.dart';
+import 'presentation/app_presentation.dart';
+import 'presentation/presentation_registry.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarBrightness: Brightness.light,
-      systemNavigationBarColor: AppColors.surface,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ),
+    presentationFor(AppStyle.southAfrica2010).systemUi,
   );
 
   runApp(const BiliardinoBootstrap());
@@ -139,7 +134,12 @@ class _BiliardinoBootstrapState extends State<BiliardinoBootstrap> {
         }
 
         return _BiliardinoMaterialApp(
-          home: _BootstrapScreen(hasError: snapshot.hasError, onRetry: _retry),
+          home: PresentationBuilder(
+            builder: (presentation) => presentation.bootstrap(
+              hasError: snapshot.hasError,
+              onRetry: _retry,
+            ),
+          ),
         );
       },
     );
@@ -220,77 +220,40 @@ class BiliardinoApp extends StatelessWidget {
             ),
           ),
         ],
-        child: const _BiliardinoMaterialApp(home: SplashScreen()),
+        child: BlocBuilder<AppStyleCubit, AppStyle>(
+          builder: (context, style) => _BiliardinoMaterialApp(
+            style: style,
+            home: const PresentationPage(AppPage.splash),
+          ),
+        ),
       ),
     );
   }
 }
 
 class _BiliardinoMaterialApp extends StatelessWidget {
-  const _BiliardinoMaterialApp({required this.home});
+  const _BiliardinoMaterialApp({
+    required this.home,
+    this.style = AppStyle.southAfrica2010,
+  });
 
   final Widget home;
+  final AppStyle style;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'NTT Biliardino',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.southAfrica(),
-      home: home,
-    );
-  }
-}
-
-class _BootstrapScreen extends StatelessWidget {
-  const _BootstrapScreen({required this.hasError, required this.onRetry});
-
-  final bool hasError;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: hasError
-              ? Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.storage_rounded, size: 56),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Impossibile caricare i dati.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Controlla il dispositivo e riprova.',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton.icon(
-                      key: const ValueKey('bootstrap-retry'),
-                      onPressed: onRetry,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('RIPROVA'),
-                    ),
-                  ],
-                )
-              : const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Caricamento dati...'),
-                  ],
-                ),
+    final presentation = presentationFor(style);
+    return AppPresentationScope(
+      presentation: presentation,
+      child: MaterialApp(
+        title: presentation.title,
+        debugShowCheckedModeBanner: false,
+        theme: presentation.theme,
+        builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+          value: presentation.systemUi,
+          child: child!,
         ),
+        home: home,
       ),
     );
   }

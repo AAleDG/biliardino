@@ -15,7 +15,7 @@ import '../theme/app_theme.dart';
 import '../widgets/design/adaptive_pair.dart';
 
 import 'history/history_artwork.dart';
-import 'match_editor/match_editor_screen.dart';
+import '../presentation/app_presentation.dart';
 
 part 'history/history_filters_sheet.dart';
 part 'history/history_details.dart';
@@ -173,10 +173,12 @@ Future<void> _openMatchEditor(BuildContext rootContext, GameMatch match) async {
   await Navigator.of(rootContext).push<void>(
     MaterialPageRoute<void>(
       fullscreenDialog: true,
-      builder: (_) => MatchEditorScreen(
-        match: match,
-        players: cubit.state.players,
-        onSave: cubit.updateMatch,
+      builder: (_) => PresentationBuilder(
+        builder: (presentation) => presentation.matchEditor(
+          match: match,
+          players: cubit.state.players,
+          onSave: cubit.updateMatch,
+        ),
       ),
     ),
   );

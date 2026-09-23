@@ -1,3 +1,5 @@
+import 'package:biliardino/presentation/app_presentation.dart';
+import 'package:biliardino/presentation/south_africa/south_africa_presentation.dart';
 import 'support/fake_database.dart';
 import 'package:biliardino/repositories/app_style_repository.dart';
 import 'support/fake_data_management.dart';
@@ -1220,6 +1222,10 @@ void main() {
       try {
         await tester.pumpWidget(
           MaterialApp(
+            builder: (context, child) => AppPresentationScope(
+              presentation: const SouthAfricaPresentation(),
+              child: child!,
+            ),
             theme: AppTheme.southAfrica(),
             home: Scaffold(
               body: Builder(
@@ -1676,7 +1682,14 @@ Future<void> _pumpHome(
             ),
           ),
         ],
-        child: MaterialApp(theme: AppTheme.southAfrica(), home: home),
+        child: MaterialApp(
+          builder: (context, child) => AppPresentationScope(
+            presentation: const SouthAfricaPresentation(),
+            child: child!,
+          ),
+          theme: AppTheme.southAfrica(),
+          home: home,
+        ),
       ),
     ),
   );

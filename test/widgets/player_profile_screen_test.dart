@@ -1,3 +1,5 @@
+import 'package:biliardino/presentation/app_presentation.dart';
+import 'package:biliardino/presentation/south_africa/south_africa_presentation.dart';
 import 'package:biliardino/cubits/player_profile/player_profile_cubit.dart';
 import 'package:biliardino/cubits/player_profile/player_profile_state.dart';
 import 'package:biliardino/navigation/app_navigation.dart';
@@ -31,7 +33,14 @@ void main() {
         value: fixture.matchesRepository,
       ),
     ],
-    child: MaterialApp(theme: AppTheme.southAfrica(), home: home),
+    child: MaterialApp(
+      builder: (context, child) => AppPresentationScope(
+        presentation: const SouthAfricaPresentation(),
+        child: child!,
+      ),
+      theme: AppTheme.southAfrica(),
+      home: home,
+    ),
   );
 
   PlayerProfileCubit owner(WidgetTester tester) => tester

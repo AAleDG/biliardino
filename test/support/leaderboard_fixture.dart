@@ -1,3 +1,5 @@
+import 'package:biliardino/presentation/app_presentation.dart';
+import 'package:biliardino/presentation/south_africa/south_africa_presentation.dart';
 import 'package:biliardino/cubits/leaderboard/leaderboard_cubit.dart';
 import 'package:biliardino/models/game_match.dart';
 import 'package:biliardino/models/player.dart';
@@ -72,6 +74,10 @@ class LeaderboardFixture {
     child: BlocProvider.value(
       value: cubit,
       child: MaterialApp(
+        builder: (context, child) => AppPresentationScope(
+          presentation: const SouthAfricaPresentation(),
+          child: child!,
+        ),
         debugShowCheckedModeBanner: false,
         theme: AppTheme.southAfrica(),
         home: const LeaderboardScreen(),
