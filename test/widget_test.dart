@@ -1,3 +1,5 @@
+import 'support/fake_database.dart';
+import 'package:biliardino/repositories/app_style_repository.dart';
 import 'support/fake_data_management.dart';
 import 'dart:async';
 
@@ -59,6 +61,7 @@ void main() {
         matchRepository: repos.matchRepo,
         matchRulesRepository: repos.matchRulesRepo,
         dataManagementRepository: FakeData(),
+        appStyleRepository: AppStyleRepository(FakeDatabaseHelper()),
       ),
     );
     await tester.pump();

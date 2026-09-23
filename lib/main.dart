@@ -1,3 +1,5 @@
+import 'cubits/app_style/app_style_cubit.dart';
+import 'repositories/app_style_repository.dart';
 import 'repositories/data_management_repository.dart';
 import 'services/data_management_coordinator.dart';
 import 'services/data_file_share_service.dart';
@@ -44,17 +46,20 @@ class BiliardinoBootstrap extends StatefulWidget {
     this.matchRepository,
     this.matchRulesRepository,
     this.dataManagementRepository,
+    this.appStyleRepository,
   }) : assert(
          (playerRepository == null) == (matchRepository == null) &&
              (playerRepository == null) == (matchRulesRepository == null) &&
-             (playerRepository == null) == (dataManagementRepository == null),
-         'Inject all repositories, including data management, or none.',
+             (playerRepository == null) == (dataManagementRepository == null) &&
+             (playerRepository == null) == (appStyleRepository == null),
+         'Inject all repositories, including data management and style, or none.',
        );
 
   final PlayerRepository? playerRepository;
   final MatchRepository? matchRepository;
   final MatchRulesRepository? matchRulesRepository;
   final DataManagementRepository? dataManagementRepository;
+  final AppStyleRepository? appStyleRepository;
 
   @override
   State<BiliardinoBootstrap> createState() => _BiliardinoBootstrapState();
@@ -65,6 +70,7 @@ class _BiliardinoBootstrapState extends State<BiliardinoBootstrap> {
   late final MatchRepository _matchRepository;
   late final MatchRulesRepository _matchRulesRepository;
   late final DataManagementRepository _dataManagementRepository;
+  late final AppStyleRepository _appStyleRepository;
   late Future<void> _loadFuture;
 
   @override
@@ -88,6 +94,9 @@ class _BiliardinoBootstrapState extends State<BiliardinoBootstrap> {
             ]);
           },
         );
+    _appStyleRepository =
+        widget.appStyleRepository ??
+        AppStyleRepository(DatabaseHelper.instance);
     _loadFuture = _loadRepositories();
   }
 
@@ -96,6 +105,7 @@ class _BiliardinoBootstrapState extends State<BiliardinoBootstrap> {
       _playerRepository.load(),
       _matchRepository.load(),
       _matchRulesRepository.load(),
+      _appStyleRepository.load(),
     ]);
   }
 
@@ -124,6 +134,7 @@ class _BiliardinoBootstrapState extends State<BiliardinoBootstrap> {
             matchRepository: _matchRepository,
             matchRulesRepository: _matchRulesRepository,
             dataManagementRepository: _dataManagementRepository,
+            appStyleRepository: _appStyleRepository,
           );
         }
 
@@ -142,17 +153,20 @@ class BiliardinoApp extends StatelessWidget {
     required this.matchRepository,
     required this.matchRulesRepository,
     required this.dataManagementRepository,
+    required this.appStyleRepository,
   });
 
   final PlayerRepository playerRepository;
   final MatchRepository matchRepository;
   final MatchRulesRepository matchRulesRepository;
   final DataManagementRepository dataManagementRepository;
+  final AppStyleRepository appStyleRepository;
 
   @override
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider<AppStyleRepository>.value(value: appStyleRepository),
         RepositoryProvider<DataManagementRepository>.value(
           value: dataManagementRepository,
         ),
@@ -173,6 +187,9 @@ class BiliardinoApp extends StatelessWidget {
       ],
       child: MultiBlocProvider(
         providers: [
+          BlocProvider<AppStyleCubit>(
+            create: (_) => AppStyleCubit(appStyleRepository),
+          ),
           BlocProvider<HomeCubit>(create: (_) => HomeCubit()),
           BlocProvider<DashboardCubit>(
             create: (ctx) => DashboardCubit(

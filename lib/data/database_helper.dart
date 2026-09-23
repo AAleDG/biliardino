@@ -8,6 +8,9 @@ import '../models/player.dart';
 
 class DatabaseHelper {
   DatabaseHelper._();
+
+  /// Uses an already-open database; its creator retains ownership of closing it.
+  DatabaseHelper.withDatabase(Database database) : _db = database;
   static final DatabaseHelper instance = DatabaseHelper._();
   Database? _db;
 

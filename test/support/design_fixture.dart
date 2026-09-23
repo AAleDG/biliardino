@@ -1,3 +1,4 @@
+import 'package:biliardino/repositories/app_style_repository.dart';
 import 'package:biliardino/repositories/data_management_repository.dart';
 import 'package:biliardino/services/data_management_coordinator.dart';
 import 'package:biliardino/services/data_file_share_service.dart';
@@ -112,6 +113,7 @@ class DesignFixture {
     matchRepository: matchesRepository,
     matchRulesRepository: rulesRepository,
     dataManagementRepository: dataCoordinator,
+    appStyleRepository: AppStyleRepository(database),
   );
 
   DataManagementRepository get dataCoordinator => DataManagementCoordinator(

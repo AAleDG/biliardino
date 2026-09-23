@@ -82,6 +82,23 @@ void main() {
     },
   );
 
+  test('backup replacement preserves the local style preference', () async {
+    await seedRestoreDatabase();
+    final db = DatabaseHelper.withDatabase(database);
+    await db.setSettings({'appearance.style': 'south-africa-2010'});
+    await database.transaction(
+      (txn) => DatabaseHelper.replacePlayersAndMatchesIn(
+        txn,
+        players: [],
+        matches: [],
+      ),
+    );
+    expect(await db.getSettings(['appearance.style', 'match_rules']), {
+      'appearance.style': 'south-africa-2010',
+      'match_rules': 'preserve-me',
+    });
+  });
+
   for (final failure in ['missing player', 'invalid scorer']) {
     test(
       'late batch trigger failure ($failure) rolls back all earlier batches and deletes',

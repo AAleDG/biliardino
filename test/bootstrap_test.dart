@@ -1,3 +1,5 @@
+import 'support/fake_database.dart';
+import 'package:biliardino/repositories/app_style_repository.dart';
 import 'support/fake_data_management.dart';
 import 'package:biliardino/main.dart';
 import 'package:biliardino/models/game_match.dart';
@@ -24,6 +26,7 @@ void main() {
         matchRepository: matches,
         matchRulesRepository: rules,
         dataManagementRepository: data,
+        appStyleRepository: AppStyleRepository(FakeDatabaseHelper()),
       ),
     );
     await tester.pumpAndSettle();
@@ -52,6 +55,33 @@ void main() {
     expect(players.disposeCalls, 1);
     expect(matches.disposeCalls, 1);
   });
+  testWidgets(
+    'style load failure uses the existing retry and preserves injected owners',
+    (tester) async {
+      final db = _StyleDatabase();
+      final style = AppStyleRepository(db);
+      final players = _PlayerRepositoryFake();
+      await tester.pumpWidget(
+        BiliardinoBootstrap(
+          playerRepository: players,
+          matchRepository: _MatchRepositoryFake(),
+          matchRulesRepository: _MatchRulesRepositoryFake(),
+          dataManagementRepository: FakeData(),
+          appStyleRepository: style,
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('bootstrap-retry')), findsOneWidget);
+      db.fail = false;
+      await tester.tap(find.byKey(const ValueKey('bootstrap-retry')));
+      await tester.pump();
+      await tester.pump();
+      final app = tester.widget<BiliardinoApp>(find.byType(BiliardinoApp));
+      expect(app.appStyleRepository, same(style));
+      expect(app.playerRepository, same(players));
+      await tester.pumpWidget(const SizedBox.shrink());
+    },
+  );
 }
 
 class _PlayerRepositoryFake implements PlayerRepository {
@@ -147,4 +177,13 @@ class _MatchRulesRepositoryFake implements MatchRulesRepository {
 
   @override
   Future<void> save(MatchRules rules) async {}
+}
+
+class _StyleDatabase extends FakeDatabaseHelper {
+  bool fail = true;
+  @override
+  Future<Map<String, String>> getSettings(List<String> keys) {
+    if (fail) throw StateError('style storage unavailable');
+    return super.getSettings(keys);
+  }
 }
