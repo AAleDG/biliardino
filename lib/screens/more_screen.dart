@@ -9,6 +9,7 @@ class MoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => PassPage(
     title: 'ALTRO',
+    fixedFrame: true,
     children: [
       const Text('ARCHIVIO E DATI', style: AppType.section),
       const SizedBox(height: 12),

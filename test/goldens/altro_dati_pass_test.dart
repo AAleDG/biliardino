@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/screens/home_screen.dart';
+import 'package:biliardino/screens/more_screen.dart';
+import 'package:biliardino/widgets/design/pass_artwork.dart';
 import 'package:biliardino/widgets/design/foosball_scene.dart';
 import '../support/design_fixture.dart';
 
@@ -46,10 +48,43 @@ void main() {
         );
       }
 
-      await capture('more');
       final data = find.byKey(const ValueKey('more-data'));
-      await tester.ensureVisible(data);
+      final heading = find.text('ALTRO');
+      final footer = find.descendant(
+        of: find.byType(MoreScreen),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is CustomPaint &&
+              widget.painter is PassRibbons &&
+              (widget.painter! as PassRibbons).kind == PassRibbonKind.footer,
+        ),
+      );
+      expect(
+        footer,
+        findsOneWidget,
+        reason: 'Altro footer remains visible even when the cards overflow',
+      );
+      await capture('more');
+      final headingBefore = tester.getRect(heading);
+      final footerBefore = tester.getRect(footer);
+      final dataBefore = tester.getTopLeft(data);
+      await Scrollable.ensureVisible(tester.element(data), alignment: .5);
       await tester.pumpAndSettle();
+      expect(
+        tester.getRect(heading),
+        headingBefore,
+        reason: 'Altro heading stays fixed while its cards scroll',
+      );
+      expect(
+        tester.getRect(footer),
+        footerBefore,
+        reason: 'Altro footer stays fixed above the tab bar',
+      );
+      expect(data.hitTestable(), findsOneWidget);
+      if (spec.$3 == 2) {
+        expect(tester.getTopLeft(data).dy, lessThan(dataBefore.dy));
+        await capture('more-scrolled');
+      }
       await tester.tap(data);
       await tester.pumpAndSettle();
       await capture('data');
