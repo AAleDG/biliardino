@@ -1,5 +1,7 @@
 # South Africa 2010 implementation receipt
 
+Simulator migration (2026-10-01): current validation targets iPhone 17 Pro Max, iOS 26.5, UDID `9BD8A107-8FB1-4B79-83FC-9400DE997961`. The iOS 26.0 device `293A02E2-FC2D-4D72-93E4-C1EE93CA537E` is retired; references below record historical evidence, not the current destination.
+
 Updated 12 September 2026. Issue #11. Branch: `codex/south-africa-2010-design-implementation`.
 
 ## Home dashboard extension checkpoint — 9 September 2026
