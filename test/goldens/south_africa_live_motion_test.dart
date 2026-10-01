@@ -113,7 +113,7 @@ void main() {
     await tester.pumpAndSettle();
     await match.save();
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
     await capture('south-africa-victory');
     await tester.tap(find.text('RIVINCITA'));
     await tester.pumpAndSettle();

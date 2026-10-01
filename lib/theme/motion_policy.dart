@@ -17,8 +17,7 @@ abstract final class AppMotion {
   static const content = Duration(milliseconds: 220);
   static const podium = Duration(milliseconds: 400);
   static const goal = Duration(milliseconds: 1100);
-  static const victory = Duration(milliseconds: 500);
-  static const confetti = Duration(milliseconds: 2000);
+  static const victory = Duration(milliseconds: 850);
   static const splash = Duration(milliseconds: 1000);
   static const enter = Curves.easeOutCubic;
   static const exit = Curves.easeInCubic;
