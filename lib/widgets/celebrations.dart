@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 import 'design/south_africa_artwork.dart';
+import 'design/victory_ribbons.dart';
 
 class Celebrations {
   Celebrations._();
@@ -250,14 +250,14 @@ class _VictoryOverlay extends StatefulWidget {
 }
 
 class _VictoryOverlayState extends State<_VictoryOverlay>
-    with TickerProviderStateMixin, MotionAwareState {
-  late final AnimationController _entry, _confetti;
+    with SingleTickerProviderStateMixin, MotionAwareState {
+  late final AnimationController _entry;
   bool _started = false;
+
   @override
   void initState() {
     super.initState();
     _entry = AnimationController(vsync: this, duration: AppMotion.victory);
-    _confetti = AnimationController(vsync: this, duration: AppMotion.confetti);
   }
 
   @override
@@ -265,10 +265,7 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
     super.didChangeDependencies();
     if (!_started) {
       _started = true;
-      if (!reduceMotion) {
-        _entry.forward();
-        _confetti.forward();
-      }
+      if (!reduceMotion) _entry.forward();
     }
   }
 
@@ -276,196 +273,172 @@ class _VictoryOverlayState extends State<_VictoryOverlay>
   void settleMotion() {
     _entry.stop();
     _entry.value = 1;
-    _confetti.stop();
-    _confetti.value = 1;
   }
 
   @override
   void dispose() {
     _entry.dispose();
-    _confetti.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    key: const ValueKey('victory-overlay'),
-    container: true,
-    liveRegion: true,
-    namesRoute: true,
-    scopesRoute: true,
-    explicitChildNodes: true,
-    label:
-        'Vittoria: ${widget.teamLabel}. ${widget.playerNames.join(' e ')}. Punteggio ${widget.winnerScore} a ${widget.loserScore}.',
-    child: BlockSemantics(
-      child: Material(
-        color: AppColors.background,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            const ModalBarrier(
-              dismissible: false,
-              barrierSemanticsDismissible: false,
-              color: Colors.transparent,
-            ),
-            const Positioned(
-              left: 0,
-              right: 0,
-              top: 0,
-              height: 120,
-              child: SouthAfricaArtwork(
-                mark: ArtworkMark.headerRibbon,
-                fit: BoxFit.fill,
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final compact =
+        media.size.height - media.padding.vertical < 740 ||
+        media.textScaler.scale(1) > 1.3;
+    return Semantics(
+      key: const ValueKey('victory-overlay'),
+      container: true,
+      liveRegion: true,
+      namesRoute: true,
+      scopesRoute: true,
+      explicitChildNodes: true,
+      label:
+          'Vittoria: ${widget.teamLabel}. ${widget.playerNames.join(' e ')}. Punteggio ${widget.winnerScore} a ${widget.loserScore}.',
+      child: BlockSemantics(
+        child: Material(
+          color: AppColors.background,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              const ModalBarrier(
+                dismissible: false,
+                barrierSemanticsDismissible: false,
+                color: Colors.transparent,
               ),
-            ),
-            if (!reduceMotion)
               IgnorePointer(
                 child: ExcludeSemantics(
                   child: RepaintBoundary(
                     child: CustomPaint(
-                      painter: _ConfettiPainter(_confetti),
-                      size: Size.infinite,
+                      painter: VictoryRibbons(_entry, compact: compact),
                     ),
                   ),
                 ),
               ),
-            SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 480),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        AnimatedBuilder(
-                          animation: _entry,
-                          builder: (_, child) => Transform.translate(
-                            offset: Offset(
-                              0,
-                              16 *
-                                  (1 -
-                                      Curves.easeOutCubic.transform(
-                                        _entry.value,
-                                      )),
-                            ),
-                            child: child,
-                          ),
-                          child: Column(
-                            children: [
-                              const Icon(
-                                Icons.emoji_events,
-                                color: AppColors.ink,
-                                size: 72,
-                              ),
-                              const FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text('VITTORIA', style: AppType.event),
-                              ),
-                              const SizedBox(height: 16),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: widget.color,
-                                  borderRadius: BorderRadius.circular(
-                                    AppRadius.panel,
-                                  ),
-                                ),
-                                child: DefaultTextStyle(
-                                  style: AppType.bodyStrong.copyWith(
-                                    color: AppColors.onTeam(widget.color),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        widget.teamLabel,
-                                        style: AppType.section.copyWith(
-                                          color: AppColors.onTeam(widget.color),
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        widget.playerNames.join('  &  '),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          '${widget.winnerScore} — ${widget.loserScore}',
-                                          style: AppType.score.copyWith(
-                                            fontSize: 80,
-                                            color: AppColors.onTeam(
-                                              widget.color,
-                                            ),
+              SafeArea(
+                minimum: EdgeInsets.symmetric(vertical: compact ? 40 : 0),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: compact ? 24 : 32,
+                        vertical: compact ? 40 : 64,
+                      ),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight:
+                              (constraints.maxHeight - (compact ? 80 : 128))
+                                  .clamp(0.0, double.infinity),
+                        ),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 440),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                AnimatedBuilder(
+                                  animation: _entry,
+                                  builder: (_, child) {
+                                    final reveal = Curves.easeOutCubic
+                                        .transform(
+                                          ((_entry.value - .45) / .55).clamp(
+                                            0.0,
+                                            1.0,
                                           ),
+                                        );
+                                    return ClipRect(
+                                      child: Transform.translate(
+                                        offset: Offset(0, 100 * (1 - reveal)),
+                                        child: Opacity(
+                                          opacity: reveal,
+                                          child: child,
                                         ),
                                       ),
-                                    ],
+                                    );
+                                  },
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      'VITTORIA',
+                                      style: AppType.event.copyWith(
+                                        fontSize: compact ? 64 : 88,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 20),
+                                Center(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: widget.color,
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    child: Text(
+                                      widget.teamLabel,
+                                      textAlign: TextAlign.center,
+                                      style: AppType.section.copyWith(
+                                        color: AppColors.onTeam(widget.color),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  widget.playerNames.join('  &  '),
+                                  textAlign: TextAlign.center,
+                                  style: AppType.player.copyWith(
+                                    fontSize: compact ? 22 : 28,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    '${widget.winnerScore} — ${widget.loserScore}',
+                                    style: AppType.score.copyWith(
+                                      fontSize: compact ? 88 : 112,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: compact ? 24 : 36),
+                                ElevatedButton.icon(
+                                  autofocus: true,
+                                  style: ElevatedButton.styleFrom(
+                                    shape: const StadiumBorder(),
+                                    minimumSize: const Size(0, 60),
+                                  ),
+                                  onPressed: widget.onRematch,
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('RIVINCITA'),
+                                ),
+                                const SizedBox(height: 12),
+                                OutlinedButton.icon(
+                                  style: OutlinedButton.styleFrom(
+                                    shape: const StadiumBorder(),
+                                  ),
+                                  onPressed: widget.onChangeTeams,
+                                  icon: const Icon(Icons.groups),
+                                  label: const Text('CAMBIA SQUADRE'),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          autofocus: true,
-                          onPressed: widget.onRematch,
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('RIVINCITA'),
-                        ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed: widget.onChangeTeams,
-                          icon: const Icon(Icons.groups),
-                          label: const Text('CAMBIA SQUADRE'),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
-/// Fixed bounded ribbon burst; repaint only while the two-second clock runs.
-class _ConfettiPainter extends CustomPainter {
-  _ConfettiPainter(this.clock) : super(repaint: clock);
-  final Animation<double> clock;
-  static const colors = [
-    AppColors.yellow,
-    AppColors.success,
-    AppColors.primary,
-    AppColors.error,
-  ];
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (clock.value >= 1) return;
-    final random = math.Random(2010);
-    final paint = Paint();
-    for (var i = 0; i < 36; i++) {
-      final x = random.nextDouble() * size.width;
-      final drift = (random.nextDouble() - .5) * 100;
-      final delay = random.nextDouble() * .25;
-      final t = math.max(0.0, clock.value - delay);
-      canvas.save();
-      canvas.translate(x + drift * t, -20 + size.height * 1.6 * t * t);
-      canvas.rotate(i + t * 4);
-      paint.color = colors[i % colors.length];
-      canvas.drawRect(const Rect.fromLTWH(-3, -6, 6, 12), paint);
-      canvas.restore();
-    }
+    );
   }
-
-  @override
-  bool shouldRepaint(_ConfettiPainter old) => old.clock != clock;
 }

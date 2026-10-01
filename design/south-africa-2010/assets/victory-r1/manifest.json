@@ -1,0 +1,22 @@
+{
+  "status": "painter-and-integrated-animation-approved",
+  "date": "2026-10-01",
+  "approval": {
+    "userResponse": "perfect",
+    "context": "Response to the Simulator video of proposal 3, the 850 ms South Africa ribbon victory reveal.",
+    "scope": "New ribbon painter and integrated victory composition/motion shown in the preview."
+  },
+  "review": {
+    "path": "design/south-africa-2010/assets/victory-r1/approved-preview.mp4",
+    "sha256": "292d4e405ed6429c7507c2aaf56a9bd9de52388b81380c83e75ed16bdbd7b5ca",
+    "device": "iPhone 17 Pro Max 26.0 AppStore",
+    "entrypoint": "tool/victory_preview.dart",
+    "notes": "Production overlay with sample data and no storage. Same-speed Simulator capture resized to 660px width, with a two-second final-frame hold."
+  },
+  "sourceSha256": {
+    "lib/widgets/design/victory_ribbons.dart": "56400ec19f1947ad2fd406057466386f61034bfeabc3b2542ea6ee7518000c97",
+    "lib/widgets/celebrations.dart": "c1c11431e7f617637ee9c028006304668e45007f5d5b51ed3755faf73b474329",
+    "lib/theme/motion_policy.dart": "cff0edbd4a399e1749dc9a973a812fcb29e6cd23a8a1aa0e6e3f9d55a44c3838",
+    "tool/victory_preview.dart": "157feb70ebb0d8c4eba077b826477ee4e35cbde15d88198b8c26dd185a0cc212"
+  }
+}
