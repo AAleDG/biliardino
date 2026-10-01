@@ -65,7 +65,10 @@ void main() {
 
     Navigator.of(tester.element(find.byType(HistoryScreen))).pop();
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('more-data')));
+    final data = find.byKey(const ValueKey('more-data'));
+    await Scrollable.ensureVisible(tester.element(data), alignment: .5);
+    await tester.pumpAndSettle();
+    await tester.tap(data);
     await tester.pumpAndSettle();
     expect(find.text('ESPORTA'), findsOneWidget);
     expect(find.byType(NavigationBar), findsNothing);
