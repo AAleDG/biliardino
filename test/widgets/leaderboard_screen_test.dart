@@ -177,6 +177,9 @@ void main() {
     'pair mode renders pairs, opens both profile targets and exports general pairs from Marcatori',
     (tester) async {
       final f = LeaderboardFixture(count: 4, mode: MatchMode.twoVsTwo);
+      f.database.matches[1] = f.database.matches[1].copyWith(
+        scorerIds: const [],
+      );
       final share = _RecordingShare();
       await mount(tester, f, share: share);
       final first = f.cubit.state.teamGeneral.first;
@@ -188,6 +191,8 @@ void main() {
       expect(share.content!.split('\n'), hasLength(5));
       expect(share.content, contains('"Coppia"'));
       expect(share.content, contains('"Ale + Luca"'));
+      expect(share.content, contains('"Eva + Leo"'));
+      expect(f.cubit.state.teamScorers, hasLength(2));
       await tester.tap(find.text('1vs1'));
       await tester.pumpAndSettle();
       expect(find.text('Nessun marcatore disponibile'), findsOneWidget);
@@ -209,7 +214,9 @@ void main() {
       }
       await tester.pageBack();
       await tester.pumpAndSettle();
-      final last = f.cubit.state.teamScorers.last;
+      await tester.tap(find.text('Generale'));
+      await tester.pumpAndSettle();
+      final last = f.cubit.state.teamGeneral.last;
       await tester.scrollUntilVisible(
         find.byKey(ValueKey('leaderboard-row-${last.id}')),
         -150,

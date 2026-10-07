@@ -3,6 +3,7 @@ import 'package:biliardino/cubits/leaderboard/leaderboard_state.dart';
 import 'package:biliardino/models/player.dart';
 import 'package:biliardino/models/player_badge.dart';
 import 'package:biliardino/models/player_stats.dart';
+import 'package:biliardino/models/team_leaderboard_stats.dart';
 import 'package:biliardino/models/game_match.dart';
 import 'package:biliardino/repositories/player_repository.dart';
 import 'package:biliardino/repositories/match_repository.dart';
@@ -39,6 +40,27 @@ void main() {
         'Carlo',
       ]);
       expect(state.general, hasLength(5));
+      final pairs = LeaderboardState(
+        teams: [
+          for (final stat in state.stats)
+            TeamLeaderboardStats(
+              id: stat.player.id,
+              players: [stat.player, player('partner', 'Partner')],
+              games: stat.games,
+              wins: stat.wins,
+              losses: stat.losses,
+              goalsScored: stat.goalsScored,
+            ),
+        ],
+      );
+      expect(pairs.teamScorers.map((s) => s.players.first.name), [
+        'zeta',
+        'anna',
+        'Bea',
+        'Carlo',
+      ]);
+      expect(pairs.teamGeneral, hasLength(5));
+      expect(() => pairs.teamScorers.clear(), throwsUnsupportedError);
       expect(() => state.scorers.clear(), throwsUnsupportedError);
     },
   );

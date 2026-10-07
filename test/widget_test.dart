@@ -590,7 +590,7 @@ void main() {
   testWidgets('Il nome nella classifica apre il profilo giocatore', (
     WidgetTester tester,
   ) async {
-    final repos = _sampleData();
+    final repos = _individualLeaderboardData();
     await _pumpHome(tester, home: const LeaderboardScreen(), repos: repos);
     await tester.pumpAndSettle();
 
@@ -1384,7 +1384,7 @@ void main() {
         await _pumpHome(
           tester,
           home: const LeaderboardScreen(),
-          repos: _sampleData(),
+          repos: _individualLeaderboardData(),
         );
         await tester.pumpAndSettle();
 
@@ -1944,5 +1944,29 @@ GameMatch _fallbackMatch() {
     t2Score: 0,
     winningTeam: 1,
     scorerIds: const ['p1'],
+  );
+}
+
+// Individual route/semantics cases must use the selected 1vs1 projection.
+_Repos _individualLeaderboardData() {
+  final sample = _sampleData();
+  return _Repos.build(
+    players: sample.playerRepo.players,
+    matches: [
+      for (final (index, opponent) in ['p1', 'p3'].indexed)
+        GameMatch(
+          id: 'individual-$index',
+          playedAt: DateTime(2026, 1, index + 1),
+          mode: MatchMode.oneVsOne,
+          t1p1: 'p2',
+          t1p2: '',
+          t2p1: opponent,
+          t2p2: '',
+          t1Score: 2,
+          t2Score: 0,
+          winningTeam: 1,
+          scorerIds: const ['p2', 'p2'],
+        ),
+    ],
   );
 }

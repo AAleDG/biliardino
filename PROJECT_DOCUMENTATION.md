@@ -50,7 +50,7 @@ Lo stato implementato prima dell'estensione Home usa una bottom navigation con c
 - **Giocatori**: elenco giocatori, stato presenza, aggiunta nuovo giocatore.
 - **Partita**: composizione squadre, avvio partita, scoreboard, modifica punteggio, salvataggio risultato.
 - **Storico**: registro partite con riepilogo, filtri, gruppi per data e card risultato.
-- **Classifica**: ranking generale e marcatori, calcolati dalle partite salvate.
+- **Classifica**: ranking generale e marcatori separati per 1vs1 (giocatori) e 2vs2 (coppie), calcolati dalle partite salvate.
 - **Dati**: esportazione JSON/CSV e ripristino verificato tramite i selettori nativi.
 
 La fondazione implementata per l'estensione Home usa cinque voci primarie tipizzate:
@@ -141,6 +141,12 @@ Il filtro `Vinte/Perse` viene abilitato solo quando e' selezionato un giocatore,
 ### Classifica calcolata, non salvata
 
 La classifica non viene persistita nel database. Viene calcolata dalle partite salvate. Questa scelta evita dati duplicati e possibili inconsistenze: se una partita esiste nello storico, la classifica puo' sempre essere ricostruita.
+
+`LeaderboardCubit` conserva la modalita' selezionata in memoria: sceglie 2vs2 all'apertura se esistono partite 2vs2, altrimenti 1vs1, e non cambia scelta durante rinomina, archiviazione o correzioni. Solo questa proiezione filtra le partite per modalita'; Dashboard e profilo individuale continuano a usare tutte le partite.
+
+Nel 2vs2 `StatsService.computeTeamLeaderboard` aggrega ogni coppia ricorrente senza distinguere ordine dei membri o lato del campo. L'identita' derivata codifica in JSON gli ID ordinati, preservando anche ID importati con delimitatori; non e' salvata e non richiede migrazioni. Generale ordina per tre punti a vittoria, win rate e nome; Marcatori somma i gol attribuiti ai membri e ordina per gol, partite e nome. I risultati legacy senza marcatori non inventano gol. Gli snapshot includono i nomi e proteggono liste e cronologia dei marcatori.
+
+`RankingStats` espone i dati comuni per i widget live senza rappresentare una coppia come giocatore fittizio. I target coppia passano da `openPairProfile` e `AppPresentation.pairProfile`; il `PairProfileCubit` della route segue gli stessi repository, conserva membri archiviati, statistiche, avversari e tutte le partite insieme. Entrambi i membri aprono il proprio profilo. Il CSV esporta sempre Generale nella modalita' selezionata, anche dalla scheda Marcatori.
 
 Il tradeoff e' che la classifica viene ricalcolata quando cambiano partite o giocatori, ma per il volume dati previsto da una app da ufficio il costo e' trascurabile.
 
