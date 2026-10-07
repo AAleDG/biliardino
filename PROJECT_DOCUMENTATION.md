@@ -81,6 +81,8 @@ South Africa conserva Storico/Dati come route spinte; Italia conserva le destina
 
 La verifica usa entrambe le vere presentazioni, persistenza SQLite, identità dei proprietari/Navigator, setup, filtri e tab di Classifica, operazioni pendenti, errori e disposal. Le immagini Italia originali restano archiviate: tre catture con decode incompleto o il difetto di nome obsoleto sono affiancate da riferimenti corretti prodotti indipendentemente dal codice donor invariato. Solo Altro e la nuova pagina Aspetto aggiungono UI; i calcoli e l’export Classifica restano quelli corretti in R5.
 
+La verifica finale e i limiti mantenuti sono documentati in `design/runtime-style-selection/IMPLEMENTATION.md`. Il piano temporaneo rimane ignorato fino alla conferma del landing sul ramo primario; AGENTS.md viene preservato verbatim come richiesto dall’utente.
+
 ## Motivazioni delle scelte tecniche
 
 ### Flutter
