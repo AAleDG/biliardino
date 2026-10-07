@@ -35,6 +35,16 @@ class MoreScreen extends StatelessWidget {
           subtitle: 'Backup, esportazione e ripristino',
           onPressed: () => openDataManagement(context),
         ),
+        const SizedBox(height: 24),
+        const Text('PERSONALIZZA', style: Italia90.heading),
+        const SizedBox(height: 12),
+        ItaliaDataActionSlip(
+          key: const ValueKey('more-appearance'),
+          icon: Icons.palette_outlined,
+          title: 'Aspetto',
+          subtitle: 'Scegli lo stile dell’app',
+          onPressed: () => openAppearance(context),
+        ),
       ],
     ),
   );

@@ -5,6 +5,7 @@ import '../repositories/data_management_repository.dart';
 import '../services/backup_file_picker.dart';
 import '../services/data_file_share_service.dart';
 import '../theme/app_theme.dart';
+import '../presentation/presentation_operations.dart';
 import '../widgets/design/pass_page.dart';
 import '../widgets/design/pass_ticket.dart';
 
@@ -14,7 +15,7 @@ class DataManagementScreen extends StatelessWidget {
   Widget build(BuildContext context) => BlocProvider(
     create: (_) =>
         DataManagementCubit(context.read<DataManagementRepository>()),
-    child: const _DataView(),
+    child: const DataOperationScope(child: _DataView()),
   );
 }
 

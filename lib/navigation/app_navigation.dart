@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../presentation/app_presentation.dart';
+import '../screens/appearance_screen.dart';
 
 Future<void> openHistory(BuildContext context) {
   return AppPresentationScope.of(context).openHistory(context);
@@ -29,3 +30,7 @@ Future<void> openPairProfile(BuildContext context, String pairId) {
     ),
   );
 }
+
+Future<void> openAppearance(BuildContext context) => Navigator.of(
+  context,
+).push(MaterialPageRoute<void>(builder: (_) => const AppearanceScreen()));

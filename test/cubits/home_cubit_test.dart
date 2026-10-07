@@ -3,23 +3,27 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test(
-    'uses the named five-destination order with Home initially selected',
-    () {
+    'starts at Home and selects typed destinations without duplicate events',
+    () async {
       final cubit = HomeCubit();
-
       expect(cubit.state, HomeDestination.home);
-      expect(HomeDestination.values, [
-        HomeDestination.home,
-        HomeDestination.players,
+      final events = <HomeDestination>[];
+      final subscription = cubit.stream.listen(events.add);
+      cubit.select(HomeDestination.match);
+      cubit.select(HomeDestination.match);
+      cubit.select(HomeDestination.history);
+      cubit.select(HomeDestination.data);
+      cubit.select(HomeDestination.home);
+      await Future<void>.delayed(Duration.zero);
+      expect(events, [
         HomeDestination.match,
-        HomeDestination.leaderboard,
-        HomeDestination.more,
+        HomeDestination.history,
+        HomeDestination.data,
+        HomeDestination.home,
       ]);
-
-      cubit.select(HomeDestination.match);
-      expect(cubit.state, HomeDestination.match);
-      cubit.select(HomeDestination.match);
-      expect(cubit.state, HomeDestination.match);
+      expect(cubit.state, HomeDestination.home);
+      await subscription.cancel();
+      await cubit.close();
     },
   );
 }

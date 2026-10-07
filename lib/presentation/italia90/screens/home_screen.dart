@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../app_presentation.dart';
 
 import '../../../cubits/home/home_cubit.dart';
 import '../../../cubits/new_match/new_match_cubit.dart';
@@ -32,9 +33,11 @@ class HomeScreen extends StatelessWidget {
           selector: (state) =>
               (isStarted: _isStartedMatch(state), isSaving: state.isSaving),
           builder: (context, matchGate) {
+            final active = AppPresentationScope.isActiveOf(context);
             return PopScope(
-              canPop: !matchGate.isStarted,
+              canPop: !active || !matchGate.isStarted,
               onPopInvokedWithResult: (didPop, result) async {
+                if (!active) return;
                 if (didPop || matchGate.isSaving) {
                   return;
                 }

@@ -4,6 +4,7 @@ import '../widgets/design/south_africa_artwork.dart';
 import '../navigation/app_navigation.dart';
 import 'players/player_dialogs.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../presentation/app_presentation.dart';
 
 import '../cubits/players/players_cubit.dart';
 import '../cubits/players/players_state.dart';
@@ -20,6 +21,7 @@ class PlayersScreen extends StatelessWidget {
       listenWhen: (previous, current) =>
           current.feedback != null && current.feedback != previous.feedback,
       listener: (context, state) {
+        if (!AppPresentationScope.isActiveOf(context)) return;
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(

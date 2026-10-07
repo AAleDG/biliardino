@@ -104,7 +104,9 @@ void main() {
         match.setTeam(entry.key as String, entry.value as int);
       }
       final rules = setup['rules'] as Map;
-      await match.setRuleMode(MatchRuleMode.values.byName(rules['mode'] as String));
+      await match.setRuleMode(
+        MatchRuleMode.values.byName(rules['mode'] as String),
+      );
       await match.setTargetScore(rules['target_score'] as int);
       await match.setWinByTwo(rules['win_by_two'] as bool);
       match.setRivalry(setup['is_rivalry'] as bool);
@@ -115,8 +117,12 @@ void main() {
         }
       }
       final ranks = ctx.read<LeaderboardCubit>();
-      ranks.selectMode(MatchMode.values.byName(metadata['leaderboard_mode'] as String));
-      home.select(HomeDestination.values.byName(metadata['destination'] as String));
+      ranks.selectMode(
+        MatchMode.values.byName(metadata['leaderboard_mode'] as String),
+      );
+      home.select(
+        HomeDestination.values.byName(metadata['destination'] as String),
+      );
       await tester.pumpAndSettle();
       if (name.endsWith('-scorers') || name == 'flows-standings-large') {
         ranks.selectTab(1);
@@ -190,7 +196,9 @@ void main() {
         await expectLater(
           image,
           matchesGoldenFile(
-            'italia90-reference/${reference['corrected_expected'] ?? '$name.png'}',
+            name.startsWith('supplement-more-')
+                ? 'appearance-altro-$name.png'
+                : 'italia90-reference/${reference['corrected_expected'] ?? '$name.png'}',
           ),
         );
       } finally {

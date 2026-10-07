@@ -25,6 +25,7 @@ import 'repositories/match_rules_repository.dart';
 import 'repositories/player_repository.dart';
 import 'models/app_style.dart';
 import 'presentation/app_presentation.dart';
+import 'presentation/presentation_operations.dart';
 import 'presentation/presentation_registry.dart';
 
 Future<void> main() async {
@@ -248,16 +249,18 @@ class _BiliardinoMaterialApp extends StatelessWidget {
     final presentation = presentationFor(style);
     return AppPresentationScope(
       presentation: presentation,
-      child: Italia90MotionScope(
-        child: MaterialApp(
-          title: presentation.title,
-          debugShowCheckedModeBanner: false,
-          theme: presentation.theme,
-          builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
-            value: presentation.systemUi,
-            child: child!,
+      child: PresentationOperationHost(
+        child: Italia90MotionScope(
+          child: MaterialApp(
+            title: presentation.title,
+            debugShowCheckedModeBanner: false,
+            theme: presentation.theme,
+            builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+              value: presentation.systemUi,
+              child: child!,
+            ),
+            home: home,
           ),
-          home: home,
         ),
       ),
     );

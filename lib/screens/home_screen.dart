@@ -26,9 +26,11 @@ class HomeScreen extends StatelessWidget {
           selector: (state) =>
               (isStarted: _isStartedMatch(state), isSaving: state.isSaving),
           builder: (context, matchGate) {
+            final active = AppPresentationScope.isActiveOf(context);
             return PopScope(
-              canPop: !matchGate.isStarted,
+              canPop: !active || !matchGate.isStarted,
               onPopInvokedWithResult: (didPop, result) async {
+                if (!active) return;
                 if (didPop) {
                   return;
                 }

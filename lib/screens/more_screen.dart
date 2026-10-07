@@ -30,6 +30,17 @@ class MoreScreen extends StatelessWidget {
         trailing: Icons.chevron_right,
         onTap: () => openDataManagement(context),
       ),
+      const SizedBox(height: 24),
+      const Text('PERSONALIZZA', style: AppType.section),
+      const SizedBox(height: 12),
+      PassTicket(
+        key: const ValueKey('more-appearance'),
+        icon: Icons.palette_outlined,
+        title: 'ASPETTO',
+        subtitle: 'Scegli lo stile dell’app',
+        trailing: Icons.chevron_right,
+        onTap: () => openAppearance(context),
+      ),
       const SizedBox(height: 14),
     ],
   );

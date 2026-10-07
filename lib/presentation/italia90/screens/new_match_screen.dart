@@ -70,6 +70,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           _dismissGoalOverlay();
+          _dismissMatchDecoration();
           _dismissVictoryOverlay();
         }
       });
@@ -94,6 +95,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
           listenWhen: (previous, current) =>
               current.kickedOff && !previous.kickedOff,
           listener: (ctx, _) {
+            if (!AppPresentationScope.isActiveOf(ctx)) return;
             if (ctx.read<HomeCubit>().state != HomeDestination.match) return;
             _dismissMatchDecoration();
             _matchDecorationOverlay = Celebrations.showMatchStart(ctx);
@@ -102,6 +104,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
         BlocListener<HomeCubit, HomeDestination>(
           listenWhen: (previous, current) => previous != current,
           listener: (ctx, destination) {
+            if (!AppPresentationScope.isActiveOf(ctx)) return;
             if (destination == HomeDestination.match) {
               final pending = ctx.read<NewMatchCubit>().state.pendingVictory;
               if (pending != null) {

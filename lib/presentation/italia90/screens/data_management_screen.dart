@@ -9,6 +9,7 @@ import '../../../repositories/match_repository.dart';
 import '../../../repositories/player_repository.dart';
 import '../../../services/backup_file_picker.dart';
 import '../theme/italia90_tokens.dart';
+import '../../presentation_operations.dart';
 import '../../../services/data_backup_service.dart';
 import '../../../services/data_file_share_service.dart';
 import '../widgets/italia90_components.dart';
@@ -40,7 +41,7 @@ class _DataManagementScreenState extends State<DataManagementScreen> {
     if (repository != null) {
       return BlocProvider<DataManagementCubit>(
         create: (_) => DataManagementCubit(repository),
-        child: _DataView(showBack: widget.showBack),
+        child: DataOperationScope(child: _DataView(showBack: widget.showBack)),
       );
     }
     return _buildLegacyView(context);

@@ -20,6 +20,7 @@ import 'package:biliardino/screens/history_screen.dart';
 import 'package:biliardino/screens/match_editor/match_editor_screen.dart';
 import 'package:biliardino/screens/player_profile_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../support/design_fixture.dart';
@@ -83,6 +84,22 @@ void main() {
   testWidgets(
     'inactive presentation does not consume a second goal or save effect',
     (tester) async {
+      final haptics = <Object?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'HapticFeedback.vibrate') {
+            haptics.add(call.arguments);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
       final fixture = DesignFixture();
       await fixture.load();
       await tester.pumpWidget(fixture.app);
@@ -96,18 +113,29 @@ void main() {
       await style.select(AppStyle.southAfrica2010);
       await tester.pumpAndSettle();
       home.select(HomeDestination.match);
+      await tester.pumpAndSettle();
       match.setMatchMode(MatchMode.oneVsOne);
       match.setTeam('p0', 1);
       match.setTeam('p3', 2);
       match.kickoff();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(
+        find.byKey(const ValueKey('match-wave')),
+        findsNothing,
+        reason: 'Inactive Italia must not decorate a South Africa kickoff',
+      );
+      haptics.clear();
       match.addGoal(1, 'p0');
       await tester.pumpAndSettle();
+      expect(haptics, ['HapticFeedbackType.mediumImpact']);
       expect(match.state.score1, 1);
       expect(match.state.scorerIds, ['p0']);
       await style.select(AppStyle.italia90);
       await tester.pumpAndSettle();
       expect(match.state.score1, 1);
       expect(match.state.kickedOff, isTrue);
+      haptics.clear();
       final barrier = Completer<void>();
       fixture.database.matchInsertBarrier = barrier.future;
       final save = match.save();
@@ -118,7 +146,9 @@ void main() {
       await save;
       await tester.pumpAndSettle();
       expect(fixture.database.insertMatchCalls, 1);
-      expect(find.text('HAI VINTO!'), findsNothing);
+      expect(find.byKey(const ValueKey('victory-overlay')), findsOneWidget);
+      expect(haptics, ['HapticFeedbackType.heavyImpact']);
+      expect(match.state.lastVictory, isNotNull);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       await fixture.dispose();
@@ -260,6 +290,45 @@ void main() {
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox.shrink());
       await fixture.dispose();
+    },
+  );
+  testWidgets(
+    'system back after visiting both styles asks once and retains the live match',
+    (tester) async {
+      final fixture = DesignFixture();
+      await fixture.load();
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await fixture.dispose();
+      });
+      await tester.pumpWidget(fixture.app);
+      await tester.pumpAndSettle();
+      final ctx = tester.element(find.byType(HomeScreen));
+      final style = ctx.read<AppStyleCubit>();
+      await style.select(AppStyle.italia90);
+      await tester.pumpAndSettle();
+      await style.select(AppStyle.southAfrica2010);
+      await tester.pumpAndSettle();
+      ctx.read<HomeCubit>().select(HomeDestination.match);
+      final match = ctx.read<NewMatchCubit>();
+      match.setMatchMode(MatchMode.oneVsOne);
+      match.setTeam('p0', 1);
+      match.setTeam('p3', 2);
+      match.kickoff();
+      match.addGoal(1, 'p0');
+      await tester.pumpAndSettle();
+      for (final selected in [AppStyle.southAfrica2010, AppStyle.italia90]) {
+        await style.select(selected);
+        await tester.pumpAndSettle();
+        await Navigator.of(ctx).maybePop();
+        await tester.pumpAndSettle();
+        expect(find.text('Uscire dalla partita?'), findsOneWidget);
+        await tester.tap(find.text('Resta'));
+        await tester.pumpAndSettle();
+        expect(find.text('Uscire dalla partita?'), findsNothing);
+        expect(match.state.score1, 1);
+        expect(match.state.kickedOff, isTrue);
+      }
     },
   );
 }
