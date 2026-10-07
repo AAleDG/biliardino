@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:biliardino/models/game_match.dart';
+import 'package:biliardino/screens/pair_profile_screen.dart';
 import 'package:biliardino/screens/player_profile_screen.dart';
 import 'package:biliardino/screens/leaderboard/ranking_row.dart';
 import 'package:biliardino/models/player.dart';
@@ -171,6 +173,55 @@ void main() {
     expect(find.text('2 gol'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
+  testWidgets(
+    'pair mode renders pairs, opens both profile targets and exports general pairs from Marcatori',
+    (tester) async {
+      final f = LeaderboardFixture(count: 4, mode: MatchMode.twoVsTwo);
+      final share = _RecordingShare();
+      await mount(tester, f, share: share);
+      final first = f.cubit.state.teamGeneral.first;
+      expect(find.text(first.name), findsWidgets);
+      await tester.tap(find.text('Marcatori'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('leaderboard-export-csv')));
+      await tester.pumpAndSettle();
+      expect(share.content!.split('\n'), hasLength(5));
+      expect(share.content, contains('"Coppia"'));
+      expect(share.content, contains('"Ale + Luca"'));
+      await tester.tap(find.text('1vs1'));
+      await tester.pumpAndSettle();
+      expect(find.text('Nessun marcatore disponibile'), findsOneWidget);
+      await tester.tap(find.text('2vs2'));
+      await tester.pumpAndSettle();
+      expect(find.text('Marcatori'), findsOneWidget);
+      await tester.tap(find.byKey(ValueKey('leaderboard-podium-${first.id}')));
+      await tester.pumpAndSettle();
+      expect(find.byType(PairProfileScreen), findsOneWidget);
+      for (final member in first.players) {
+        await tester.ensureVisible(
+          find.byKey(ValueKey('pair-member-${member.id}')),
+        );
+        await tester.tap(find.byKey(ValueKey('pair-member-${member.id}')));
+        await tester.pumpAndSettle();
+        expect(find.byType(PlayerProfileScreen), findsOneWidget);
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+      }
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      final last = f.cubit.state.teamScorers.last;
+      await tester.scrollUntilVisible(
+        find.byKey(ValueKey('leaderboard-row-${last.id}')),
+        -150,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.tap(find.byKey(ValueKey('leaderboard-row-${last.id}')));
+      await tester.pumpAndSettle();
+      expect(find.byType(PairProfileScreen), findsOneWidget);
+      expect(find.text(last.name), findsWidgets);
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets(
     'CSV always shares general ranking, including empty scorers; reports success and failure',
     (tester) async {

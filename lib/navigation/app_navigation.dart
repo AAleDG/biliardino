@@ -27,3 +27,13 @@ Future<void> openPlayerProfile(BuildContext context, String playerId) {
     ),
   );
 }
+
+Future<void> openPairProfile(BuildContext context, String pairId) {
+  return Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => PresentationBuilder(
+        builder: (presentation) => presentation.pairProfile(pairId),
+      ),
+    ),
+  );
+}

@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/game_match.dart';
 import '../../models/player.dart';
 import '../../models/player_profile_stats.dart';
-import '../../models/player_stats.dart';
+import '../../models/ranking_stats.dart';
 import '../../services/stats_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/avatar.dart';
@@ -61,8 +61,10 @@ class ProfileStatistics extends StatelessWidget {
     super.key,
     required this.stats,
     required this.results,
+    this.heading = 'LE MIE STATISTICHE',
   });
-  final PlayerStats stats;
+  final RankingStats stats;
+  final String heading;
   final List<bool> results;
   @override
   Widget build(BuildContext context) {
@@ -78,7 +80,7 @@ class ProfileStatistics extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const ProfileSectionHeading('LE MIE STATISTICHE'),
+          ProfileSectionHeading(heading),
           const SizedBox(height: AppSpace.page),
           LayoutBuilder(
             builder: (context, constraints) {

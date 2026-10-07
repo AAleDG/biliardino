@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/leaderboard/leaderboard_cubit.dart';
 import '../cubits/leaderboard/leaderboard_state.dart';
-import '../models/player_stats.dart';
+import '../models/ranking_stats.dart';
+import '../models/game_match.dart';
 import '../navigation/app_navigation.dart';
 import '../services/csv_share_service.dart';
 import '../services/leaderboard_csv_service.dart';
@@ -20,8 +21,13 @@ class LeaderboardScreen extends StatelessWidget {
     BuildContext context,
   ) => BlocBuilder<LeaderboardCubit, LeaderboardState>(
     builder: (context, state) {
-      final rankedByPoints = state.general;
-      final rankedByGoals = state.scorers;
+      final pairs = state.selectedMode == MatchMode.twoVsTwo;
+      final List<RankingStats> rankedByPoints = pairs
+          ? state.teamGeneral
+          : state.general;
+      final List<RankingStats> rankedByGoals = pairs
+          ? state.teamScorers
+          : state.scorers;
       final compact =
           MediaQuery.sizeOf(context).height < 650 ||
           MediaQuery.textScalerOf(context).scale(1) > 1.3;
@@ -59,11 +65,37 @@ class LeaderboardScreen extends StatelessWidget {
                         ? null
                         : () => _shareLeaderboardCsv(
                             context: buttonContext,
-                            ranked: rankedByPoints,
+                            csv: pairs
+                                ? LeaderboardCsvService.buildPairs(
+                                    state.teamGeneral,
+                                  )
+                                : LeaderboardCsvService.build(state.general),
                           ),
                   ),
                 ),
               ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: SegmentedButton<MatchMode>(
+              key: const ValueKey('leaderboard-mode'),
+              showSelectedIcon: false,
+              style: SegmentedButton.styleFrom(
+                minimumSize: const Size(0, 48),
+                selectedBackgroundColor: AppColors.primary,
+                selectedForegroundColor: AppColors.onPrimary,
+                backgroundColor: AppColors.surface,
+                foregroundColor: AppColors.ink,
+                textStyle: AppType.action,
+              ),
+              segments: const [
+                ButtonSegment(value: MatchMode.oneVsOne, label: Text('1vs1')),
+                ButtonSegment(value: MatchMode.twoVsTwo, label: Text('2vs2')),
+              ],
+              selected: {state.selectedMode},
+              onSelectionChanged: (modes) =>
+                  context.read<LeaderboardCubit>().selectMode(modes.single),
             ),
           ),
           Padding(
@@ -91,6 +123,7 @@ class LeaderboardScreen extends StatelessWidget {
         children: [
           _LeaderboardPane(
             ranked: rankedByPoints,
+            pairs: pairs,
             sectionLabel: 'CLASSIFICA COMPLETA',
             metricLabel: (stats) => '${stats.points} pt',
             rowDetail: (stats) =>
@@ -100,6 +133,7 @@ class LeaderboardScreen extends StatelessWidget {
           ),
           _LeaderboardPane(
             ranked: rankedByGoals,
+            pairs: pairs,
             sectionLabel: 'CLASSIFICA MARCATORI',
             metricLabel: (stats) => '${stats.goalsScored} gol',
             rowDetail: (stats) =>
@@ -138,10 +172,9 @@ class LeaderboardScreen extends StatelessWidget {
 
 Future<void> _shareLeaderboardCsv({
   required BuildContext context,
-  required List<PlayerStats> ranked,
+  required String csv,
 }) async {
   try {
-    final csv = LeaderboardCsvService.build(ranked);
     await context.read<CsvShareService>().shareCsv(
       csv: csv,
       fileName: 'classifica-biliardino.csv',
@@ -181,6 +214,7 @@ Rect? _sharePositionOrigin(BuildContext context) {
 class _LeaderboardPane extends StatelessWidget {
   const _LeaderboardPane({
     required this.ranked,
+    required this.pairs,
     required this.sectionLabel,
     required this.metricLabel,
     required this.rowDetail,
@@ -188,9 +222,10 @@ class _LeaderboardPane extends StatelessWidget {
     required this.emptyDescription,
     this.emptyIcon = Icons.leaderboard,
   });
-  final List<PlayerStats> ranked;
+  final List<RankingStats> ranked;
+  final bool pairs;
   final String sectionLabel, emptyTitle, emptyDescription;
-  final String Function(PlayerStats) metricLabel, rowDetail;
+  final String Function(RankingStats) metricLabel, rowDetail;
   final IconData emptyIcon;
   @override
   Widget build(BuildContext context) {
@@ -220,7 +255,7 @@ class _LeaderboardPane extends StatelessWidget {
       );
     }
     final list = ListView.builder(
-      key: PageStorageKey(sectionLabel),
+      key: PageStorageKey((sectionLabel, pairs)),
       padding: EdgeInsets.only(
         top: 8,
         bottom: 24 + MediaQuery.paddingOf(context).bottom,
@@ -231,7 +266,9 @@ class _LeaderboardPane extends StatelessWidget {
           return RankingPodium(
             top: ranked.take(3).toList(),
             metricLabel: metricLabel,
-            onOpen: (id) => openPlayerProfile(context, id),
+            onOpen: (id) => pairs
+                ? openPairProfile(context, id)
+                : openPlayerProfile(context, id),
           );
         }
         if (index == 1) {
@@ -251,7 +288,9 @@ class _LeaderboardPane extends StatelessWidget {
             stats: ranked[i],
             metric: metricLabel(ranked[i]),
             detail: rowDetail(ranked[i]),
-            onOpen: () => openPlayerProfile(context, ranked[i].player.id),
+            onOpen: () => pairs
+                ? openPairProfile(context, ranked[i].id)
+                : openPlayerProfile(context, ranked[i].id),
           ),
         );
       },

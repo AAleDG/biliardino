@@ -11,6 +11,7 @@ import '../../screens/match_editor/match_editor_screen.dart';
 import '../../screens/more_screen.dart';
 import '../../screens/new_match_screen.dart';
 import '../../screens/player_profile_screen.dart';
+import '../../screens/pair_profile_screen.dart';
 import '../../screens/players_screen.dart';
 import '../../screens/splash_screen.dart';
 import '../../theme/app_theme.dart';
@@ -51,6 +52,8 @@ class SouthAfricaPresentation implements AppPresentation {
       SouthAfricaBootstrapScreen(hasError: hasError, onRetry: onRetry);
   @override
   Widget profile(String playerId) => PlayerProfileScreen(playerId: playerId);
+  @override
+  Widget pairProfile(String pairId) => PairProfileScreen(pairId: pairId);
   @override
   Widget matchEditor({
     required GameMatch match,

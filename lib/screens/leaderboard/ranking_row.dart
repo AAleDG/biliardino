@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../models/player_stats.dart';
+import '../../models/ranking_stats.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/design/ranking_avatar.dart';
+import '../../widgets/design/ranking_identity.dart';
 import '../../widgets/design/ranking_badges.dart';
 
 class RankingRow extends StatelessWidget {
@@ -14,18 +14,18 @@ class RankingRow extends StatelessWidget {
     required this.onOpen,
   });
   final int rank;
-  final PlayerStats stats;
+  final RankingStats stats;
   final String metric, detail;
   final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) => Semantics(
-    key: ValueKey('leaderboard-row-${stats.player.id}'),
+    key: ValueKey('leaderboard-row-${stats.id}'),
     container: true,
     button: true,
     enabled: true,
     label:
-        'Posizione $rank: ${stats.player.name}. $metric. $detail. ${stats.badges.map((b) => b.label).join(', ')}',
+        'Posizione $rank: ${stats.name}. $metric. $detail. ${stats.badges.map((b) => b.label).join(', ')}',
     onTap: onOpen,
     child: ExcludeSemantics(
       child: Material(
@@ -52,7 +52,7 @@ class RankingRow extends StatelessWidget {
               final info = Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(stats.player.name, style: AppType.player),
+                  Text(stats.name, style: AppType.player),
                   Text(
                     detail,
                     style: AppType.caption.copyWith(
@@ -119,7 +119,10 @@ class RankingRow extends StatelessWidget {
                         vertical: 12,
                       ),
                       child: Center(
-                        child: RankingAvatar(name: stats.player.name, size: 36),
+                        child: RankingIdentity(
+                          names: stats.memberNames,
+                          size: 36,
+                        ),
                       ),
                     ),
                     Expanded(

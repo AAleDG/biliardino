@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
-import '../../models/player_stats.dart';
+import '../../models/ranking_stats.dart';
 import '../../theme/app_theme.dart';
-import 'ranking_avatar.dart';
+import 'ranking_identity.dart';
 import 'ranking_podium_artwork.dart';
 import 'ranking_badges.dart';
 
@@ -14,8 +14,8 @@ class RankingPodium extends StatefulWidget {
     required this.metricLabel,
     required this.onOpen,
   });
-  final List<PlayerStats> top;
-  final String Function(PlayerStats) metricLabel;
+  final List<RankingStats> top;
+  final String Function(RankingStats) metricLabel;
   final ValueChanged<String> onOpen;
   @override
   State<RankingPodium> createState() => _RankingPodiumState();
@@ -208,7 +208,7 @@ class _RankingPodiumState extends State<RankingPodium>
 
   bool _fitsEntry(
     BuildContext context,
-    PlayerStats stats,
+    RankingStats stats,
     int index,
     double scale,
   ) {
@@ -238,10 +238,13 @@ class _RankingPodiumState extends State<RankingPodium>
           RankingBadges.contentPadding.vertical +
           RankingBadges.spacing,
     );
+    final avatarHeight =
+        (index == 0 ? 50.0 : 46.0) * (stats.memberNames.length == 1 ? 1 : .72);
     final contentHeight =
-        (index == 0 ? 32 + 50 : 46) +
+        (index == 0 ? 32 : 0) +
+        avatarHeight +
         6 +
-        heightOf(stats.player.name, style, width) +
+        heightOf(stats.name, style, width) +
         heightOf(widget.metricLabel(stats), style, width) +
         4 +
         badgesHeight -
@@ -250,13 +253,13 @@ class _RankingPodiumState extends State<RankingPodium>
     return contentHeight <= availableHeight;
   }
 
-  Widget _place(PlayerStats stats, int index, {required bool stacked}) =>
+  Widget _place(RankingStats stats, int index, {required bool stacked}) =>
       _PodiumPlace(
         rank: index + 1,
         stats: stats,
         metric: widget.metricLabel(stats),
         stacked: stacked,
-        onTap: () => widget.onOpen(stats.player.id),
+        onTap: () => widget.onOpen(stats.id),
       );
 }
 
@@ -269,20 +272,20 @@ class _PodiumPlace extends StatelessWidget {
     required this.onTap,
   });
   final int rank;
-  final PlayerStats stats;
+  final RankingStats stats;
   final String metric;
   final bool stacked;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) => Semantics(
-    key: ValueKey('leaderboard-podium-${stats.player.id}'),
+    key: ValueKey('leaderboard-podium-${stats.id}'),
     sortKey: OrdinalSortKey(rank.toDouble()),
     container: true,
     button: true,
     enabled: true,
     label:
-        'Posizione $rank: ${stats.player.name}. $metric. ${stats.badges.map((b) => b.label).join(', ')}',
+        'Posizione $rank: ${stats.name}. $metric. ${stats.badges.map((b) => b.label).join(', ')}',
     onTap: onTap,
     child: ExcludeSemantics(
       child: Material(
@@ -311,7 +314,7 @@ class _PodiumPlace extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(stats.player.name, style: AppType.player),
+                            Text(stats.name, style: AppType.player),
                             Text(metric, style: AppType.bodyStrong),
                             RankingBadges(badges: stats.badges),
                           ],
@@ -331,13 +334,13 @@ class _PodiumPlace extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                     ],
-                    RankingAvatar(
-                      name: stats.player.name,
+                    RankingIdentity(
+                      names: stats.memberNames,
                       size: rank == 1 ? 50 : 46,
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      stats.player.name,
+                      stats.name,
                       textAlign: TextAlign.center,
                       style: AppType.bodyStrong.copyWith(height: 1.2),
                     ),

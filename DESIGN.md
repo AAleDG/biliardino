@@ -452,6 +452,12 @@ Keep all three decorative podium blocks and numbers for one or two qualifying pl
 
 Classifica and Nuova Partita share `BrandChoiceSelector`: the same pill outline, blue selected fill, asymmetric inner corners and 28px Barlow Condensed action labels. Mode labels retain their existing copy and semantics; Generale/Marcatori remain connected to their page controller, including swipe selection. The shared selector scrolls horizontally when an unbroken label cannot fit at the current text scale.
 
+### Classifica pairs — approved 7 October 2026
+
+Classifica has a compact 1vs1/2vs2 control above Generale/Marcatori. The 1vs1 view ranks individuals; 2vs2 ranks recurring unordered pairs. Keep the approved South Africa podium, painters, fonts and palette. Pair identities reuse two existing ranking rings with live names; long names and enlarged text retain the readable stacked fallback. Points, attributed goals and badges stay live. CSV exports Generale for the selected mode from either tab.
+
+Pair podium places and complete-ranking rows open Profilo coppia. Its approved composition uses a yellow identity panel, the existing achievement ribbons and white statistics/member/opponent/history panels. Both member rows link to their existing individual profiles. Preserve complete shared history and archived members. This approval covers the reviewed Flutter layouts; no new artwork master is introduced.
+
 ## Profilo Figurina — direction approved 12 September 2026
 
 The user selected Figurina for the profile refresh: a prominent yellow identity hero with black foosball artwork and sweeping brand ribbons, followed by one calm panel grouping the six existing statistics and compact recent form. Keep the player name, ring initial, presence/archive status, points and earned badges as live widgets. Preserve every metric and the complete relationships, head-to-head and personal-history content. The reviewed Flutter hero, relationship sweeps and footer are approved for integration; the user accepted the running composition and subsequent B gradient refinement.

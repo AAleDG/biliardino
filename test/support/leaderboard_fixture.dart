@@ -18,34 +18,46 @@ class LeaderboardFixture {
     int count = 4,
     bool longNames = false,
     bool legacy = false,
+    MatchMode mode = MatchMode.oneVsOne,
   }) {
     // A one-entrant view models a historical opponent no longer in the roster.
     final players = [
-      for (var i = 0; i < count; i++)
+      for (var i = 0; i < count * (mode == MatchMode.twoVsTwo ? 2 : 1); i++)
         Player(
           id: 'p$i',
           name: longNames
               ? 'Giocatore $i Alessandro Antonio Delgaudio'
+              : mode == MatchMode.twoVsTwo
+              ? ['Ale', 'Luca', 'Bea', 'Fede', 'Mia', 'Tom', 'Eva', 'Leo'][i %
+                    8]
               : 'Player $i',
           createdAt: DateTime(2026),
           isPresent: true,
         ),
     ];
     final matches = [
-      for (var i = 0; i < count; i += 2)
+      for (
+        var i = 0;
+        i < count * (mode == MatchMode.twoVsTwo ? 2 : 1);
+        i += (mode == MatchMode.twoVsTwo ? 4 : 2)
+      )
         GameMatch(
           id: 'm$i',
           playedAt: DateTime(2026, 1, i + 1),
-          mode: MatchMode.oneVsOne,
+          mode: mode,
           isRivalry: false,
           t1p1: 'p$i',
-          t1p2: '',
-          t2p1: 'p${i + 1}',
-          t2p2: '',
+          t1p2: mode == MatchMode.twoVsTwo ? 'p${i + 1}' : '',
+          t2p1: 'p${i + (mode == MatchMode.twoVsTwo ? 2 : 1)}',
+          t2p2: mode == MatchMode.twoVsTwo ? 'p${i + 3}' : '',
           t1Score: 2,
           t2Score: 1,
           winningTeam: 1,
-          scorerIds: legacy ? const [] : ['p$i', 'p$i', 'p${i + 1}'],
+          scorerIds: legacy
+              ? const []
+              : mode == MatchMode.twoVsTwo
+              ? ['p$i', 'p${i + 1}', 'p${i + 2}']
+              : ['p$i', 'p$i', 'p${i + 1}'],
         ),
     ];
     database = FakeDatabaseHelper(players: players, matches: matches);

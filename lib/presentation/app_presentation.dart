@@ -12,6 +12,7 @@ abstract interface class AppPresentation {
   Widget page(AppPage page);
   Widget bootstrap({required bool hasError, required VoidCallback onRetry});
   Widget profile(String playerId);
+  Widget pairProfile(String pairId);
   Widget matchEditor({
     required GameMatch match,
     required List<Player> players,
