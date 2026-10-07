@@ -2,6 +2,8 @@ import 'package:biliardino/models/player.dart';
 import 'package:biliardino/models/player_badge.dart';
 import '../support/design_fixture.dart';
 import 'package:biliardino/models/player_stats.dart';
+import 'package:biliardino/models/ranking_stats.dart';
+import 'package:biliardino/models/team_leaderboard_stats.dart';
 import 'package:biliardino/theme/app_theme.dart';
 import 'package:biliardino/widgets/design/ranking_podium.dart';
 import 'package:flutter/material.dart';
@@ -49,49 +51,107 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
-  testWidgets(
-    'six badges and a long metric use the readable stacked fallback',
-    (tester) async {
-      await loadDesignFonts();
-      tester.view.physicalSize = const Size(402, 874);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      final labels = [
-        'Capoclassifica',
-        'Bomber',
-        'Presenza Fissa',
-        'Implacabile',
-        'Hot Streak',
-        'Re delle Rivalita',
-      ];
-      final stats = entrants.first.copyWith(
-        badges: [
-          for (final label in labels)
-            PlayerBadge(code: label, label: label, description: label),
-        ],
-      );
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.southAfrica(),
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: RankingPodium(
-                top: [stats],
-                metricLabel: (_) => '12345678901234567890 pt',
-                onOpen: (_) {},
+  for (final pair in [false, true]) {
+    for (final longMetric in [false, true]) {
+      testWidgets(
+        '${pair ? 'pair' : 'individual'} achievements retain artwork with ordinary scores and fallback with long scores ($longMetric)',
+        (tester) async {
+          await loadDesignFonts();
+          tester.view.physicalSize = const Size(402, 874);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          const awards = [
+            ('leader', 'Capoclassifica'),
+            ('bomber', 'Bomber'),
+            ('grinder', 'Presenza Fissa'),
+            ('dominant', 'Implacabile'),
+            ('streak', 'Hot Streak'),
+            ('rivalry', 'Re delle Rivalita'),
+          ];
+          final badges = [
+            for (final award in pair ? awards.take(3) : awards)
+              PlayerBadge(
+                code: award.$1,
+                label: award.$2,
+                description: award.$2,
+              ),
+          ];
+          final alex = entrants.first.player.copyWith(name: 'Alex');
+          final RankingStats stats = pair
+              ? TeamLeaderboardStats(
+                  id: 'pair',
+                  players: [
+                    alex,
+                    entrants[1].player.copyWith(name: 'Luca'),
+                  ],
+                  games: 3,
+                  wins: 3,
+                  losses: 0,
+                  goalsScored: 4,
+                  badges: badges,
+                )
+              : PlayerStats(
+                  player: alex,
+                  games: 4,
+                  wins: 3,
+                  losses: 1,
+                  goalsScored: 4,
+                  badges: badges,
+                );
+          String? opened;
+          await tester.pumpWidget(
+            MaterialApp(
+              theme: AppTheme.southAfrica(),
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: RankingPodium(
+                    top: [stats],
+                    metricLabel: (_) =>
+                        longMetric ? '12345678901234567890 pt' : '9 pt',
+                    onOpen: (id) => opened = id,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
+          );
+          final ctx = tester.element(find.byType(Scaffold));
+          await tester.runAsync(
+            () => precacheImage(
+              const AssetImage(
+                'design/south-africa-2010/assets/live-r1/live-scene.png',
+              ),
+              ctx,
+            ),
+          );
+          await tester.pumpAndSettle();
+          final pedestal = find.byKey(const ValueKey('podium-block-1'));
+          expect(pedestal, longMetric ? findsNothing : findsOneWidget);
+          for (final badge in badges) {
+            expect(find.text(badge.label), findsOneWidget);
+          }
+          if (!longMetric) {
+            expect(
+              tester.getTopLeft(find.text('Presenza Fissa')).dy,
+              greaterThan(tester.getBottomRight(pedestal).dy),
+              reason:
+                  'Additional achievements stay below the illustrated podium',
+            );
+            await expectLater(
+              find.byType(Scaffold),
+              matchesGoldenFile(
+                '../goldens/podium-extra-awards-${pair ? 'pairs' : 'singles'}.png',
+              ),
+            );
+          }
+          await tester.tap(
+            find.byKey(ValueKey('leaderboard-podium-${stats.id}')),
+          );
+          expect(opened, stats.id);
+          expect(tester.takeException(), isNull);
+        },
       );
-      await tester.pumpAndSettle();
-      expect(find.byKey(const ValueKey('podium-block-1')), findsNothing);
-      for (final label in labels) {
-        expect(find.text(label), findsOneWidget);
-      }
-      expect(tester.takeException(), isNull);
-    },
-  );
+    }
+  }
   testWidgets(
     'Podium waits for first visibility and settles on live reduced motion',
     (tester) async {

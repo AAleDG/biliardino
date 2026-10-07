@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import '../../models/ranking_stats.dart';
+import '../../models/player_badge.dart';
 import '../../theme/app_theme.dart';
 import 'ranking_identity.dart';
 import 'ranking_podium_artwork.dart';
@@ -201,7 +202,19 @@ class _RankingPodiumState extends State<RankingPodium>
           ),
           child: child,
         ),
-        child: content,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            content,
+            if (!stacked)
+              for (final stats in entries)
+                if (stats.badges.any((badge) => !_isPodiumBadge(badge)))
+                  SizedBox(
+                    width: width,
+                    child: _AdditionalAwards(stats: stats),
+                  ),
+          ],
+        ),
       );
     },
   );
@@ -226,7 +239,8 @@ class _RankingPodiumState extends State<RankingPodium>
     }
 
     final style = AppType.bodyStrong.copyWith(height: 1.2);
-    final badgesHeight = stats.badges.fold<double>(
+    final badges = _podiumBadges(stats);
+    final badgesHeight = badges.fold<double>(
       0,
       (sum, badge) =>
           sum +
@@ -248,7 +262,7 @@ class _RankingPodiumState extends State<RankingPodium>
         heightOf(widget.metricLabel(stats), style, width) +
         4 +
         badgesHeight -
-        (stats.badges.isEmpty ? 0 : RankingBadges.spacing);
+        (badges.isEmpty ? 0 : RankingBadges.spacing);
     final availableHeight = (slot.contentBottom - slot.top) * scale;
     return contentHeight <= availableHeight;
   }
@@ -278,83 +292,131 @@ class _PodiumPlace extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    key: ValueKey('leaderboard-podium-${stats.id}'),
-    sortKey: OrdinalSortKey(rank.toDouble()),
-    container: true,
-    button: true,
-    enabled: true,
-    label:
-        'Posizione $rank: ${stats.name}. $metric. ${stats.badges.map((b) => b.label).join(', ')}',
-    onTap: onTap,
-    child: ExcludeSemantics(
-      child: Material(
-        color: stacked ? AppColors.surface : Colors.transparent,
-        borderRadius: BorderRadius.circular(AppRadius.panel),
-        child: InkWell(
-          onTap: onTap,
+  Widget build(BuildContext context) {
+    final badges = stacked ? stats.badges : _podiumBadges(stats);
+    return Semantics(
+      key: ValueKey('leaderboard-podium-${stats.id}'),
+      sortKey: OrdinalSortKey(rank.toDouble()),
+      container: true,
+      button: true,
+      enabled: true,
+      label:
+          'Posizione $rank: ${stats.name}. $metric. ${badges.map((b) => b.label).join(', ')}',
+      onTap: onTap,
+      child: ExcludeSemantics(
+        child: Material(
+          color: stacked ? AppColors.surface : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.panel),
-          child: stacked
-              ? Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 36,
-                        child: Text(
-                          '$rank',
-                          style: AppType.section.copyWith(
-                            color: AppColors.primary,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppRadius.panel),
+            child: stacked
+                ? Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 36,
+                          child: Text(
+                            '$rank',
+                            style: AppType.section.copyWith(
+                              color: AppColors.primary,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(stats.name, style: AppType.player),
-                            Text(metric, style: AppType.bodyStrong),
-                            RankingBadges(badges: stats.badges),
-                          ],
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(stats.name, style: AppType.player),
+                              Text(metric, style: AppType.bodyStrong),
+                              RankingBadges(badges: badges),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                )
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (rank == 1) ...[
-                      const Icon(
-                        Icons.emoji_events,
-                        color: AppColors.yellow,
-                        size: 26,
+                      ],
+                    ),
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (rank == 1) ...[
+                        const Icon(
+                          Icons.emoji_events,
+                          color: AppColors.yellow,
+                          size: 26,
+                        ),
+                        const SizedBox(height: 6),
+                      ],
+                      RankingIdentity(
+                        names: stats.memberNames,
+                        size: rank == 1 ? 50 : 46,
                       ),
                       const SizedBox(height: 6),
+                      Text(
+                        stats.name,
+                        textAlign: TextAlign.center,
+                        style: AppType.bodyStrong.copyWith(height: 1.2),
+                      ),
+                      Text(
+                        metric,
+                        textAlign: TextAlign.center,
+                        style: AppType.bodyStrong.copyWith(height: 1.2),
+                      ),
+                      const SizedBox(height: 4),
+                      RankingBadges(badges: badges),
                     ],
-                    RankingIdentity(
-                      names: stats.memberNames,
-                      size: rank == 1 ? 50 : 46,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      stats.name,
-                      textAlign: TextAlign.center,
-                      style: AppType.bodyStrong.copyWith(height: 1.2),
-                    ),
-                    Text(
-                      metric,
-                      textAlign: TextAlign.center,
-                      style: AppType.bodyStrong.copyWith(height: 1.2),
-                    ),
-                    const SizedBox(height: 4),
-                    RankingBadges(badges: stats.badges),
-                  ],
-                ),
+                  ),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
+}
+
+// Keep the podium fit calculation and inline rendering on the same policy.
+bool _isPodiumBadge(PlayerBadge badge) =>
+    badge.code == 'leader' || badge.code == 'bomber';
+
+List<PlayerBadge> _podiumBadges(RankingStats stats) =>
+    stats.badges.where(_isPodiumBadge).toList(growable: false);
+
+/// Earned ribbons that need more room stay visible below the podium, by entrant.
+class _AdditionalAwards extends StatelessWidget {
+  const _AdditionalAwards({required this.stats});
+  final RankingStats stats;
+
+  @override
+  Widget build(BuildContext context) {
+    final badges = stats.badges
+        .where((badge) => !_isPodiumBadge(badge))
+        .toList(growable: false);
+    return Semantics(
+      container: true,
+      label:
+          'Riconoscimenti di ${stats.name}: ${badges.map((badge) => badge.label).join(', ')}',
+      child: ExcludeSemantics(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Material(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppRadius.panel),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(stats.name, style: AppType.player),
+                  const SizedBox(height: 8),
+                  RankingBadges(badges: badges),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

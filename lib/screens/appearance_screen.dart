@@ -347,5 +347,17 @@ class _StylePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) => style == AppStyle.southAfrica2010
       ? Image.asset(homeHeroAssetPath, fit: BoxFit.contain)
-      : const Center(child: ItaliaCiao(height: 158));
+      : const Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ItaliaFootball(size: 100),
+                SizedBox(width: 24),
+                ItaliaCiao(height: 158),
+              ],
+            ),
+          ),
+        );
 }
