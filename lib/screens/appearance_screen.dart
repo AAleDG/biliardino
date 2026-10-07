@@ -5,9 +5,10 @@ import '../models/app_style.dart';
 import '../presentation/presentation_operations.dart';
 import '../presentation/italia90/theme/italia90_tokens.dart';
 import '../presentation/italia90/widgets/italia90_artwork.dart';
-import '../presentation/italia90/widgets/italia90_components.dart';
+import '../presentation/italia90/widgets/italia90_page.dart';
 import '../theme/app_theme.dart';
 import '../widgets/design/pass_artwork.dart';
+import '../widgets/design/pass_page.dart';
 import '../widgets/design/foosball_scene.dart';
 import 'dashboard_screen.dart' show homeHeroAssetPath;
 
@@ -48,7 +49,6 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
         final italia = current == AppStyle.italia90;
         final active = italia ? Italia90.primary : AppColors.primary;
         final body = italia ? Italia90.body : AppType.body;
-        final heading = italia ? Italia90.display : AppType.event;
         final label = italia ? Italia90.heading : AppType.section;
         final compact =
             MediaQuery.sizeOf(context).height < 650 ||
@@ -56,51 +56,19 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
         return _AppearanceFrame(
           italia: italia,
           compact: compact,
-          back: TextButton.icon(
-            key: const ValueKey('appearance-back'),
-            onPressed: () => Navigator.of(context).maybePop(),
-            icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-            label: const Text('Altro'),
-            style: TextButton.styleFrom(
-              foregroundColor: active,
-              textStyle: body.copyWith(fontSize: 18),
-            ),
-          ),
           child: ListView(
             key: const ValueKey('appearance-scroll'),
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            padding: EdgeInsets.fromLTRB(
+              italia ? 20 : 16,
+              12,
+              italia ? 20 : 16,
+              24 + MediaQuery.paddingOf(context).bottom,
+            ),
             children: [
-              Semantics(
-                header: true,
-                child: Text(
-                  'ASPETTO',
-                  style: heading.copyWith(
-                    fontSize: compact ? 34 : 48,
-                    color: AppColors.ink,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
               Text(
                 'Scegli lo stile dell’app.',
                 style: body.copyWith(fontSize: 20),
               ),
-              const SizedBox(height: 22),
-              for (final style in AppStyle.values) ...[
-                _StyleCard(
-                  style: style,
-                  selected: current == style,
-                  pending: pending == style,
-                  activeColor: active,
-                  labelStyle: label.copyWith(fontSize: 24),
-                  bodyStyle: body,
-                  compact: compact,
-                  onTap: pending != null || blocked
-                      ? null
-                      : () => _select(style),
-                ),
-                const SizedBox(height: 16),
-              ],
               if (blocked)
                 Text(
                   'Attendi la conclusione dell’operazione sui dati.',
@@ -118,6 +86,22 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
                     ),
                   ),
                 ),
+              const SizedBox(height: 22),
+              for (final style in AppStyle.values) ...[
+                _StyleCard(
+                  style: style,
+                  selected: current == style,
+                  pending: pending == style,
+                  activeColor: active,
+                  labelStyle: label.copyWith(fontSize: 24),
+                  bodyStyle: body,
+                  compact: compact,
+                  onTap: pending != null || blocked
+                      ? null
+                      : () => _select(style),
+                ),
+                const SizedBox(height: 16),
+              ],
             ],
           ),
         );
@@ -130,69 +114,104 @@ class _AppearanceFrame extends StatelessWidget {
   const _AppearanceFrame({
     required this.italia,
     required this.compact,
-    required this.back,
     required this.child,
   });
   final bool italia, compact;
-  final Widget back, child;
+  final Widget child;
+
   @override
-  Widget build(BuildContext context) => FoosballScene(
-    builder: (context, scene) => Scaffold(
-      backgroundColor: italia ? Italia90.surface : AppColors.background,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            if (!compact)
-              Positioned(
-                right: 0,
-                top: 0,
-                width: 170,
-                height: 70,
-                child: IgnorePointer(
-                  child: ExcludeSemantics(
-                    child: italia
-                        ? const ItaliaDiagonalStripes(
-                            backgroundColor: null,
-                            stripeColor: Italia90.green,
-                          )
-                        : const CustomPaint(
-                            painter: PassRibbons(PassRibbonKind.corner),
-                          ),
-                  ),
-                ),
-              ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget build(BuildContext context) {
+    void back() => Navigator.of(context).maybePop();
+    if (italia) {
+      // Keep the fixed brand lockup legible; scrolling choices retain the user's
+      // full text scale through their original media configuration.
+      return MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1,
+        child: ItaliaPage(
+          title: 'ASPETTO',
+          onBack: back,
+          child: MediaQuery(data: MediaQuery.of(context), child: child),
+        ),
+      );
+    }
+    return FoosballScene(
+      builder: (context, scene) => Scaffold(
+        backgroundColor: AppColors.background,
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final footerHeight = compact
+                ? 32.0
+                : constraints.maxWidth * 149 / 463;
+            return Stack(
+              fit: StackFit.expand,
               children: [
-                Align(alignment: Alignment.centerLeft, child: back),
-                Expanded(child: child),
-                SizedBox(
-                  key: const ValueKey('appearance-fixed-footer'),
-                  height: compact ? 20 : 64,
-                  width: double.infinity,
+                if (!compact)
+                  const Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: IgnorePointer(
+                      child: ExcludeSemantics(
+                        child: AspectRatio(
+                          aspectRatio: 466 / 163,
+                          child: CustomPaint(
+                            painter: PassRibbons(PassRibbonKind.header),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: footerHeight,
                   child: IgnorePointer(
                     child: ExcludeSemantics(
-                      child: italia
-                          ? const ItaliaDiagonalStripes(
-                              backgroundColor: null,
-                              stripeColor: Italia90.red,
-                            )
-                          : CustomPaint(
-                              painter: PassRibbons(
-                                PassRibbonKind.footer,
-                                scene: scene,
-                              ),
+                      child: ClipRect(
+                        key: const ValueKey('appearance-fixed-footer'),
+                        child: OverflowBox(
+                          alignment: Alignment.bottomCenter,
+                          minHeight: constraints.maxWidth * 149 / 463,
+                          maxHeight: constraints.maxWidth * 149 / 463,
+                          child: CustomPaint(
+                            painter: PassRibbons(
+                              PassRibbonKind.footer,
+                              scene: scene,
                             ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
+                SafeArea(
+                  bottom: false,
+                  child: Column(
+                    children: [
+                      PassPageHeader(
+                        title: 'ASPETTO',
+                        compact: compact,
+                        onBack: back,
+                        showArtwork: false,
+                        fitTitle: true,
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: footerHeight),
+                          child: child,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
-            ),
-          ],
+            );
+          },
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _StyleCard extends StatelessWidget {
@@ -328,12 +347,5 @@ class _StylePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) => style == AppStyle.southAfrica2010
       ? Image.asset(homeHeroAssetPath, fit: BoxFit.contain)
-      : const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ItaliaHomeBrandMark(size: 78),
-            SizedBox(width: 24),
-            ItaliaCiao(height: 148),
-          ],
-        );
+      : const Center(child: ItaliaCiao(height: 158));
 }

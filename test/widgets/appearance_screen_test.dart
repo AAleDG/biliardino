@@ -82,7 +82,7 @@ void main() {
         same(navigator),
       );
       expect(fixture.playersRepository.players, roster);
-      await tester.tap(find.byKey(const ValueKey('appearance-back')));
+      await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(ctx.read<HomeCubit>().state, HomeDestination.more);
       await tester.scrollUntilVisible(
@@ -143,7 +143,7 @@ void main() {
       final ctx = await _open(tester, fixture);
       await _tap(tester, AppStyle.italia90);
       await tester.pump();
-      await tester.tap(find.byKey(const ValueKey('appearance-back')));
+      await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(find.byType(AppearanceScreen), findsNothing);
       await tester.ensureVisible(find.byKey(const ValueKey('more-appearance')));

@@ -22,46 +22,10 @@ class PassPage extends StatelessWidget {
     final compact =
         MediaQuery.textScalerOf(context).scale(1) > 1.3 ||
         MediaQuery.sizeOf(context).height < 650;
-    final header = SizedBox(
-      height: compact ? 92 : 144,
-      child: Stack(
-        children: [
-          if (!compact)
-            const Positioned.fill(
-              child: IgnorePointer(
-                child: ExcludeSemantics(
-                  child: CustomPaint(
-                    painter: PassRibbons(PassRibbonKind.header),
-                  ),
-                ),
-              ),
-            ),
-          if (onBack != null)
-            Positioned(
-              left: 8,
-              top: 0,
-              child: IconButton(
-                onPressed: onBack,
-                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                icon: const Icon(Icons.arrow_back_ios_new),
-              ),
-            ),
-          Positioned(
-            top: compact ? 0 : 14,
-            left: 60,
-            right: 60,
-            child: Center(
-              child: Semantics(
-                header: true,
-                child: Text(
-                  title,
-                  style: AppType.event.copyWith(fontSize: compact ? 32 : 56),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    final header = PassPageHeader(
+      title: title,
+      compact: compact,
+      onBack: onBack,
     );
     final content = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -111,6 +75,71 @@ class PassPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// The established Pass header, also used over fullscreen decorative layers.
+class PassPageHeader extends StatelessWidget {
+  const PassPageHeader({
+    super.key,
+    required this.title,
+    required this.compact,
+    this.onBack,
+    this.showArtwork = true,
+    this.fitTitle = false,
+  });
+
+  final String title;
+  final bool compact;
+  final VoidCallback? onBack;
+  final bool showArtwork, fitTitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final heading = Semantics(
+      header: true,
+      child: Text(
+        title,
+        style: AppType.event.copyWith(fontSize: compact ? 32 : 56),
+      ),
+    );
+    return SizedBox(
+      height: compact ? 92 : 144,
+      child: Stack(
+        children: [
+          if (showArtwork && !compact)
+            const Positioned.fill(
+              child: IgnorePointer(
+                child: ExcludeSemantics(
+                  child: CustomPaint(
+                    painter: PassRibbons(PassRibbonKind.header),
+                  ),
+                ),
+              ),
+            ),
+          if (onBack != null)
+            Positioned(
+              left: 8,
+              top: 0,
+              child: IconButton(
+                onPressed: onBack,
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                icon: const Icon(Icons.arrow_back_ios_new),
+              ),
+            ),
+          Positioned(
+            top: compact ? 0 : 14,
+            left: 60,
+            right: 60,
+            child: Center(
+              child: fitTitle
+                  ? FittedBox(fit: BoxFit.scaleDown, child: heading)
+                  : heading,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

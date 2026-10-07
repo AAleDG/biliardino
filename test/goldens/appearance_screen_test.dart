@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/models/app_style.dart';
 import 'package:biliardino/presentation/presentation_host.dart';
+import 'package:biliardino/presentation/italia90/widgets/italia_graphic_backdrop.dart';
 import 'package:biliardino/screens/appearance_screen.dart';
 import 'package:biliardino/screens/dashboard_screen.dart'
     show homeHeroAssetPath;
@@ -62,6 +63,10 @@ void main() {
         await tester.runAsync(() async {
           await precacheImage(const AssetImage(homeHeroAssetPath), ctx);
           await precacheImage(const AssetImage(FoosballScene.asset), ctx);
+          await precacheImage(
+            const AssetImage('assets/italia90/backdrop-proposal-2.png'),
+            ctx,
+          );
         });
         ctx.read<HomeCubit>().select(HomeDestination.more);
         await tester.pumpAndSettle();
@@ -75,12 +80,27 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.byType(AppearanceScreen), findsOneWidget);
         expect(tester.takeException(), isNull);
+        if (style == AppStyle.southAfrica2010) {
+          expect(
+            tester
+                .getRect(find.byKey(const ValueKey('appearance-fixed-footer')))
+                .bottom,
+            tester.view.physicalSize.height,
+            reason:
+                'Decorative footer reaches the screen edge below the safe area',
+          );
+        }
+        final back = find.byTooltip('Back');
+        expect(back.hitTestable(), findsOneWidget);
+        expect(tester.getRect(back).top, greaterThanOrEqualTo(62));
         await expectLater(
           find.byKey(const ValueKey('appearance-capture')),
           matchesGoldenFile('$name.png'),
         );
         if (compact) {
-          final footer = find.byKey(const ValueKey('appearance-fixed-footer'));
+          final footer = style == AppStyle.southAfrica2010
+              ? find.byKey(const ValueKey('appearance-fixed-footer'))
+              : find.byType(ItaliaGraphicBackdrop);
           final before = tester.getRect(footer);
           await tester.scrollUntilVisible(
             find.byKey(const ValueKey('appearance-italia-90')),
