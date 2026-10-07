@@ -1,9 +1,154 @@
+import 'dart:convert';
+import 'package:biliardino/services/data_backup_service.dart';
+import '../support/fake_database.dart';
 import 'package:biliardino/models/game_match.dart';
 import 'package:biliardino/models/player.dart';
 import 'package:biliardino/services/stats_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  group('recurring pair rankings', () {
+    final players = [
+      for (final (id, name) in [
+        ('a', 'Anna'),
+        ('b', 'Bruno'),
+        ('c', 'Carla'),
+        ('d', 'Dario'),
+        ('e', 'Elena'),
+        ('f', 'Fabio'),
+      ])
+        Player(id: id, name: name, isPresent: true, createdAt: DateTime(2026)),
+    ];
+    test(
+      'membership ignores side/order; distinct partnerships and legacy goals stay separate',
+      () {
+        final matches = [
+          _match('old', DateTime(2026, 1, 1), ['a', 'b'], ['c', 'd'], 1),
+          _match('new', DateTime(2026, 1, 3), ['d', 'c'], ['b', 'a'], 2),
+          _match('other', DateTime(2026, 1, 2), ['a', 'e'], ['c', 'd'], 2),
+          GameMatch(
+            id: 'single',
+            playedAt: DateTime(2026, 1, 4),
+            mode: MatchMode.oneVsOne,
+            t1p1: 'a',
+            t1p2: '',
+            t2p1: 'f',
+            t2p2: '',
+            t1Score: 5,
+            t2Score: 0,
+            winningTeam: 1,
+            scorerIds: const ['a', 'a', 'a', 'a', 'a'],
+          ),
+        ];
+        final ranked = StatsService.computeTeamLeaderboard(players, matches);
+        expect(ranked.map((s) => s.name), [
+          'Anna + Bruno',
+          'Carla + Dario',
+          'Anna + Elena',
+        ]);
+        expect(ranked.first.games, 2);
+        expect(ranked.first.points, 6);
+        expect(ranked.first.currentWinStreak, 2);
+        expect(ranked.first.goalsScored, 0);
+        final profile = StatsService.computePairProfile(
+          players,
+          matches,
+          ranked.first.id,
+        )!;
+        expect(profile.matches.map((m) => m.id), ['new', 'old']);
+        expect(profile.recentResults, [true, true]);
+        expect(profile.opponents.single.games, 2);
+        expect(() => ranked.first.players.clear(), throwsUnsupportedError);
+        expect(() => profile.matches.clear(), throwsUnsupportedError);
+      },
+    );
+    test('valid imported opaque IDs cannot collapse two distinct pairs', () {
+      final roster = [
+        for (final (id, name) in [
+          ('a', 'Anna'),
+          ('b|c', 'Bruno'),
+          ('a|b', 'Carla'),
+          ('c', 'Dario'),
+          ('d', 'Elena'),
+          ('e', 'Fabio'),
+        ])
+          Player(
+            id: id,
+            name: name,
+            isPresent: true,
+            createdAt: DateTime(2026),
+          ),
+      ];
+      final matches = [
+        _match('one', DateTime(2026, 1, 1), ['a', 'b|c'], ['d', 'e'], 1),
+        _match('two', DateTime(2026, 1, 2), ['a|b', 'c'], ['d', 'e'], 2),
+      ];
+      final backup = DataBackupService(FakeDatabaseHelper()).parse(
+        jsonEncode({
+          'version': 0,
+          'players': roster.map((p) => p.toMap()).toList(),
+          'matches': matches.map((m) => m.toMap()).toList(),
+        }),
+      );
+      final ranked = StatsService.computeTeamLeaderboard(
+        backup.players,
+        backup.matches,
+      );
+      expect(ranked.map((s) => s.name), [
+        'Anna + Bruno',
+        'Elena + Fabio',
+        'Carla + Dario',
+      ]);
+      expect(ranked.map((s) => s.id).toSet(), hasLength(3));
+      expect(ranked.last.losses, 1);
+      expect(
+        StatsService.computePairProfile(
+          backup.players,
+          backup.matches,
+          ranked.last.id,
+        )!.matches.single.id,
+        'two',
+      );
+    });
+    test(
+      'attributed pair goals and alphabetical ties exclude legacy score totals',
+      () {
+        final match = GameMatch(
+          id: 'goals',
+          playedAt: DateTime(2026),
+          mode: MatchMode.twoVsTwo,
+          t1p1: 'a',
+          t1p2: 'b',
+          t2p1: 'c',
+          t2p2: 'd',
+          t1Score: 3,
+          t2Score: 1,
+          winningTeam: 1,
+          scorerIds: ['a', 'b', 'a', 'd'],
+        );
+        final ranked = StatsService.computeTeamLeaderboard(players, [match]);
+        expect(ranked.map((s) => s.goalsScored), [3, 1]);
+        final profile = StatsService.computePairProfile(players, [
+          match,
+        ], ranked.first.id)!;
+        match.scorerIds.clear();
+        expect(profile.matches.single.scorerIds, ['a', 'b', 'a', 'd']);
+        expect(
+          () => profile.matches.single.scorerIds.clear(),
+          throwsUnsupportedError,
+        );
+        expect(
+          ranked.first.badges.map((b) => b.code),
+          containsAll(['leader', 'bomber']),
+        );
+        final tied = StatsService.computeTeamLeaderboard(players, [
+          match,
+          _match('tie', DateTime(2026, 1, 2), ['c', 'd'], ['a', 'b'], 1),
+        ]);
+        expect(tied.map((s) => s.name), ['Anna + Bruno', 'Carla + Dario']);
+      },
+    );
+  });
   group('StatsService computePlayerProfile', () {
     test('computes recent form, relationships and head-to-head', () {
       final matches = [

@@ -87,6 +87,71 @@ void main() {
     },
   );
   test(
+    'selected mode filters matches; same-order pair rename emits and mode survives updates',
+    () async {
+      final db = FakeDatabaseHelper(
+        players: [
+          player('a', 'Anna'),
+          player('b', 'Bruno'),
+          player('c', 'Carla'),
+          player('d', 'Dario'),
+        ],
+      );
+      final players = PlayerRepository(db), matches = MatchRepository(db);
+      await players.load();
+      await matches.load();
+      await matches.addMatch(
+        mode: MatchMode.twoVsTwo,
+        isRivalry: false,
+        team1: ['a', 'b'],
+        team2: ['c', 'd'],
+        score1: 2,
+        score2: 0,
+        scorerIds: ['a', 'b'],
+      );
+      await matches.addMatch(
+        mode: MatchMode.oneVsOne,
+        isRivalry: false,
+        team1: ['c'],
+        team2: ['a'],
+        score1: 1,
+        score2: 0,
+        scorerIds: ['c'],
+      );
+      final cubit = LeaderboardCubit(
+        playerRepository: players,
+        matchRepository: matches,
+      );
+      addTearDown(() async {
+        await cubit.close();
+        await players.dispose();
+        await matches.dispose();
+      });
+      await Future<void>.delayed(Duration.zero);
+      expect(cubit.state.selectedMode, MatchMode.twoVsTwo);
+      expect(cubit.state.teamGeneral.first.name, 'Anna + Bruno');
+      final updated = cubit.stream.first;
+      await players.renamePlayer(
+        players.players.firstWhere((p) => p.id == 'a'),
+        'Anne',
+      );
+      expect((await updated).teamGeneral.first.name, 'Anne + Bruno');
+      cubit.selectMode(MatchMode.oneVsOne);
+      expect(cubit.state.general.map((s) => s.player.id), ['c', 'a']);
+      expect(cubit.state.general.first.points, 3);
+      expect(cubit.state.teams, isEmpty);
+      await players.archivePlayer(
+        players.players.firstWhere((p) => p.id == 'c'),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(cubit.state.selectedMode, MatchMode.oneVsOne);
+      expect(cubit.state.general.first.player.id, 'c');
+      cubit.selectMode(MatchMode.twoVsTwo);
+      expect(cubit.state.teamGeneral, hasLength(2));
+      expect(() => cubit.state.teams.clear(), throwsUnsupportedError);
+    },
+  );
+  test(
     'match add/edit/delete react; archived players retain historical stats; close cancels',
     () async {
       final db = FakeDatabaseHelper(

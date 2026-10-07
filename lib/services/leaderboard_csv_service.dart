@@ -1,13 +1,49 @@
 import '../models/player_stats.dart';
+import '../models/team_leaderboard_stats.dart';
 
 class LeaderboardCsvService {
   const LeaderboardCsvService._();
 
-  static String build(List<PlayerStats> stats) {
+  static String build(List<PlayerStats> stats) => _build(
+    'Giocatore',
+    stats.map(
+      (s) => (
+        s.player.name,
+        s.points,
+        s.games,
+        s.wins,
+        s.losses,
+        s.goalsScored,
+        s.winRate,
+        s.currentWinStreak,
+      ),
+    ),
+  );
+
+  static String buildPairs(List<TeamLeaderboardStats> stats) => _build(
+    'Coppia',
+    stats.map(
+      (s) => (
+        s.name,
+        s.points,
+        s.games,
+        s.wins,
+        s.losses,
+        s.goalsScored,
+        s.winRate,
+        s.currentWinStreak,
+      ),
+    ),
+  );
+
+  static String _build(
+    String identityLabel,
+    Iterable<(String, int, int, int, int, int, double, int)> stats,
+  ) {
     final rows = <List<String>>[
-      const [
+      [
         'Posizione',
-        'Giocatore',
+        identityLabel,
         'Punti',
         'Partite',
         'Vittorie',
@@ -16,20 +52,18 @@ class LeaderboardCsvService {
         'Win rate',
         'Striscia vittorie',
       ],
-      ...stats.asMap().entries.map((entry) {
-        final stats = entry.value;
-        return [
-          '${entry.key + 1}',
-          stats.player.name,
-          '${stats.points}',
-          '${stats.games}',
-          '${stats.wins}',
-          '${stats.losses}',
-          '${stats.goalsScored}',
-          '${(stats.winRate * 100).toStringAsFixed(1)}%',
-          '${stats.currentWinStreak}',
-        ];
-      }),
+      for (final (index, s) in stats.indexed)
+        [
+          '${index + 1}',
+          s.$1,
+          '${s.$2}',
+          '${s.$3}',
+          '${s.$4}',
+          '${s.$5}',
+          '${s.$6}',
+          '${(s.$7 * 100).toStringAsFixed(1)}%',
+          '${s.$8}',
+        ],
     ];
     return rows.map(_encodeRow).join('\n');
   }

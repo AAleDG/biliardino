@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../models/game_match.dart';
 import '../../models/player.dart';
+import '../../models/team_leaderboard_stats.dart';
 import '../../repositories/match_repository.dart';
 import '../../repositories/player_repository.dart';
 import '../../services/stats_service.dart';
@@ -15,7 +16,9 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     required MatchRepository matchRepository,
   }) : _playerRepo = playerRepository,
        _matchRepo = matchRepository,
-       super(LeaderboardState()) {
+       super(
+         LeaderboardState(selectedMode: _defaultMode(matchRepository.matches)),
+       ) {
     _players = _playerRepo.players;
     _matches = _matchRepo.matches;
     _recompute();
@@ -39,9 +42,34 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
   List<Player> _players = const [];
   List<GameMatch> _matches = const [];
 
-  void _recompute() {
-    final stats = StatsService.computeLeaderboard(_players, _matches);
-    emit(state.copyWith(stats: stats, isLoading: false));
+  void _recompute({MatchMode? mode}) {
+    final selectedMode = mode ?? state.selectedMode;
+    final modeMatches = _matches
+        .where((match) => match.mode == selectedMode)
+        .toList(growable: false);
+    final stats = StatsService.computeLeaderboard(_players, modeMatches);
+    final List<TeamLeaderboardStats> teams = selectedMode == MatchMode.twoVsTwo
+        ? StatsService.computeTeamLeaderboard(_players, modeMatches)
+        : const <TeamLeaderboardStats>[];
+    emit(
+      state.copyWith(
+        stats: stats,
+        teams: teams,
+        selectedMode: selectedMode,
+        isLoading: false,
+      ),
+    );
+  }
+
+  void selectMode(MatchMode mode) {
+    if (state.selectedMode == mode) return;
+    _recompute(mode: mode);
+  }
+
+  static MatchMode _defaultMode(List<GameMatch> matches) {
+    return matches.any((match) => match.mode == MatchMode.twoVsTwo)
+        ? MatchMode.twoVsTwo
+        : MatchMode.oneVsOne;
   }
 
   @override

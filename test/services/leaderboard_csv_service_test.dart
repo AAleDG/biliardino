@@ -1,10 +1,31 @@
 import 'package:biliardino/models/player.dart';
 import 'package:biliardino/models/player_stats.dart';
+import 'package:biliardino/models/team_leaderboard_stats.dart';
 import 'package:biliardino/services/leaderboard_csv_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('LeaderboardCsvService', () {
+    test('pair CSV serializes one row per pair with the same escaping policy', () {
+      final csv = LeaderboardCsvService.buildPairs([
+        TeamLeaderboardStats(
+          id: 'pair',
+          players: [
+            _stats('a', '=Anna').player,
+            _stats('b', 'Bruno, "Ace"').player,
+          ],
+          games: 4,
+          wins: 3,
+          losses: 1,
+          goalsScored: 7,
+          currentWinStreak: 2,
+        ),
+      ]);
+      expect(csv.split('\n'), [
+        '"Posizione","Coppia","Punti","Partite","Vittorie","Sconfitte","Gol","Win rate","Striscia vittorie"',
+        "\"1\",\"'=Anna + Bruno, \"\"Ace\"\"\",\"9\",\"4\",\"3\",\"1\",\"7\",\"75.0%\",\"2\"",
+      ]);
+    });
     test('serializes rankings with escaped values', () {
       final csv = LeaderboardCsvService.build([
         PlayerStats(

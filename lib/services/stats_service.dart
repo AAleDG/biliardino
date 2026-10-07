@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import '../models/game_match.dart';
 import '../models/player.dart';
+import '../models/pair_profile_stats.dart';
+import '../models/team_leaderboard_stats.dart';
 import '../models/player_badge.dart';
 import '../models/player_profile_stats.dart';
 import '../models/player_stats.dart';
@@ -336,8 +340,213 @@ class StatsService {
     return list;
   }
 
+  static List<TeamLeaderboardStats> computeTeamLeaderboard(
+    List<Player> players,
+    List<GameMatch> matches,
+  ) {
+    final playersById = <String, Player>{
+      for (final player in players) player.id: player,
+    };
+    final twoVsTwoMatches = matches
+        .where((match) => match.mode == MatchMode.twoVsTwo)
+        .toList(growable: false);
+    final accumulators = <String, _TeamAccumulator>{};
+
+    for (final match in twoVsTwoMatches) {
+      _recordTeam(
+        accumulators: accumulators,
+        playerIds: match.team1,
+        won: match.winningTeam == 1,
+        goals: _goalsForTeam(match, match.team1),
+      );
+      _recordTeam(
+        accumulators: accumulators,
+        playerIds: match.team2,
+        won: match.winningTeam == 2,
+        goals: _goalsForTeam(match, match.team2),
+      );
+    }
+
+    final closedStreaks = <String>{};
+    for (final match in sortedByMostRecent(twoVsTwoMatches)) {
+      final winningTeam = match.winningTeam == 1 ? match.team1 : match.team2;
+      for (final team in [match.team1, match.team2]) {
+        final key = _teamKey(team);
+        if (closedStreaks.contains(key)) continue;
+        if (winningTeam.toSet().containsAll(team)) {
+          accumulators[key]?.currentWinStreak += 1;
+        } else {
+          closedStreaks.add(key);
+        }
+      }
+    }
+
+    final teams = accumulators.values
+        .map((accumulator) {
+          final teamPlayers =
+              accumulator.playerIds
+                  .map((id) => playersById[id])
+                  .whereType<Player>()
+                  .toList()
+                ..sort(
+                  (first, second) => first.name.toLowerCase().compareTo(
+                    second.name.toLowerCase(),
+                  ),
+                );
+          return TeamLeaderboardStats(
+            id: accumulator.id,
+            players: List.unmodifiable(teamPlayers),
+            games: accumulator.games,
+            wins: accumulator.wins,
+            losses: accumulator.losses,
+            goalsScored: accumulator.goalsScored,
+            currentWinStreak: accumulator.currentWinStreak,
+          );
+        })
+        .where((team) => team.players.length == 2)
+        .toList();
+
+    final topPoints = teams.fold<int>(
+      0,
+      (max, stats) => stats.points > max ? stats.points : max,
+    );
+    final topGoals = teams.fold<int>(
+      0,
+      (max, stats) => stats.goalsScored > max ? stats.goalsScored : max,
+    );
+    final topGames = teams.fold<int>(
+      0,
+      (max, stats) => stats.games > max ? stats.games : max,
+    );
+
+    final decorated = teams.map((stats) {
+      final badges = <PlayerBadge>[];
+      if (stats.points == topPoints && topPoints > 0) {
+        badges.add(
+          const PlayerBadge(
+            code: 'leader',
+            label: 'Capoclassifica',
+            description: 'Ha il punteggio piu alto del ranking di coppia.',
+          ),
+        );
+      }
+      if (stats.goalsScored == topGoals && topGoals > 0) {
+        badges.add(
+          const PlayerBadge(
+            code: 'bomber',
+            label: 'Bomber',
+            description: 'Ha segnato piu gol nella classifica 2vs2.',
+          ),
+        );
+      }
+      if (stats.games == topGames && topGames >= 3) {
+        badges.add(
+          const PlayerBadge(
+            code: 'grinder',
+            label: 'Presenza Fissa',
+            description: 'E la coppia piu presente nelle partite 2vs2.',
+          ),
+        );
+      }
+      return stats.copyWith(badges: List.unmodifiable(badges));
+    }).toList();
+
+    decorated.sort((first, second) {
+      final byPoints = second.points.compareTo(first.points);
+      if (byPoints != 0) return byPoints;
+      final byRate = second.winRate.compareTo(first.winRate);
+      if (byRate != 0) return byRate;
+      final byName = first.name.toLowerCase().compareTo(
+        second.name.toLowerCase(),
+      );
+      return byName != 0 ? byName : first.id.compareTo(second.id);
+    });
+    return List.unmodifiable(decorated);
+  }
+
+  static PairProfileStats? computePairProfile(
+    List<Player> players,
+    List<GameMatch> matches,
+    String pairId,
+  ) {
+    final leaderboard = computeTeamLeaderboard(players, matches);
+    final rankIndex = leaderboard.indexWhere((stats) => stats.id == pairId);
+    if (rankIndex < 0) return null;
+    final together = sortedByMostRecent(matches)
+        .where(
+          (match) =>
+              match.mode == MatchMode.twoVsTwo &&
+              (_teamKey(match.team1) == pairId ||
+                  _teamKey(match.team2) == pairId),
+        )
+        .toList(growable: false);
+    final opponents = <String, PairOpponentStats>{};
+    final results = <bool>[];
+    for (final match in together) {
+      final side = _teamKey(match.team1) == pairId ? 1 : 2;
+      final won = match.winningTeam == side;
+      results.add(won);
+      final opponentIds = side == 1 ? match.team2 : match.team1;
+      final opponentId = _teamKey(opponentIds);
+      final previous = opponents[opponentId];
+      opponents[opponentId] = PairOpponentStats(
+        id: opponentId,
+        playerIds: List.unmodifiable([...opponentIds]..sort()),
+        games: (previous?.games ?? 0) + 1,
+        wins: (previous?.wins ?? 0) + (won ? 1 : 0),
+        losses: (previous?.losses ?? 0) + (won ? 0 : 1),
+      );
+    }
+    final rankedOpponents = opponents.values.toList()
+      ..sort((first, second) {
+        final byGames = second.games.compareTo(first.games);
+        return byGames != 0 ? byGames : first.id.compareTo(second.id);
+      });
+    return PairProfileStats(
+      stats: leaderboard[rankIndex],
+      rank: rankIndex + 1,
+      matches: List.unmodifiable(together),
+      recentResults: List.unmodifiable(results.take(5).toList().reversed),
+      opponents: List.unmodifiable(rankedOpponents),
+    );
+  }
+
+  static void _recordTeam({
+    required Map<String, _TeamAccumulator> accumulators,
+    required List<String> playerIds,
+    required bool won,
+    required int goals,
+  }) {
+    final key = _teamKey(playerIds);
+    final accumulator = accumulators.putIfAbsent(
+      key,
+      () => _TeamAccumulator(id: key, playerIds: [...playerIds]..sort()),
+    );
+    accumulator.games += 1;
+    accumulator.wins += won ? 1 : 0;
+    accumulator.losses += won ? 0 : 1;
+    accumulator.goalsScored += goals;
+  }
+
+  static String _teamKey(List<String> playerIds) {
+    final sorted = [...playerIds]..sort();
+    return jsonEncode(sorted);
+  }
+
   static int _goalsForTeam(GameMatch match, List<String> teamIds) {
     final teamSet = teamIds.toSet();
     return match.scorerIds.where(teamSet.contains).length;
   }
+}
+
+class _TeamAccumulator {
+  _TeamAccumulator({required this.id, required this.playerIds});
+
+  final String id;
+  final List<String> playerIds;
+  int games = 0;
+  int wins = 0;
+  int losses = 0;
+  int goalsScored = 0;
+  int currentWinStreak = 0;
 }
