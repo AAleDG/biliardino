@@ -10,6 +10,7 @@ class LeaderboardState extends Equatable {
     List<TeamLeaderboardStats> teams = const [],
     this.selectedMode = MatchMode.oneVsOne,
     this.isLoading = true,
+    this.selectedTab = 0,
   }) : stats = List.unmodifiable(stats),
        teams = List.unmodifiable(teams);
 
@@ -17,6 +18,7 @@ class LeaderboardState extends Equatable {
   final List<TeamLeaderboardStats> teams;
   final MatchMode selectedMode;
   final bool isLoading;
+  final int selectedTab;
 
   List<PlayerStats> get general =>
       List.unmodifiable(stats.where((stat) => stat.games > 0));
@@ -55,15 +57,23 @@ class LeaderboardState extends Equatable {
     List<TeamLeaderboardStats>? teams,
     MatchMode? selectedMode,
     bool? isLoading,
+    int? selectedTab,
   }) {
     return LeaderboardState(
       stats: stats ?? this.stats,
       teams: teams ?? this.teams,
       selectedMode: selectedMode ?? this.selectedMode,
       isLoading: isLoading ?? this.isLoading,
+      selectedTab: selectedTab ?? this.selectedTab,
     );
   }
 
   @override
-  List<Object?> get props => [stats, teams, selectedMode, isLoading];
+  List<Object?> get props => [
+    stats,
+    teams,
+    selectedMode,
+    isLoading,
+    selectedTab,
+  ];
 }

@@ -1,3 +1,5 @@
+import 'package:intl/date_symbol_data_local.dart';
+import 'presentation/italia90/theme/italia90_motion.dart';
 import 'cubits/app_style/app_style_cubit.dart';
 import 'repositories/app_style_repository.dart';
 import 'repositories/data_management_repository.dart';
@@ -25,12 +27,13 @@ import 'models/app_style.dart';
 import 'presentation/app_presentation.dart';
 import 'presentation/presentation_registry.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     presentationFor(AppStyle.southAfrica2010).systemUi,
   );
 
+  await initializeDateFormatting('it_IT');
   runApp(const BiliardinoBootstrap());
 }
 
@@ -245,15 +248,17 @@ class _BiliardinoMaterialApp extends StatelessWidget {
     final presentation = presentationFor(style);
     return AppPresentationScope(
       presentation: presentation,
-      child: MaterialApp(
-        title: presentation.title,
-        debugShowCheckedModeBanner: false,
-        theme: presentation.theme,
-        builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
-          value: presentation.systemUi,
-          child: child!,
+      child: Italia90MotionScope(
+        child: MaterialApp(
+          title: presentation.title,
+          debugShowCheckedModeBanner: false,
+          theme: presentation.theme,
+          builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+            value: presentation.systemUi,
+            child: child!,
+          ),
+          home: home,
         ),
-        home: home,
       ),
     );
   }

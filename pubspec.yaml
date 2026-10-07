@@ -33,6 +33,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_svg: 2.3.0
   cupertino_icons: ^1.0.2
   bloc: ^8.1.4
   flutter_bloc: ^8.1.6
@@ -81,6 +82,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/italia90/
     - design/south-africa-2010/assets/live-r1/live-scene.png
     - assets/fonts/Barlow-OFL.txt
     - assets/fonts/BarlowCondensed-OFL.txt
@@ -88,6 +90,16 @@ flutter:
     - design/south-africa-2010/assets/setup-r2/approved/team-stage-v10-gimp-white-to-alpha.png
     - design/south-africa-2010/assets/setup-r2/approved/lower-flourish-v5-transparent.png
   fonts:
+    - family: Anton
+      fonts:
+        - asset: assets/fonts/Anton-Regular.ttf
+          weight: 400
+    - family: Italia Barlow
+      fonts:
+        - asset: assets/fonts/Barlow-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Barlow-Bold.ttf
+          weight: 700
     - family: Barlow
       fonts:
         - asset: assets/fonts/Barlow-Regular.ttf

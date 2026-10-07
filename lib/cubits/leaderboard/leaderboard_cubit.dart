@@ -66,6 +66,11 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
     _recompute(mode: mode);
   }
 
+  void selectTab(int index) {
+    if (index < 0 || index > 1) throw RangeError.range(index, 0, 1);
+    if (index != state.selectedTab) emit(state.copyWith(selectedTab: index));
+  }
+
   static MatchMode _defaultMode(List<GameMatch> matches) {
     return matches.any((match) => match.mode == MatchMode.twoVsTwo)
         ? MatchMode.twoVsTwo

@@ -1,0 +1,100 @@
+{
+  "approved_review": "design/italia90/asset-review/v4/manifest.json",
+  "approval": {
+    "date": "2026-09-08",
+    "response": "Okay, it's actually approved now. What else?",
+    "scope": "Revision 4 presented set: Ciao v2, football v3, backdrop v3, and reviewed home/live presentation including roster shadow.",
+    "follow_up_approval": {
+      "date": "2026-09-17",
+      "response": "Utilizza lo sfondo 2 ... Applica le modifiche ...",
+      "scope": "Portrait background proposal 2 integrated as a decorative runtime backdrop with Home, working-screen and live intensity variants."
+    },
+    "home_revision_approval": {
+      "date": "2026-09-19",
+      "response": "Implementa questa, la settima schermata generata, nella Home.",
+      "scope": "Home-only edge-ribbon background derived from the selected seventh Home proposal; the native Flutter Home UI remains unchanged."
+    }
+  },
+  "assets": [
+    {
+      "id": "ASSET-1",
+      "name": "Ciao",
+      "version": "v2",
+      "master": "ciao.svg",
+      "usage": "Home hero at 170 logical pixels; whole-image entrance",
+      "sha256": "bb2b1e109c76c5396fae3dc2019bd332ffff006b81856731d36a77ba883bf94a",
+      "status": "approved-and-promoted",
+      "production_path": "assets/italia90/ciao.svg"
+    },
+    {
+      "id": "ASSET-2",
+      "name": "Tricolour football",
+      "version": "v3",
+      "master": "football-mark.svg",
+      "usage": "48px masthead; 32px/104px scale review",
+      "sha256": "cd6280de437df6ccf8379fbbd1589f0703fdd1e8bf3c430609967bce2bb659cd",
+      "status": "approved-and-promoted",
+      "production_path": "assets/italia90/football-mark.svg"
+    },
+    {
+      "id": "ASSET-3",
+      "name": "Pitch and ribbons",
+      "version": "v3",
+      "master": "italia_graphic_backdrop.dart",
+      "usage": "Responsive home and working variants",
+      "sha256": "2fc8c0471c02dfc14f1efc735c917006fef52233dbd8fb4dbf32820b7df7e59b",
+      "status": "approved-and-promoted",
+      "production_path": "lib/widgets/italia_graphic_backdrop.dart"
+    },
+    {
+      "id": "ASSET-4",
+      "name": "Portrait poster backdrop proposal 2",
+      "version": "v1",
+      "master": "backdrop-proposal-2.png",
+      "usage": "Decorative runtime backdrop; full on Home and transient entrance surfaces, reduced on working screens and near-neutral during live scoring",
+      "sha256": "798820b6c5fcda3982f2594e5b4cad91bd2ded3f0ec86fe7e27ef15c8745389b",
+      "status": "approved-and-promoted",
+      "production_path": "assets/italia90/backdrop-proposal-2.png",
+      "dimensions": "941x1672",
+      "generation": "Built-in image generation tool; second portrait background proposal presented to and selected by the user on 2026-09-17"
+    },
+    {
+      "id": "ASSET-5",
+      "name": "Home-only edge-ribbon backdrop proposal 7",
+      "version": "v1",
+      "master": "backdrop-home-proposal-7.png",
+      "usage": "HomeDashboardScreen decorative background only; native Home content and controls remain live Flutter widgets",
+      "sha256": "27671a6121773999ac2bd12b9078904351ae81545259fe6989093aea9c1fa2659",
+      "status": "approved-and-promoted",
+      "production_path": "assets/italia90/backdrop-home-proposal-7.png",
+      "dimensions": "941x1672",
+      "generation": "Built-in image generation tool; standalone background derived from the seventh Home proposal selected by the user on 2026-09-19"
+    }
+  ],
+  "football_source": {
+    "file": "../v3/source/italia90-full-logo.svg",
+    "url": "https://assets.footylogos.com/logos/fifa-world-cup-1990/fifa-world-cup-1990-logo-footylogos.svg",
+    "retrieved": "2026-09-08",
+    "sha256": "6e769f082ac287bb8dd849ca5f8585d5529cc72e10d1526980a29080fa207948",
+    "extraction": "Keep path2187 and path2185 unchanged; in path2183 retain ball subpaths starting M399.0299,483.3121. Set viewBox to 218 150 370 370. Preserve original fill values."
+  },
+  "mascot_source": {
+    "url": "https://openclipart.org/download/281421",
+    "page": "https://openclipart.org/detail/281421/italia-90",
+    "creator": "dordy",
+    "file": "source/ciao-openclipart.svg",
+    "sha256": "c521e08f6b83713b512cb35eecf75d5812649320a31a7023f196607cdc711590",
+    "retrieved": "2026-09-08",
+    "viewBox": "38.996 76.656 549.952 701.576",
+    "colors": {
+      "#8c170d": "#E31331",
+      "#81110e": "#B80F27",
+      "#0a2c14": "#00834D",
+      "#132318": "#00683D",
+      "#edecea": "#FFFFFF",
+      "#eeeeec": "#FFFFFF"
+    },
+    "modifications": "Keep all vector path geometry; change listed fills; remove embedded metadata thumbnail; crop viewBox with 5-unit transparent margin. Empty defs removed.",
+    "alternative_reviewed": "Logovector legacy AI https://logovector.net/italia-90-ciao-logo-vector-337606; file and preview retained. Converted using local flattened-path parser for comparison only. Openclipart preferred for smoother contour."
+  }
+}

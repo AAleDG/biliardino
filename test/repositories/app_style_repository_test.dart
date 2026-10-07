@@ -18,7 +18,7 @@ void main() {
         expect(repo.style, AppStyle.southAfrica2010);
         expect(db.settings, before);
       }
-      expect(AppStyle.values, [AppStyle.southAfrica2010]);
+      expect(AppStyle.values, [AppStyle.southAfrica2010, AppStyle.italia90]);
     },
   );
 
@@ -41,9 +41,10 @@ void main() {
       final first = AppStyleRepository(db);
       await first.load();
       await first.save(AppStyle.southAfrica2010);
+      await first.save(AppStyle.italia90);
       final second = AppStyleRepository(db);
       await second.load();
-      expect(second.style, AppStyle.southAfrica2010);
+      expect(second.style, AppStyle.italia90);
       expect(
         await db.getSettings([
           'match_rules.target_score',
@@ -51,7 +52,7 @@ void main() {
         ]),
         {
           'match_rules.target_score': '12',
-          AppStyleRepository.storageKey: 'south-africa-2010',
+          AppStyleRepository.storageKey: 'italia-90',
         },
       );
     },

@@ -1,0 +1,82 @@
+{
+  "name": "profile-no-matches",
+  "captured_at": "2026-10-07T10:26:03.233588",
+  "viewport": {
+    "width": 402.0,
+    "height": 874.0
+  },
+  "text_scale": 1.0,
+  "safe_area": {
+    "top": 62.0,
+    "bottom": 34.0
+  },
+  "image_pixel_ratio": 2,
+  "destination": "home",
+  "leaderboard_mode": "oneVsOne",
+  "players": [
+    {
+      "id": "Andrea",
+      "name": "Andrea",
+      "name_key": "andrea",
+      "created_at": 1788213600000,
+      "is_present": 1,
+      "is_archived": 0
+    },
+    {
+      "id": "Giulia",
+      "name": "Giulia",
+      "name_key": "giulia",
+      "created_at": 1788213600000,
+      "is_present": 0,
+      "is_archived": 0
+    },
+    {
+      "id": "Luca",
+      "name": "Luca",
+      "name_key": "luca",
+      "created_at": 1788213600000,
+      "is_present": 1,
+      "is_archived": 0
+    },
+    {
+      "id": "Marco",
+      "name": "Marco",
+      "name_key": "marco",
+      "created_at": 1788213600000,
+      "is_present": 1,
+      "is_archived": 0
+    },
+    {
+      "id": "Paolo",
+      "name": "Paolo",
+      "name_key": "paolo",
+      "created_at": 1788213600000,
+      "is_present": 1,
+      "is_archived": 0
+    },
+    {
+      "id": "Sara",
+      "name": "Sara",
+      "name_key": "sara",
+      "created_at": 1788213600000,
+      "is_present": 0,
+      "is_archived": 0
+    }
+  ],
+  "matches": [],
+  "match_setup": {
+    "mode": "twoVsTwo",
+    "assignment": {},
+    "score1": 0,
+    "score2": 0,
+    "scorer_ids": [],
+    "kicked_off": false,
+    "is_rivalry": false,
+    "rules": {
+      "mode": "free",
+      "target_score": 10,
+      "win_by_two": false
+    }
+  },
+  "scope": "Synthetic widget-rendered visual reference, not native or persistence validation."
+}

@@ -1,6 +1,7 @@
 /// Persisted presentation identity. Only installed presentations are selectable.
 enum AppStyle {
-  southAfrica2010('south-africa-2010');
+  southAfrica2010('south-africa-2010'),
+  italia90('italia-90');
 
   const AppStyle(this.storageValue);
   final String storageValue;

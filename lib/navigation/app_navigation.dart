@@ -3,19 +3,11 @@ import 'package:flutter/material.dart';
 import '../presentation/app_presentation.dart';
 
 Future<void> openHistory(BuildContext context) {
-  return Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => const PresentationPage(AppPage.history),
-    ),
-  );
+  return AppPresentationScope.of(context).openHistory(context);
 }
 
 Future<void> openDataManagement(BuildContext context) {
-  return Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => const PresentationPage(AppPage.data),
-    ),
-  );
+  return AppPresentationScope.of(context).openData(context);
 }
 
 Future<void> openPlayerProfile(BuildContext context, String playerId) {

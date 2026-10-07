@@ -1,0 +1,248 @@
+{
+  "donor_sha": "9c6c4b8b46114acc15fdaa2e49851d4054804ef8",
+  "source": "frozen pre-import production-widget renders, unchanged expected images",
+  "references": [
+    {
+      "name": "core-home",
+      "source": "core/home.png",
+      "sha256": "863c84abf485e148828e2504771906f471e57014e71656deaa4d9d796fcffc2a"
+    },
+    {
+      "name": "core-home-empty",
+      "source": "core/home-empty.png",
+      "sha256": "ff18ec95e2e51cfb1d8b99c18c940d4c5742a0db90bc1b17111cb5d33ecf0042"
+    },
+    {
+      "name": "core-setup",
+      "source": "core/setup.png",
+      "sha256": "0e59fab9743d122ac0497b2017c2cf9b03c6e4c8abac52bf8c84f841e72c2b8e"
+    },
+    {
+      "name": "core-live-4-5",
+      "source": "core/live-4-5.png",
+      "sha256": "874f4dae8be877be6b88d65f134da0ac67f7df7ffb927e0c23b3ff192de9bd58"
+    },
+    {
+      "name": "core-live-10-12",
+      "source": "core/live-10-12.png",
+      "sha256": "31ece87f4ed211832868368730682663f228348c923935bea94d9cee68b2c5c5"
+    },
+    {
+      "name": "core-live-large",
+      "source": "core/live-large.png",
+      "sha256": "f06a73d4d5d1dbb073bcc856d74476e17aedf40ee2e6fa5cacb59cc89b553053"
+    },
+    {
+      "name": "flows-data",
+      "source": "flows/data.png",
+      "sha256": "5433fcadc26141332fa52f11e64da491944e5c5729be7f618c151fe6e0caf4a6"
+    },
+    {
+      "name": "flows-data-large",
+      "source": "flows/data-large.png",
+      "sha256": "feee05b81b7023b28221797b96dd290b6243223e75615b1e2463273afc970480"
+    },
+    {
+      "name": "flows-history",
+      "source": "flows/history.png",
+      "sha256": "c50306e9db4a92652c2b068c71269fcf2fc1ddde2dfecfcab268db6c44e92947"
+    },
+    {
+      "name": "flows-history-empty",
+      "source": "flows/history-empty.png",
+      "sha256": "8204c834cda1de4618e8c795d442c09806848b4ef84b85ecfd8ebef3d2022438"
+    },
+    {
+      "name": "flows-history-large",
+      "source": "flows/history-large.png",
+      "sha256": "808660bdadc8e06340f5c2b056329c94543240c2302363e29798c4f5cb99937b"
+    },
+    {
+      "name": "flows-history-filters",
+      "source": "flows/history-filters.png",
+      "sha256": "9059bb9d14f6f54ae40661b07909644882ddc0db77ab2f5ec74e3810600e3b18"
+    },
+    {
+      "name": "flows-history-detail",
+      "source": "flows/history-detail.png",
+      "sha256": "e0d1506118290a034f0dfddf03f487ab2a3baf35ba99e40fcdf2643c1caeb915"
+    },
+    {
+      "name": "flows-history-edit",
+      "source": "flows/history-edit.png",
+      "sha256": "2056a01a562466820fcdc6f7f2e769392965f153e7d3d31c595ba2c0ffb317f4"
+    },
+    {
+      "name": "flows-standings",
+      "source": "flows/standings.png",
+      "sha256": "d8f8e341c12420ab3576da119f820afc9b4f92836b233a0c881c9e15df82ef7d"
+    },
+    {
+      "name": "flows-standings-intesa",
+      "source": "flows/standings-intesa.png",
+      "sha256": "4509cb10a0da00029c02b268c0d1a0835fcf7709d89757b21ad303abfdf147bd"
+    },
+    {
+      "name": "flows-standings-large",
+      "source": "flows/standings-large.png",
+      "sha256": "669c0179ef376355bc976efe6ed4e83d423d70e0e05e475e71ed7dcbe9c3f3c7"
+    },
+    {
+      "name": "flows-standings-0",
+      "source": "flows/standings-0.png",
+      "sha256": "7eedaea2194ef5a9379c29fd66d5933527dc6ff77dd9ec2cf987e1f347e84fe4"
+    },
+    {
+      "name": "flows-standings-1",
+      "source": "flows/standings-1.png",
+      "sha256": "bd60b760bf224caf81284262c956c2295303bf8db961b695bb2ca5a50b0e1289"
+    },
+    {
+      "name": "flows-standings-2",
+      "source": "flows/standings-2.png",
+      "sha256": "f693b7d808dbbdf34e181e47a41aaacfbc89b3df39b5e9593ebac946f2e8e9aa"
+    },
+    {
+      "name": "flows-scorers",
+      "source": "flows/scorers.png",
+      "sha256": "dfd05ffcb17acbfc9bdfde599ad3fabb1dc492a641e081612e2b9284252a604e"
+    },
+    {
+      "name": "flows-profile",
+      "source": "flows/profile.png",
+      "sha256": "645481aa74ca839079e575243a4559a567411736810088e8e92c4aa2dd9b3c46"
+    },
+    {
+      "name": "flows-profile-no-matches",
+      "source": "flows/profile-no-matches.png",
+      "sha256": "bfef94e01adaa398bc72eedede7d328890fa8f3421886f063acbe8730e31dfe4"
+    },
+    {
+      "name": "flows-profile-archived",
+      "source": "flows/profile-archived.png",
+      "sha256": "395dcddea4d6405a7cdcfeba67087cc1d8742619f8d9909d4cb38d6ebe513be9"
+    },
+    {
+      "name": "flows-profile-missing",
+      "source": "flows/profile-missing.png",
+      "sha256": "30e4829eec8b462c5de3ebb1f9ba210d88640cd2d65f40ed3b60891e7e09b299"
+    },
+    {
+      "name": "flows-profile-large",
+      "source": "flows/profile-large.png",
+      "sha256": "2a55a31ff8619d866293a0fbc7db0948db73c42aeab10e5a6070581e4461deb9"
+    },
+    {
+      "name": "flows-profile-history",
+      "source": "flows/profile-history.png",
+      "sha256": "101c58447dcb9fe6766d1b3d00faac1ed637d93075b386681844900df3c6807b"
+    },
+    {
+      "name": "flows-pair-profile-intesa",
+      "source": "flows/pair-profile-intesa.png",
+      "sha256": "1b92f068daf8d5fc9cac135a1326c4a2a8ecc1f1be91b0b8a9c2a0e13fe2508f"
+    },
+    {
+      "name": "flows-pair-profile-intesa-large",
+      "source": "flows/pair-profile-intesa-large.png",
+      "sha256": "28a1ed7550a13039d8e2e6558175acb12b019bddbe8ecc020a2c9265a9e7aef0"
+    },
+    {
+      "name": "flows-pair-profile-intesa-history",
+      "source": "flows/pair-profile-intesa-history.png",
+      "sha256": "6acc0bfaef2eed270d7c947d0d9ba3b7d9f437f0a4d457c095639aa716230238"
+    },
+    {
+      "name": "flows-setup-rules",
+      "source": "flows/setup-rules.png",
+      "sha256": "46d62748fdab241c54f0a7711a1eec88127c58a2782a37715fbfd51738886610"
+    },
+    {
+      "name": "flows-setup-final-player",
+      "source": "flows/setup-final-player.png",
+      "sha256": "204ffd7ddfaec44c8b16dd0b5df53964763158936d9eaa4c3b70c3e16cb31c84"
+    },
+    {
+      "name": "flows-setup-large",
+      "source": "flows/setup-large.png",
+      "sha256": "16c47a7d692d458a9561532d23b43e251f29013395b072997e037c670f90f881"
+    },
+    {
+      "name": "flows-home-large",
+      "source": "flows/home-large.png",
+      "sha256": "9f75ce9fcc88d246fc35dac6bb7d1f97f4abe375d4d1bec6f229766f66e25844"
+    },
+    {
+      "name": "supplement-players-normal",
+      "source": "supplement/players-normal.png",
+      "sha256": "21d2f8db7fd047f02fbc82c7c1973f3b6c3b2fc29c876648634bf72043397f83",
+      "corrected_expected": "supplement-players-normal-corrected.png",
+      "corrected_sha256": "fdfc96b686d9326346b3e8310924d595d04d333c17130f1584ab81e86e6217ee",
+      "correction_reason": "Deterministic complete backdrop decode",
+      "correction_source": "Independent git archive of unmodified donor 9c6c4b8; real original BiliardinoApp, original fonts; qa/r6-donor-replay/test/replay_test.dart and donor-replay.log; original frozen image retained"
+    },
+    {
+      "name": "supplement-players-compact-large",
+      "source": "supplement/players-compact-large.png",
+      "sha256": "4d2a0ced6320b2d19095c05f10043e1928c7cfe0de5954d2b7a4281dc12c35fc"
+    },
+    {
+      "name": "supplement-players-long-name-normal",
+      "source": "supplement/players-long-name-normal.png",
+      "sha256": "7c8ecbcc728f078685e88cded2b8bf4d30f40cb3c7b2125cf222241c652b369a"
+    },
+    {
+      "name": "supplement-players-long-name-compact-large",
+      "source": "supplement/players-long-name-compact-large.png",
+      "sha256": "4d2a0ced6320b2d19095c05f10043e1928c7cfe0de5954d2b7a4281dc12c35fc"
+    },
+    {
+      "name": "supplement-more-normal",
+      "source": "supplement/more-normal.png",
+      "sha256": "cd6b14eda1d509fdcbf8cd024e09aad8f549f154430d6037cbff1e3140ca0cf3"
+    },
+    {
+      "name": "supplement-more-compact-large",
+      "source": "supplement/more-compact-large.png",
+      "sha256": "24a72857357cd93be2e6aed0d2acedc8f85455a48110fed96dfbd434a584dbc6"
+    },
+    {
+      "name": "supplement-home-compact-large",
+      "source": "supplement/home-compact-large.png",
+      "sha256": "d477f46c0bb70b25a6894065c37e3018bf549122f15a19cd7717e38bf2bc3a6d"
+    },
+    {
+      "name": "supplement-match-compact-large",
+      "source": "supplement/match-compact-large.png",
+      "sha256": "d85bd6d70e052148f7046e6b78da61c3f15a8c1044c31d15237aa4f105f1b98f"
+    },
+    {
+      "name": "supplement-leaderboard-compact-large",
+      "source": "supplement/leaderboard-compact-large.png",
+      "sha256": "463c1bd583ffa1ab9cf142e4124b829339a5369d2817e7a01090d8e084c0f2e9"
+    },
+    {
+      "name": "supplement-leaderboard-long-name-normal",
+      "source": "supplement/leaderboard-long-name-normal.png",
+      "sha256": "d8f8e341c12420ab3576da119f820afc9b4f92836b233a0c881c9e15df82ef7d",
+      "corrected_expected": "supplement-leaderboard-long-name-normal-corrected.png",
+      "corrected_sha256": "4e48c259d704ece14fcc91f12da8493a4575aceeaab7ab80a0672db09ae91a5d",
+      "correction_reason": "Already-approved R5 rename correctness; initialize unchanged donor with snapshot names instead of its stale-ranking defect",
+      "correction_source": "Independent git archive of unmodified donor 9c6c4b8; real original BiliardinoApp, original fonts; qa/r6-donor-replay/test/replay_test.dart and donor-replay.log; original frozen image retained"
+    },
+    {
+      "name": "supplement-leaderboard-long-name-compact-large",
+      "source": "supplement/leaderboard-long-name-compact-large.png",
+      "sha256": "463c1bd583ffa1ab9cf142e4124b829339a5369d2817e7a01090d8e084c0f2e9",
+      "corrected_expected": "supplement-leaderboard-long-name-compact-large-corrected.png",
+      "corrected_sha256": "448af31fc0ec9fa4af3a1ea20c1aed22dc5b4b5356555a10107093609c5d9162",
+      "correction_reason": "Already-approved R5 rename correctness; initialize unchanged donor with snapshot names instead of its stale-ranking defect",
+      "correction_source": "Independent git archive of unmodified donor 9c6c4b8; real original BiliardinoApp, original fonts; qa/r6-donor-replay/test/replay_test.dart and donor-replay.log; original frozen image retained"
+    },
+    {
+      "name": "supplement-data-compact-large",
+      "source": "supplement/data-compact-large.png",
+      "sha256": "1a1cd0ef871f5c0c7d8f7c29669b1598c219cd1a76efb6e162fd7bdf515dbb7b"
+    }
+  ]
+}

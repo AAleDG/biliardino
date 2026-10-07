@@ -1,3 +1,4 @@
+import '../presentation/ranking_tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/leaderboard/leaderboard_cubit.dart';
@@ -145,8 +146,7 @@ class LeaderboardScreen extends StatelessWidget {
           ),
         ],
       );
-      return DefaultTabController(
-        length: 2,
+      return RankingTabs(
         child: Scaffold(
           body: SafeArea(
             bottom: false,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/game_match.dart';
 import '../../models/player.dart';
+import '../../models/app_style.dart';
 import '../../screens/dashboard_screen.dart';
 import '../../screens/data_management_screen.dart';
 import '../../screens/history_screen.dart';
@@ -21,6 +22,8 @@ import 'bootstrap_screen.dart';
 /// Reuses the existing South Africa compositions without changing their visuals.
 class SouthAfricaPresentation implements AppPresentation {
   const SouthAfricaPresentation();
+  @override
+  AppStyle get style => AppStyle.southAfrica2010;
   @override
   String get title => 'NTT Biliardino';
   @override
@@ -54,6 +57,18 @@ class SouthAfricaPresentation implements AppPresentation {
   Widget profile(String playerId) => PlayerProfileScreen(playerId: playerId);
   @override
   Widget pairProfile(String pairId) => PairProfileScreen(pairId: pairId);
+  @override
+  Future<void> openHistory(BuildContext context) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => const PresentationPage(AppPage.history),
+    ),
+  );
+  @override
+  Future<void> openData(BuildContext context) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => const PresentationPage(AppPage.data),
+    ),
+  );
   @override
   Widget matchEditor({
     required GameMatch match,

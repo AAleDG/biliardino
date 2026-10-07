@@ -1,0 +1,228 @@
+{
+  "name": "scorers",
+  "captured_at": "2026-10-07T10:25:56.534010",
+  "viewport": {
+    "width": 402.0,
+    "height": 874.0
+  },
+  "text_scale": 1.0,
+  "safe_area": {
+    "top": 62.0,
+    "bottom": 34.0
+  },
+  "image_pixel_ratio": 2,
+  "destination": "leaderboard",
+  "leaderboard_mode": "oneVsOne",
+  "players": [
+    {
+      "id": "Andrea",
+      "name": "Andrea",
+      "name_key": "andrea",
+      "created_at": 1788213600000,
+      "is_present": 1,
+      "is_archived": 0
+    },
+    {
+      "id": "Giulia",
+      "name": "Giulia",
+      "name_key": "giulia",
+      "created_at": 1788213600000,
+      "is_present": 0,
+      "is_archived": 0
+    },
+    {
+      "id": "Luca",
+      "name": "Luca",
+      "name_key": "luca",
+      "created_at": 1788213600000,
+      "is_present": 1,
+      "is_archived": 0
+    },
+    {
+      "id": "Marco",
+      "name": "Marco",
+      "name_key": "marco",
+      "created_at": 1788213600000,
+      "is_present": 1,
+      "is_archived": 0
+    },
+    {
+      "id": "Paolo",
+      "name": "Paolo",
+      "name_key": "paolo",
+      "created_at": 1788213600000,
+      "is_present": 1,
+      "is_archived": 0
+    },
+    {
+      "id": "Sara",
+      "name": "Sara",
+      "name_key": "sara",
+      "created_at": 1788213600000,
+      "is_present": 0,
+      "is_archived": 0
+    }
+  ],
+  "matches": [
+    {
+      "id": "bbddfe14-0403-4165-a45a-302c0bb60b7f",
+      "played_at": 1791361553687,
+      "match_mode": "2v2",
+      "t1p1": "Andrea",
+      "t1p2": "Paolo",
+      "t2p1": "Luca",
+      "t2p2": "Marco",
+      "t1_score": 5,
+      "t2_score": 3,
+      "winning_team": 1,
+      "scorer_ids_json": "[\"Andrea\",\"Andrea\",\"Andrea\",\"Andrea\",\"Andrea\",\"Luca\",\"Luca\",\"Luca\"]",
+      "is_rivalry": 0
+    },
+    {
+      "id": "7acf0a52-2977-406f-9440-f93670e0323f",
+      "played_at": 1791361553685,
+      "match_mode": "2v2",
+      "t1p1": "Andrea",
+      "t1p2": "Luca",
+      "t2p1": "Marco",
+      "t2p2": "Paolo",
+      "t1_score": 5,
+      "t2_score": 3,
+      "winning_team": 1,
+      "scorer_ids_json": "[\"Andrea\",\"Andrea\",\"Andrea\",\"Andrea\",\"Andrea\",\"Marco\",\"Marco\",\"Marco\"]",
+      "is_rivalry": 0
+    },
+    {
+      "id": "af3142a9-58f3-49eb-9049-395754787db9",
+      "played_at": 1791361553684,
+      "match_mode": "2v2",
+      "t1p1": "Andrea",
+      "t1p2": "Luca",
+      "t2p1": "Marco",
+      "t2p2": "Paolo",
+      "t1_score": 5,
+      "t2_score": 3,
+      "winning_team": 1,
+      "scorer_ids_json": "[\"Andrea\",\"Andrea\",\"Andrea\",\"Andrea\",\"Andrea\",\"Marco\",\"Marco\",\"Marco\"]",
+      "is_rivalry": 0
+    },
+    {
+      "id": "28c3c88b-b7e8-4660-a696-cd9f22d36255",
+      "played_at": 1791361553683,
+      "match_mode": "2v2",
+      "t1p1": "Andrea",
+      "t1p2": "Luca",
+      "t2p1": "Marco",
+      "t2p2": "Paolo",
+      "t1_score": 5,
+      "t2_score": 3,
+      "winning_team": 1,
+      "scorer_ids_json": "[\"Andrea\",\"Andrea\",\"Andrea\",\"Andrea\",\"Andrea\",\"Marco\",\"Marco\",\"Marco\"]",
+      "is_rivalry": 0
+    },
+    {
+      "id": "preview-0",
+      "played_at": 1788213600000,
+      "match_mode": "1v1",
+      "t1p1": "Andrea",
+      "t1p2": "",
+      "t2p1": "Luca",
+      "t2p2": "",
+      "t1_score": 5,
+      "t2_score": 3,
+      "winning_team": 1,
+      "scorer_ids_json": "[\"Andrea\",\"Andrea\",\"Andrea\",\"Andrea\",\"Andrea\",\"Luca\",\"Luca\",\"Luca\"]",
+      "is_rivalry": 0
+    },
+    {
+      "id": "preview-1",
+      "played_at": 1788300000000,
+      "match_mode": "1v1",
+      "t1p1": "Marco",
+      "t1p2": "",
+      "t2p1": "Paolo",
+      "t2p2": "",
+      "t1_score": 5,
+      "t2_score": 3,
+      "winning_team": 1,
+      "scorer_ids_json": "[\"Marco\",\"Marco\",\"Marco\",\"Marco\",\"Marco\",\"Paolo\",\"Paolo\",\"Paolo\"]",
+      "is_rivalry": 0
+    },
+    {
+      "id": "preview-2",
+      "played_at": 1788386400000,
+      "match_mode": "1v1",
+      "t1p1": "Andrea",
+      "t1p2": "",
+      "t2p1": "Marco",
+      "t2p2": "",
+      "t1_score": 5,
+      "t2_score": 3,
+      "winning_team": 1,
+      "scorer_ids_json": "[\"Andrea\",\"Andrea\",\"Andrea\",\"Andrea\",\"Andrea\",\"Marco\",\"Marco\",\"Marco\"]",
+      "is_rivalry": 0
+    },
+    {
+      "id": "preview-3",
+      "played_at": 1788472800000,
+      "match_mode": "1v1",
+      "t1p1": "Luca",
+      "t1p2": "",
+      "t2p1": "Paolo",
+      "t2p2": "",
+      "t1_score": 5,
+      "t2_score": 3,
+      "winning_team": 1,
+      "scorer_ids_json": "[\"Luca\",\"Luca\",\"Luca\",\"Luca\",\"Luca\",\"Paolo\",\"Paolo\",\"Paolo\"]",
+      "is_rivalry": 0
+    },
+    {
+      "id": "preview-4",
+      "played_at": 1788559200000,
+      "match_mode": "1v1",
+      "t1p1": "Sara",
+      "t1p2": "",
+      "t2p1": "Giulia",
+      "t2p2": "",
+      "t1_score": 5,
+      "t2_score": 3,
+      "winning_team": 1,
+      "scorer_ids_json": "[\"Sara\",\"Sara\",\"Sara\",\"Sara\",\"Sara\",\"Giulia\",\"Giulia\",\"Giulia\"]",
+      "is_rivalry": 0
+    },
+    {
+      "id": "preview-5",
+      "played_at": 1788645600000,
+      "match_mode": "1v1",
+      "t1p1": "Paolo",
+      "t1p2": "",
+      "t2p1": "Andrea",
+      "t2p2": "",
+      "t1_score": 5,
+      "t2_score": 3,
+      "winning_team": 1,
+      "scorer_ids_json": "[\"Paolo\",\"Paolo\",\"Paolo\",\"Paolo\",\"Paolo\",\"Andrea\",\"Andrea\",\"Andrea\"]",
+      "is_rivalry": 0
+    }
+  ],
+  "match_setup": {
+    "mode": "twoVsTwo",
+    "assignment": {
+      "Luca": 1,
+      "Marco": 1,
+      "Andrea": 2,
+      "Paolo": 2
+    },
+    "score1": 0,
+    "score2": 0,
+    "scorer_ids": [],
+    "kicked_off": false,
+    "is_rivalry": false,
+    "rules": {
+      "mode": "firstTo",
+      "target_score": 10,
+      "win_by_two": false
+    }
+  },
+  "scope": "Synthetic widget-rendered visual reference, not native or persistence validation."
+}

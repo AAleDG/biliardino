@@ -14,9 +14,10 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeDestination>(
       builder: (context, destination) {
-        final index = _homeEntries.indexWhere(
+        final selectedPage = _homeEntries.indexWhere(
           (entry) => entry.destination == destination,
         );
+        final index = selectedPage < 0 ? _homeEntries.length - 1 : selectedPage;
         return BlocSelector<
           NewMatchCubit,
           NewMatchState,
@@ -131,9 +132,12 @@ class _BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedIndex = _homeEntries.indexWhere(
+    final selectedPage = _homeEntries.indexWhere(
       (entry) => entry.destination == destination,
     );
+    final selectedIndex = selectedPage < 0
+        ? _homeEntries.length - 1
+        : selectedPage;
     return Material(
       color: AppColors.surface,
       elevation: 0,

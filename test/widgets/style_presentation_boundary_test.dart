@@ -1,3 +1,6 @@
+import 'package:biliardino/cubits/leaderboard/leaderboard_cubit.dart';
+import 'package:biliardino/presentation/italia90/screens/home_screen.dart'
+    as italia;
 import 'dart:async';
 import 'package:biliardino/cubits/app_style/app_style_cubit.dart';
 import 'package:biliardino/cubits/home/home_cubit.dart';
@@ -24,6 +27,105 @@ import '../support/match_editor_fixture.dart' show editorTap;
 
 void main() {
   testWidgets(
+    'two real styles retain setup, filters, ranking mode/tab and the Navigator',
+    (tester) async {
+      final fixture = DesignFixture();
+      await fixture.load();
+      await tester.pumpWidget(fixture.app);
+      await tester.pumpAndSettle();
+      final context = tester.element(find.byType(HomeScreen));
+      final home = context.read<HomeCubit>();
+      final match = context.read<NewMatchCubit>();
+      final style = context.read<AppStyleCubit>();
+      final ranks = context.read<LeaderboardCubit>();
+      final history = context.read<HistoryCubit>();
+      final nav = Navigator.of(context);
+      home.select(HomeDestination.match);
+      match.setTeam('p0', 1);
+      match.setTeam('p3', 2);
+      history.applyFilters(
+        const HistoryFilters(matchMode: HistoryMatchModeFilter.twoVsTwo),
+      );
+      ranks.selectMode(MatchMode.oneVsOne);
+      ranks.selectTab(1);
+      home.select(HomeDestination.more);
+      await tester.pumpAndSettle();
+      for (final target in [
+        AppStyle.italia90,
+        AppStyle.southAfrica2010,
+        AppStyle.italia90,
+      ]) {
+        await style.select(target);
+        await tester.pumpAndSettle();
+        final screen = target == AppStyle.italia90
+            ? find.byType(italia.HomeScreen)
+            : find.byType(HomeScreen);
+        final current = tester.element(screen);
+        expect(current.read<NewMatchCubit>(), same(match));
+        expect(current.read<HomeCubit>(), same(home));
+        expect(current.read<LeaderboardCubit>(), same(ranks));
+        expect(Navigator.of(current), same(nav));
+        expect(match.state.assignment, {'p0': 1, 'p3': 2});
+        expect(
+          history.state.filters.matchMode,
+          HistoryMatchModeFilter.twoVsTwo,
+        );
+        expect(ranks.state.selectedMode, MatchMode.oneVsOne);
+        expect(ranks.state.selectedTab, 1);
+        expect(home.state, HomeDestination.more);
+        expect(tester.takeException(), isNull);
+      }
+      await tester.pumpWidget(const SizedBox.shrink());
+      await fixture.dispose();
+    },
+  );
+
+  testWidgets(
+    'inactive presentation does not consume a second goal or save effect',
+    (tester) async {
+      final fixture = DesignFixture();
+      await fixture.load();
+      await tester.pumpWidget(fixture.app);
+      await tester.pumpAndSettle();
+      final ctx = tester.element(find.byType(HomeScreen));
+      final home = ctx.read<HomeCubit>();
+      final match = ctx.read<NewMatchCubit>();
+      final style = ctx.read<AppStyleCubit>();
+      await style.select(AppStyle.italia90);
+      await tester.pumpAndSettle();
+      await style.select(AppStyle.southAfrica2010);
+      await tester.pumpAndSettle();
+      home.select(HomeDestination.match);
+      match.setMatchMode(MatchMode.oneVsOne);
+      match.setTeam('p0', 1);
+      match.setTeam('p3', 2);
+      match.kickoff();
+      match.addGoal(1, 'p0');
+      await tester.pumpAndSettle();
+      expect(match.state.score1, 1);
+      expect(match.state.scorerIds, ['p0']);
+      await style.select(AppStyle.italia90);
+      await tester.pumpAndSettle();
+      expect(match.state.score1, 1);
+      expect(match.state.kickedOff, isTrue);
+      final barrier = Completer<void>();
+      fixture.database.matchInsertBarrier = barrier.future;
+      final save = match.save();
+      await tester.pump();
+      await style.select(AppStyle.southAfrica2010);
+      await tester.pump();
+      barrier.complete();
+      await save;
+      await tester.pumpAndSettle();
+      expect(fixture.database.insertMatchCalls, 1);
+      expect(find.text('HAI VINTO!'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox.shrink());
+      await fixture.dispose();
+    },
+  );
+
+  testWidgets(
     'production composition keeps owners, setup and active match on rebuild',
     (tester) async {
       final fixture = DesignFixture();
@@ -35,7 +137,7 @@ void main() {
       final match = context.read<NewMatchCubit>();
       final style = context.read<AppStyleCubit>();
       final navigator = Navigator.of(context);
-      expect(AppStyle.values, [AppStyle.southAfrica2010]);
+      expect(AppStyle.values, [AppStyle.southAfrica2010, AppStyle.italia90]);
       expect(presentationFor(style.state), isA<SouthAfricaPresentation>());
       expect(find.text('Italia'), findsNothing);
       home.select(HomeDestination.match);

@@ -1,3 +1,4 @@
+import '../presentation/app_presentation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -53,6 +54,19 @@ class _NewMatchViewState extends State<_NewMatchView> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!AppPresentationScope.isActiveOf(context)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _dismissGoalOverlay();
+          _dismissVictoryOverlay();
+        }
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
@@ -66,6 +80,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
         BlocListener<HomeCubit, HomeDestination>(
           listenWhen: (previous, current) => previous != current,
           listener: (ctx, state) {
+            if (!AppPresentationScope.isActiveOf(ctx)) return;
             if (state == HomeDestination.match) {
               final pending = ctx.read<NewMatchCubit>().state.pendingVictory;
               if (pending != null) {
@@ -84,6 +99,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
         BlocListener<NewMatchCubit, NewMatchState>(
           listenWhen: (p, n) => n.lastGoal != null && n.lastGoal != p.lastGoal,
           listener: (ctx, state) {
+            if (!AppPresentationScope.isActiveOf(ctx)) return;
             final goal = state.lastGoal!;
             if (ctx.read<HomeCubit>().state != HomeDestination.match) {
               return;
@@ -106,6 +122,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
           listenWhen: (p, n) =>
               n.pendingVictory != null && n.pendingVictory != p.pendingVictory,
           listener: (ctx, state) {
+            if (!AppPresentationScope.isActiveOf(ctx)) return;
             _dismissGoalOverlay();
             if (ctx.read<HomeCubit>().state == HomeDestination.match) {
               _confirmCompletedMatch(ctx, state.pendingVictory!);
@@ -116,6 +133,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
           listenWhen: (p, n) =>
               n.lastVictory != null && n.lastVictory != p.lastVictory,
           listener: (ctx, state) {
+            if (!AppPresentationScope.isActiveOf(ctx)) return;
             if (ctx.read<HomeCubit>().state != HomeDestination.match) {
               ctx.read<NewMatchCubit>().acknowledgeVictory();
               return;
@@ -149,6 +167,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
           listenWhen: (p, n) =>
               n.lastFeedback != null && n.lastFeedback != p.lastFeedback,
           listener: (ctx, state) {
+            if (!AppPresentationScope.isActiveOf(ctx)) return;
             final message = _feedbackText(state.lastFeedback!.kind, state.mode);
             ScaffoldMessenger.of(ctx)
               ..hideCurrentSnackBar()

@@ -1,0 +1,33 @@
+{
+  "name": "history-empty",
+  "captured_at": "2026-10-07T10:26:01.201675",
+  "viewport": {
+    "width": 402.0,
+    "height": 874.0
+  },
+  "text_scale": 1.0,
+  "safe_area": {
+    "top": 62.0,
+    "bottom": 34.0
+  },
+  "image_pixel_ratio": 2,
+  "destination": "history",
+  "leaderboard_mode": "oneVsOne",
+  "players": [],
+  "matches": [],
+  "match_setup": {
+    "mode": "twoVsTwo",
+    "assignment": {},
+    "score1": 0,
+    "score2": 0,
+    "scorer_ids": [],
+    "kicked_off": false,
+    "is_rivalry": false,
+    "rules": {
+      "mode": "free",
+      "target_score": 10,
+      "win_by_two": false
+    }
+  },
+  "scope": "Synthetic widget-rendered visual reference, not native or persistence validation."
+}
