@@ -175,6 +175,66 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Italia presence summary stays readable at enlarged text', (
+    tester,
+  ) async {
+    await _mountPlayers(
+      tester,
+      size: const Size(320, 568),
+      textScale: 2,
+      players: [
+        Player(
+          id: 'p0',
+          name: 'Andrea',
+          createdAt: DateTime(2026),
+          isPresent: true,
+        ),
+      ],
+    );
+
+    final presentLabel = find.byKey(
+      const ValueKey('players-summary-present-label'),
+    );
+    final presentChip = find.byKey(const ValueKey('players-summary-present'));
+
+    // Two lines are valid when the compact viewport cannot fit the scaled text.
+    expect(tester.getSize(presentLabel).height, lessThan(120));
+    expect(tester.getSize(presentChip).height, lessThan(140));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Italia summary pills stay content-sized in a compact layout', (
+    tester,
+  ) async {
+    await _mountPlayers(tester);
+
+    final presentChip = find.byKey(const ValueKey('players-summary-present'));
+    final readyChip = find.byKey(const ValueKey('players-summary-ready'));
+    final summary = find.ancestor(of: presentChip, matching: find.byType(Wrap));
+    final summaryWidth = tester.getSize(summary.first).width;
+
+    expect(tester.getSize(presentChip).width, lessThan(summaryWidth));
+    expect(tester.getSize(readyChip).width, lessThan(summaryWidth));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Italia summary pills stay content-sized at normal text', (
+    tester,
+  ) async {
+    await _mountPlayers(tester, size: const Size(640, 874));
+
+    final presentChip = find.byKey(const ValueKey('players-summary-present'));
+    final readyChip = find.byKey(const ValueKey('players-summary-ready'));
+
+    expect(
+      tester.getTopLeft(presentChip).dy,
+      closeTo(tester.getTopLeft(readyChip).dy, 0.5),
+    );
+    expect(tester.getSize(presentChip).width, lessThan(250));
+    expect(tester.getSize(readyChip).width, lessThan(320));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Italia action preserves the busy label and disabled semantics', (
     tester,
   ) async {

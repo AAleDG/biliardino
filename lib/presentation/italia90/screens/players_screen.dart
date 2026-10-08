@@ -180,20 +180,24 @@ class _SummaryChip extends StatelessWidget {
         minHeight: Italia90.touch,
         maxWidth: maxWidth,
       ),
-      child: Container(
+      child: Align(
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-        decoration: BoxDecoration(
-          color: Italia90.surface,
-          border: Border.all(color: color, width: 1.5),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: _SummaryLabel(
-          key: labelKey,
-          label: label,
-          leadingText: leadingText,
-          trailingText: trailingText,
-          color: color,
+        widthFactor: 1,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: Italia90.touch),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+          decoration: BoxDecoration(
+            color: Italia90.surface,
+            border: Border.all(color: color, width: 1.5),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: _SummaryLabel(
+            key: labelKey,
+            label: label,
+            leadingText: leadingText,
+            trailingText: trailingText,
+            color: color,
+          ),
         ),
       ),
     ),
@@ -225,37 +229,80 @@ class _SummaryLabel extends StatelessWidget {
     final leading = leadingText;
     final trailing = trailingText;
     if (leading == null || trailing == null) {
-      return Text(label, textAlign: TextAlign.center, style: style);
+      final labelPainter = TextPainter(
+        text: TextSpan(text: label, style: style),
+        textDirection: Directionality.of(context),
+        textScaler: MediaQuery.textScalerOf(context),
+      )..layout();
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final fits =
+              !constraints.hasBoundedWidth ||
+              labelPainter.width <= constraints.maxWidth;
+          if (fits) {
+            return SizedBox(
+              width: labelPainter.width,
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: style,
+                softWrap: false,
+                textWidthBasis: TextWidthBasis.longestLine,
+              ),
+            );
+          }
+          return Text(
+            label,
+            textAlign: TextAlign.center,
+            style: style,
+            textWidthBasis: TextWidthBasis.longestLine,
+          );
+        },
+      );
     }
-    return Text.rich(
-      TextSpan(
-        style: style,
-        children: [
-          WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
+    final textScaler = MediaQuery.textScalerOf(context);
+    final leadingPainter = TextPainter(
+      text: TextSpan(text: leading, style: style),
+      textDirection: Directionality.of(context),
+      textScaler: textScaler,
+    )..layout();
+    final trailingPainter = TextPainter(
+      text: TextSpan(text: trailing, style: style),
+      textDirection: Directionality.of(context),
+      textScaler: textScaler,
+    )..layout();
+    final contentWidth = leadingPainter.width + 4 + trailingPainter.width;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final children = [
+          Text(
+            key: const ValueKey('players-summary-present-number'),
+            leading,
+            style: style,
+          ),
+          const SizedBox(width: 4),
+          Transform.translate(
+            // Optical correction aligns the word with the adjacent numeral.
+            offset: const Offset(0, -1),
             child: Text(
-              key: const ValueKey('players-summary-present-number'),
-              leading,
+              key: const ValueKey('players-summary-present-word'),
+              trailing,
               style: style,
             ),
           ),
-          const TextSpan(text: ' '),
-          WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Transform.translate(
-              // Optical correction aligns the word with the adjacent numeral.
-              offset: const Offset(0, -1),
-              child: Text(
-                key: const ValueKey('players-summary-present-word'),
-                trailing,
-                style: style,
-              ),
-            ),
-          ),
-        ],
-      ),
-      textAlign: TextAlign.center,
-      style: style,
+        ];
+        if (!constraints.hasBoundedWidth ||
+            contentWidth <= constraints.maxWidth) {
+          return Row(mainAxisSize: MainAxisSize.min, children: children);
+        }
+        return Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 4,
+          children: children,
+        );
+      },
     );
   }
 }
