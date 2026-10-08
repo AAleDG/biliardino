@@ -124,55 +124,140 @@ class _Summary extends StatelessWidget {
   final int total;
 
   @override
-  Widget build(BuildContext context) => Wrap(
-    alignment: WrapAlignment.center,
-    spacing: 10,
-    runSpacing: 8,
-    children: [
-      _SummaryChip(
-        label: '$presentCount/$total presenti',
-        color: Italia90.teamOne,
-      ),
-      _SummaryChip(
-        label: presentCount >= 2
-            ? 'Pronti a giocare'
-            : 'Servono ${2 - presentCount} per giocare',
-        color: presentCount >= 2 ? Italia90.success : Italia90.muted,
-      ),
-    ],
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) => Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 10,
+      runSpacing: 8,
+      children: [
+        _SummaryChip(
+          key: const ValueKey('players-summary-present'),
+          labelKey: const ValueKey('players-summary-present-label'),
+          maxWidth: constraints.maxWidth,
+          label: '$presentCount/$total presenti',
+          leadingText: '$presentCount/$total',
+          trailingText: 'presenti',
+          color: Italia90.teamOne,
+        ),
+        _SummaryChip(
+          key: const ValueKey('players-summary-ready'),
+          labelKey: const ValueKey('players-summary-ready-label'),
+          maxWidth: constraints.maxWidth,
+          label: presentCount >= 2
+              ? 'Pronti a giocare'
+              : 'Servono ${2 - presentCount} per giocare',
+          color: presentCount >= 2 ? Italia90.success : Italia90.muted,
+        ),
+      ],
+    ),
   );
 }
 
 class _SummaryChip extends StatelessWidget {
-  const _SummaryChip({required this.label, required this.color});
+  const _SummaryChip({
+    super.key,
+    required this.labelKey,
+    required this.maxWidth,
+    required this.label,
+    this.leadingText,
+    this.trailingText,
+    required this.color,
+  });
 
+  final Key labelKey;
+  final double maxWidth;
   final String label;
+  final String? leadingText;
+  final String? trailingText;
   final Color color;
 
   @override
   Widget build(BuildContext context) => Semantics(
     container: true,
     label: label,
-    child: Container(
-      constraints: const BoxConstraints(minHeight: Italia90.touch),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-      decoration: BoxDecoration(
-        color: Italia90.surface,
-        border: Border.all(color: color, width: 1.5),
-        borderRadius: BorderRadius.circular(24),
+    child: ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: Italia90.touch,
+        maxWidth: maxWidth,
       ),
-      child: Text(
-        label,
-        textAlign: TextAlign.center,
-        style: Italia90.body.copyWith(
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+        decoration: BoxDecoration(
+          color: Italia90.surface,
+          border: Border.all(color: color, width: 1.5),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: _SummaryLabel(
+          key: labelKey,
+          label: label,
+          leadingText: leadingText,
+          trailingText: trailingText,
           color: color,
-          fontSize: 17,
-          height: 1.15,
-          fontWeight: FontWeight.w700,
         ),
       ),
     ),
   );
+}
+
+class _SummaryLabel extends StatelessWidget {
+  const _SummaryLabel({
+    super.key,
+    required this.label,
+    required this.leadingText,
+    required this.trailingText,
+    required this.color,
+  });
+
+  final String label;
+  final String? leadingText;
+  final String? trailingText;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Italia90.body.copyWith(
+      color: color,
+      fontSize: 17,
+      height: 1.15,
+      fontWeight: FontWeight.w700,
+    );
+    final leading = leadingText;
+    final trailing = trailingText;
+    if (leading == null || trailing == null) {
+      return Text(label, textAlign: TextAlign.center, style: style);
+    }
+    return Text.rich(
+      TextSpan(
+        style: style,
+        children: [
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Text(
+              key: const ValueKey('players-summary-present-number'),
+              leading,
+              style: style,
+            ),
+          ),
+          const TextSpan(text: ' '),
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Transform.translate(
+              // Optical correction aligns the word with the adjacent numeral.
+              offset: const Offset(0, -1),
+              child: Text(
+                key: const ValueKey('players-summary-present-word'),
+                trailing,
+                style: style,
+              ),
+            ),
+          ),
+        ],
+      ),
+      textAlign: TextAlign.center,
+      style: style,
+    );
+  }
 }
 
 class _PlayersTitle extends StatelessWidget {
@@ -237,9 +322,6 @@ class _PlayerPanel extends StatelessWidget {
             _PlayerRow(
               key: ValueKey('player-${players[index].id}'),
               player: players[index],
-              avatarColor: index.isEven
-                  ? Italia90.homeAvatarBlue
-                  : Italia90.green,
               onToggle: isMutating || players[index].isArchived
                   ? null
                   : () => onToggle(players[index]),
@@ -265,7 +347,6 @@ class _PlayerRow extends StatelessWidget {
   const _PlayerRow({
     super.key,
     required this.player,
-    required this.avatarColor,
     required this.onToggle,
     required this.onRename,
     required this.onArchive,
@@ -274,7 +355,6 @@ class _PlayerRow extends StatelessWidget {
   });
 
   final Player player;
-  final Color avatarColor;
   final VoidCallback? onToggle;
   final VoidCallback? onRename;
   final VoidCallback? onArchive;
@@ -300,7 +380,7 @@ class _PlayerRow extends StatelessWidget {
         name: player.name,
         present: player.isPresent,
         archived: player.isArchived,
-        avatarColor: avatarColor,
+        avatarColor: Italia90.avatarNeutral,
         avatarSize: 56,
         presenceKey: ValueKey('player-presence-${player.id}'),
         onProfile: onOpenProfile,
