@@ -210,11 +210,9 @@ void main() {
 
     final presentChip = find.byKey(const ValueKey('players-summary-present'));
     final readyChip = find.byKey(const ValueKey('players-summary-ready'));
-    final summary = find.ancestor(of: presentChip, matching: find.byType(Wrap));
-    final summaryWidth = tester.getSize(summary.first).width;
 
-    expect(tester.getSize(presentChip).width, lessThan(summaryWidth));
-    expect(tester.getSize(readyChip).width, lessThan(summaryWidth));
+    expect(tester.getSize(presentChip).width, lessThan(250));
+    expect(tester.getSize(readyChip).width, lessThan(320));
     expect(tester.takeException(), isNull);
   });
 
