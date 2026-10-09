@@ -21,6 +21,22 @@ import 'history/history_filter_summary.dart';
 import 'history/history_filters_sheet.dart';
 import 'history/history_match_card.dart';
 
+/// Supplies a stable reference date to the history presentation when a
+/// caller needs deterministic relative date labels, such as a visual fixture.
+class HistoryClockScope extends InheritedWidget {
+  const HistoryClockScope({super.key, required this.now, required super.child});
+
+  final DateTime Function() now;
+
+  static DateTime nowOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<HistoryClockScope>()?.now() ??
+      DateTime.now();
+
+  @override
+  bool updateShouldNotify(HistoryClockScope oldWidget) =>
+      !identical(now, oldWidget.now);
+}
+
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key, this.showBack = true});
 
@@ -62,6 +78,7 @@ class _HistoryView extends StatelessWidget {
         final media = MediaQuery.of(context);
         final compact =
             media.size.height < 650 || media.textScaler.scale(1) > 1.3;
+        final now = HistoryClockScope.nowOf(context);
         final matches = state.filteredMatches;
         final daysByFirstMatch = {
           for (final group in state.groups) group.matches.first.id: group.day,
@@ -114,9 +131,7 @@ class _HistoryView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           if (day != null)
-                            _HistoryDayBand(
-                              label: dayLabel(day, DateTime.now()),
-                            )
+                            _HistoryDayBand(label: dayLabel(day, now))
                           else
                             const SizedBox(height: Italia90.md),
                           HistoryMatchCard(
