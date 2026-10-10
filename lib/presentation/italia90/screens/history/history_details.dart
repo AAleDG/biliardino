@@ -5,6 +5,7 @@ import '../../../../models/game_match.dart';
 import '../../../../models/player.dart';
 import '../../../../services/stats_service.dart';
 import '../../theme/italia90_tokens.dart';
+import '../../widgets/design/adaptive_pair.dart';
 
 enum HistoryMatchAction { edit, delete }
 
@@ -56,36 +57,62 @@ class HistoryMatchDetailsSheet extends StatelessWidget {
             const SizedBox(height: 20),
             const Text('Dettagli partita', style: Italia90.heading),
             const SizedBox(height: 18),
-            _DetailRow(label: 'Data e ora', value: '$date · $time'),
-            _DetailRow(
-              label: 'Formato',
-              value: match.isRivalry ? 'Rivalita · $mode' : mode,
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: Italia90.panel,
+                borderRadius: BorderRadius.circular(Italia90.panelRadius),
+                border: Border.all(
+                  color: Italia90.outline.withValues(alpha: 0.35),
+                ),
+              ),
+              child: Column(
+                children: [
+                  _DetailRow(
+                    icon: Icons.event_outlined,
+                    accentColor: Italia90.primary,
+                    label: 'Data e ora',
+                    value: '$date · $time',
+                  ),
+                  const Divider(height: 1, color: Italia90.subtle),
+                  _DetailRow(
+                    icon: Icons.sports_soccer_outlined,
+                    accentColor: Italia90.primary,
+                    label: 'Formato',
+                    value: match.isRivalry ? 'Rivalita · $mode' : mode,
+                  ),
+                  const Divider(height: 1, color: Italia90.subtle),
+                  _DetailRow(
+                    icon: Icons.groups_outlined,
+                    accentColor: Italia90.teamOne,
+                    label: 'Squadra 1',
+                    value: '$team1  ${match.t1Score}',
+                  ),
+                  const Divider(height: 1, color: Italia90.subtle),
+                  _DetailRow(
+                    icon: Icons.groups_outlined,
+                    accentColor: Italia90.teamTwo,
+                    label: 'Squadra 2',
+                    value: '$team2  ${match.t2Score}',
+                  ),
+                ],
+              ),
             ),
-            _DetailRow(label: 'Squadra 1', value: '$team1  ${match.t1Score}'),
-            _DetailRow(label: 'Squadra 2', value: '$team2  ${match.t2Score}'),
-            const SizedBox(height: 14),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    key: const ValueKey('match-details-delete'),
-                    onPressed: () =>
-                        Navigator.of(context).pop(HistoryMatchAction.delete),
-                    icon: const Icon(Icons.delete_outline),
-                    label: const Text('Elimina'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    key: const ValueKey('match-details-edit'),
-                    onPressed: () =>
-                        Navigator.of(context).pop(HistoryMatchAction.edit),
-                    icon: const Icon(Icons.edit),
-                    label: const Text('Correggi'),
-                  ),
-                ),
-              ],
+            const SizedBox(height: 20),
+            AdaptivePair(
+              first: OutlinedButton.icon(
+                key: const ValueKey('match-details-delete'),
+                onPressed: () =>
+                    Navigator.of(context).pop(HistoryMatchAction.delete),
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Elimina'),
+              ),
+              second: ElevatedButton.icon(
+                key: const ValueKey('match-details-edit'),
+                onPressed: () =>
+                    Navigator.of(context).pop(HistoryMatchAction.edit),
+                icon: const Icon(Icons.edit),
+                label: const Text('Correggi'),
+              ),
             ),
           ],
         ),
@@ -95,25 +122,68 @@ class HistoryMatchDetailsSheet extends StatelessWidget {
 }
 
 class _DetailRow extends StatelessWidget {
-  const _DetailRow({required this.label, required this.value});
+  const _DetailRow({
+    required this.icon,
+    required this.accentColor,
+    required this.label,
+    required this.value,
+  });
 
+  final IconData icon;
+  final Color accentColor;
   final String label;
   final String value;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(width: 96, child: Text(label, style: Italia90.caption)),
-        Expanded(
-          child: Text(
-            value,
-            style: Italia90.body.copyWith(fontWeight: FontWeight.w700),
-          ),
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+      final stacked = largeText || constraints.maxWidth < 300;
+      final labelWidget = Text(
+        label,
+        style: Italia90.body.copyWith(
+          color: Italia90.muted,
+          fontWeight: FontWeight.w600,
         ),
-      ],
-    ),
+      );
+      final valueWidget = Text(value, style: Italia90.title);
+      final textContent = stacked
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [labelWidget, const SizedBox(height: 4), valueWidget],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(width: 96, child: labelWidget),
+                const SizedBox(width: 12),
+                Expanded(child: valueWidget),
+              ],
+            );
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ExcludeSemantics(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: Icon(icon, color: accentColor, size: 18),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: textContent),
+          ],
+        ),
+      );
+    },
   );
 }
