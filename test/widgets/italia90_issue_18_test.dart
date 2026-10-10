@@ -9,7 +9,9 @@ import 'package:biliardino/presentation/italia90/theme/italia90_tokens.dart';
 import 'package:biliardino/presentation/italia90/widgets/avatar.dart';
 import 'package:biliardino/presentation/italia90/widgets/italia90_components.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/design_fixture.dart';
@@ -73,6 +75,13 @@ Future<DesignFixture> _mountPlayers(
 }
 
 void main() {
+  setUpAll(() async {
+    final loader = FontLoader('Italia Barlow')
+      ..addFont(rootBundle.load('assets/fonts/Barlow-Regular.ttf'))
+      ..addFont(rootBundle.load('assets/fonts/Barlow-Bold.ttf'));
+    await loader.load();
+  });
+
   testWidgets('Italia players center summaries and use neutral avatars', (
     tester,
   ) async {
@@ -230,6 +239,67 @@ void main() {
     );
     expect(tester.getSize(presentChip).width, lessThan(250));
     expect(tester.getSize(readyChip).width, lessThan(320));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Italia readiness label is not clipped at normal text', (
+    tester,
+  ) async {
+    await _mountPlayers(tester);
+
+    final readiness = tester.renderObject<RenderParagraph>(
+      find.text('Pronti a giocare'),
+    );
+
+    expect(
+      readiness.size.width,
+      greaterThanOrEqualTo(
+        readiness.getMaxIntrinsicWidth(double.infinity) - 0.01,
+      ),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Italia waiting label is not clipped at normal text', (
+    tester,
+  ) async {
+    await _mountPlayers(
+      tester,
+      players: [
+        Player(
+          id: 'p0',
+          name: 'Andrea',
+          createdAt: DateTime(2026),
+          isPresent: true,
+        ),
+      ],
+    );
+
+    final readiness = tester.renderObject<RenderParagraph>(
+      find.text('Servono 1 per giocare'),
+    );
+
+    expect(
+      readiness.size.width,
+      greaterThanOrEqualTo(
+        readiness.getMaxIntrinsicWidth(double.infinity) - 0.01,
+      ),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Italia readiness label is vertically centered in its pill', (
+    tester,
+  ) async {
+    await _mountPlayers(tester);
+
+    final readiness = find.text('Pronti a giocare');
+    final readinessChip = find.byKey(const ValueKey('players-summary-ready'));
+
+    expect(
+      tester.getCenter(readiness).dy,
+      closeTo(tester.getCenter(readinessChip).dy, 0.5),
+    );
     expect(tester.takeException(), isNull);
   });
 

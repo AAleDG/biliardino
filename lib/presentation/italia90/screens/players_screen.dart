@@ -220,11 +220,13 @@ class _SummaryLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = Italia90.body.copyWith(
-      color: color,
-      fontSize: 17,
-      height: 1.15,
-      fontWeight: FontWeight.w700,
+    final style = DefaultTextStyle.of(context).style.merge(
+      Italia90.body.copyWith(
+        color: color,
+        fontSize: 17,
+        height: 1.15,
+        fontWeight: FontWeight.w700,
+      ),
     );
     final leading = leadingText;
     final trailing = trailingText;
@@ -242,20 +244,27 @@ class _SummaryLabel extends StatelessWidget {
           if (fits) {
             return SizedBox(
               width: labelPainter.width,
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                style: style,
-                softWrap: false,
-                textWidthBasis: TextWidthBasis.longestLine,
+              child: Align(
+                alignment: Alignment.center,
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: style,
+                  softWrap: false,
+                  textWidthBasis: TextWidthBasis.longestLine,
+                ),
               ),
             );
           }
-          return Text(
-            label,
-            textAlign: TextAlign.center,
-            style: style,
-            textWidthBasis: TextWidthBasis.longestLine,
+          return Align(
+            alignment: Alignment.center,
+            widthFactor: 1,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: style,
+              textWidthBasis: TextWidthBasis.longestLine,
+            ),
           );
         },
       );
@@ -273,36 +282,40 @@ class _SummaryLabel extends StatelessWidget {
     )..layout();
     final contentWidth = leadingPainter.width + 4 + trailingPainter.width;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final children = [
-          Text(
-            key: const ValueKey('players-summary-present-number'),
-            leading,
-            style: style,
-          ),
-          const SizedBox(width: 4),
-          Transform.translate(
-            // Optical correction aligns the word with the adjacent numeral.
-            offset: const Offset(0, -1),
-            child: Text(
-              key: const ValueKey('players-summary-present-word'),
-              trailing,
+    return Align(
+      alignment: Alignment.center,
+      widthFactor: 1,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final children = [
+            Text(
+              key: const ValueKey('players-summary-present-number'),
+              leading,
               style: style,
             ),
-          ),
-        ];
-        if (!constraints.hasBoundedWidth ||
-            contentWidth <= constraints.maxWidth) {
-          return Row(mainAxisSize: MainAxisSize.min, children: children);
-        }
-        return Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          spacing: 4,
-          children: children,
-        );
-      },
+            const SizedBox(width: 4),
+            Transform.translate(
+              // Optical correction aligns the word with the adjacent numeral.
+              offset: const Offset(0, -1),
+              child: Text(
+                key: const ValueKey('players-summary-present-word'),
+                trailing,
+                style: style,
+              ),
+            ),
+          ];
+          if (!constraints.hasBoundedWidth ||
+              contentWidth <= constraints.maxWidth) {
+            return Row(mainAxisSize: MainAxisSize.min, children: children);
+          }
+          return Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 4,
+            children: children,
+          );
+        },
+      ),
     );
   }
 }
