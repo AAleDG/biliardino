@@ -303,7 +303,7 @@ class _HistoryFilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final selectedAndEnabled = selected && enabled;
     final height = _historyFilterChipHeight(context);
-    final backgroundColor = selected
+    final backgroundColor = selectedAndEnabled
         ? Italia90.primary
         : enabled
         ? Italia90.subtle

@@ -3,6 +3,7 @@ import 'package:biliardino/navigation/app_navigation.dart';
 import 'package:biliardino/presentation/italia90/screens/history/history_match_card.dart';
 import 'package:biliardino/presentation/italia90/screens/history_screen.dart';
 import 'package:biliardino/presentation/italia90/screens/home_screen.dart';
+import 'package:biliardino/presentation/italia90/theme/italia90_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -189,6 +190,28 @@ void main() {
     expectCentered(
       find.byKey(const ValueKey('history-filter-losses')),
       'Perse',
+    );
+
+    final disabledResultChip = allFilterChips.at(2);
+    final disabledMaterial = find.descendant(
+      of: disabledResultChip,
+      matching: find.byType(Material),
+    );
+    expect(
+      tester.widget<Material>(disabledMaterial).color,
+      Italia90.subtle.withValues(alpha: 0.45),
+    );
+    expect(
+      tester
+          .widget<Text>(
+            find.descendant(
+              of: disabledResultChip,
+              matching: find.text('Tutte'),
+            ),
+          )
+          .style
+          ?.color,
+      Italia90.muted,
     );
     expect(tester.takeException(), isNull);
   });

@@ -200,12 +200,15 @@ void main() {
         () => boundary.toImage(pixelRatio: 2),
       );
       try {
+        final expectedGolden = name.startsWith('flows-history')
+            ? 'italia90-history-reference/$name.png'
+            : 'italia90-reference/${reference['corrected_expected'] ?? '$name.png'}';
         await expectLater(
           image,
           matchesGoldenFile(
             name.startsWith('supplement-more-')
                 ? 'appearance-altro-$name.png'
-                : 'italia90-reference/${reference['corrected_expected'] ?? '$name.png'}',
+                : expectedGolden,
           ),
         );
       } finally {
