@@ -44,7 +44,12 @@ void main() {
           as Map<String, dynamic>;
   for (final reference in references['references'] as List) {
     final name = reference['name'] as String;
-    testWidgets('Italia donor parity: $name', (tester) async {
+    // Issue 17 intentionally replaces the live composition; donor PNGs stay frozen.
+    final isLiveScoreAcceptance = name.startsWith('core-live-');
+    final testTitle = isLiveScoreAcceptance
+        ? 'Italia live-score acceptance'
+        : 'Italia donor parity';
+    testWidgets('$testTitle: $name', (tester) async {
       final metadata =
           jsonDecode(
                 File(
@@ -95,6 +100,14 @@ void main() {
           ctx,
         ),
       );
+      if (isLiveScoreAcceptance) {
+        await tester.runAsync(
+          () => precacheImage(
+            const AssetImage('assets/italia90/live-poster-editoriale.png'),
+            ctx,
+          ),
+        );
+      }
       await tester.pumpAndSettle();
       final home = ctx.read<HomeCubit>();
       final match = ctx.read<NewMatchCubit>();
@@ -198,6 +211,8 @@ void main() {
           matchesGoldenFile(
             name.startsWith('supplement-more-')
                 ? 'appearance-altro-$name.png'
+                : isLiveScoreAcceptance
+                ? 'italia90-issue-17-reference/$name.png'
                 : 'italia90-reference/${reference['corrected_expected'] ?? '$name.png'}',
           ),
         );

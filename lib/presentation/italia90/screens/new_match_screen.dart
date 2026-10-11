@@ -11,9 +11,7 @@ import '../../../models/player.dart';
 import '../../../services/stats_service.dart';
 import '../theme/app_theme.dart';
 import '../theme/italia90_tokens.dart';
-import '../widgets/avatar.dart';
 import '../widgets/celebrations.dart';
-import '../widgets/design/sheet_ribbon_accent.dart';
 import '../widgets/italia90_components.dart';
 import '../widgets/italia_graphic_backdrop.dart';
 import 'new_match/live_match_view.dart';
@@ -223,13 +221,19 @@ class _NewMatchViewState extends State<_NewMatchView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(20, compact ? 0 : 10, 20, 0),
-                      child: const ItaliaCompactMasthead(
-                        semanticsKey: ValueKey('new-match-masthead'),
-                        footballKey: ValueKey('new-match-brand-football'),
+                    if (!state.showScoreboard)
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          20,
+                          compact ? 0 : 10,
+                          20,
+                          0,
+                        ),
+                        child: const ItaliaCompactMasthead(
+                          semanticsKey: ValueKey('new-match-masthead'),
+                          footballKey: ValueKey('new-match-brand-football'),
+                        ),
                       ),
-                    ),
                     Expanded(
                       child: state.showScoreboard
                           ? LiveMatchView(
@@ -241,28 +245,21 @@ class _NewMatchViewState extends State<_NewMatchView> {
                                       team2Ids: state.team2,
                                     )
                                   : null,
-                              team1Names: _matchPlayers(
+                              team1Players: _matchPlayers(
                                 state.players,
                                 state.team1,
-                              ).map((player) => player.name).toList(),
-                              team2Names: _matchPlayers(
+                              ),
+                              team2Players: _matchPlayers(
                                 state.players,
                                 state.team2,
-                              ).map((player) => player.name).toList(),
+                              ),
                               score1: state.score1,
                               score2: state.score2,
                               isSaving: state.isSaving,
                               awaitingConfirmation:
                                   state.pendingVictory != null,
                               canRegisterResult: state.canRegisterResult,
-                              onAddGoal: (team) => _handleAddGoal(
-                                context,
-                                team,
-                                _matchPlayers(
-                                  state.players,
-                                  team == 1 ? state.team1 : state.team2,
-                                ),
-                              ),
+                              onAddGoal: cubit.addGoal,
                               onBack: () => _confirmExit(context, cubit),
                               onReset: () => _confirmResetScore(context, cubit),
                               onRemoveGoal: cubit.removeGoal,
@@ -347,12 +344,16 @@ Future<void> _confirmCompletedMatch(
   }
 }
 
-List<_MatchPlayer> _matchPlayers(List<Player> players, List<String> ids) {
+List<Player> _matchPlayers(List<Player> players, List<String> ids) {
   return ids
-      .map(
-        (id) =>
-            _MatchPlayer(id: id, name: StatsService.playerName(players, id)),
-      )
+      .map((id) {
+        for (final player in players) {
+          if (player.id == id) return player;
+        }
+        throw StateError(
+          'Assigned player $id is missing from the match roster.',
+        );
+      })
       .toList(growable: false);
 }
 
@@ -371,127 +372,6 @@ String _feedbackText(NewMatchFeedback kind, MatchMode mode) {
     case NewMatchFeedback.playersUnavailable:
       return 'La partita è stata annullata: un giocatore non è più presente.';
   }
-}
-
-Future<void> _handleAddGoal(
-  BuildContext context,
-  int team,
-  List<_MatchPlayer> players,
-) async {
-  final cubit = context.read<NewMatchCubit>();
-  if (players.isEmpty) {
-    return;
-  }
-
-  final scorer = players.length == 1
-      ? players.first
-      : await showModalBottomSheet<_MatchPlayer>(
-          context: context,
-          isScrollControlled: true,
-          useSafeArea: true,
-          backgroundColor: AppColors.background,
-          clipBehavior: Clip.antiAlias,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(AppRadius.sheet),
-            ),
-          ),
-          sheetAnimationStyle: shouldReduceMotion(context)
-              ? AnimationStyle.noAnimation
-              : const AnimationStyle(
-                  duration: AppMotion.navigation,
-                  reverseDuration: AppMotion.navigation,
-                ),
-          builder: (ctx) => Stack(
-            children: [
-              const Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 64,
-                child: SheetRibbonAccent(),
-              ),
-              SafeArea(
-                top: false,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: ExcludeSemantics(
-                          child: Container(
-                            width: 36,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: AppColors.divider,
-                              borderRadius: BorderRadius.circular(
-                                AppRadius.small,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Chi ha segnato per la squadra $team?',
-                              style: AppType.player,
-                            ),
-                          ),
-                          IconButton(
-                            tooltip: 'Chiudi selezione marcatore',
-                            onPressed: () => Navigator.pop(ctx),
-                            icon: const Icon(Icons.close),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      const Text(
-                        'Assegna il gol al giocatore corretto.',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      ...players.map(
-                        (player) => Card(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          child: ListTile(
-                            leading: PlayerAvatar(
-                              name: player.name,
-                              color: team == 1
-                                  ? AppColors.teamOne
-                                  : AppColors.teamTwo,
-                            ),
-                            title: Text(player.name),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () => Navigator.pop(ctx, player),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-
-  if (scorer != null) {
-    cubit.addGoal(team, scorer.id);
-  }
-}
-
-class _MatchPlayer {
-  const _MatchPlayer({required this.id, required this.name});
-
-  final String id;
-  final String name;
 }
 
 Future<void> _confirmExit(BuildContext context, NewMatchCubit cubit) async {
