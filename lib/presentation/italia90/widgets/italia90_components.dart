@@ -686,7 +686,7 @@ class TeamScorePanel extends StatelessWidget {
       children: [
         _ItaliaTeamScoreCard(team: team, score: score),
         const SizedBox(height: 10),
-        _ItaliaTeamRoster(
+        ItaliaTeamRoster(
           team: team,
           players: players,
           largeText: largeText,
@@ -697,6 +697,33 @@ class TeamScorePanel extends StatelessWidget {
       ],
     );
   }
+}
+
+class ItaliaScoreValue extends StatelessWidget {
+  const ItaliaScoreValue({
+    super.key,
+    required this.score,
+    required this.style,
+    this.fit = BoxFit.scaleDown,
+  });
+
+  final int score;
+  final TextStyle style;
+  final BoxFit fit;
+
+  @override
+  Widget build(BuildContext context) => TweenAnimationBuilder<double>(
+    key: ValueKey(score),
+    tween: Tween(begin: 0.96, end: 1),
+    duration: Italia90Motion.durationOf(context, Italia90Motion.score),
+    curve: Italia90Motion.curve,
+    child: FittedBox(
+      fit: fit,
+      child: Text('$score', style: style),
+    ),
+    builder: (context, scale, child) =>
+        Transform.scale(scale: scale, child: child),
+  );
 }
 
 class _ItaliaTeamScoreCard extends StatelessWidget {
@@ -738,23 +765,11 @@ class _ItaliaTeamScoreCard extends StatelessWidget {
                         liveRegion: true,
                         label: 'Punteggio ${team.label.toUpperCase()}: $score',
                         child: ExcludeSemantics(
-                          child: AnimatedSwitcher(
-                            key: ValueKey(Italia90Motion.reducedOf(context)),
-                            duration: Italia90Motion.durationOf(
-                              context,
-                              Italia90Motion.score,
-                            ),
-                            switchInCurve: Italia90Motion.curve,
-                            child: FittedBox(
-                              key: ValueKey(score),
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                '$score',
-                                style: Italia90.score.copyWith(
-                                  color: team.onColor,
-                                  fontSize: 112,
-                                ),
-                              ),
+                          child: ItaliaScoreValue(
+                            score: score,
+                            style: Italia90.score.copyWith(
+                              color: team.onColor,
+                              fontSize: 112,
                             ),
                           ),
                         ),
@@ -801,14 +816,17 @@ class _ItaliaTeamScoreClipper extends CustomClipper<Path> {
       oldClipper.team != team;
 }
 
-class _ItaliaTeamRoster extends StatelessWidget {
-  const _ItaliaTeamRoster({
+class ItaliaTeamRoster extends StatelessWidget {
+  const ItaliaTeamRoster({
+    super.key,
     required this.team,
     required this.players,
     required this.largeText,
     required this.enabled,
     required this.score,
     required this.onAdd,
+    this.avatar,
+    this.nameStyle,
   });
 
   final ItaliaTeam team;
@@ -817,6 +835,8 @@ class _ItaliaTeamRoster extends StatelessWidget {
   final bool enabled;
   final int score;
   final ValueChanged<String> onAdd;
+  final Widget? avatar;
+  final TextStyle? nameStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -833,6 +853,8 @@ class _ItaliaTeamRoster extends StatelessWidget {
               enabled: enabled,
               score: score,
               onAdd: onAdd,
+              avatar: avatar,
+              nameStyle: nameStyle,
               actionKey: index == 0
                   ? ValueKey('score-add-team-${team.number}')
                   : ValueKey('score-add-team-${team.number}-player-$index'),
@@ -866,6 +888,8 @@ class _ItaliaTeamRosterPlayer extends StatelessWidget {
     required this.score,
     required this.onAdd,
     required this.actionKey,
+    required this.avatar,
+    required this.nameStyle,
   });
 
   final ItaliaTeam team;
@@ -874,6 +898,8 @@ class _ItaliaTeamRosterPlayer extends StatelessWidget {
   final int score;
   final ValueChanged<String> onAdd;
   final Key actionKey;
+  final Widget? avatar;
+  final TextStyle? nameStyle;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -881,17 +907,14 @@ class _ItaliaTeamRosterPlayer extends StatelessWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _ItaliaFoosballPlayerBadge(team: team),
+        avatar ?? _ItaliaFoosballPlayerBadge(team: team),
         const SizedBox(height: 4),
         Text(
           player.name,
-          maxLines: 3,
-          overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
-          style: Italia90.body.copyWith(
-            fontWeight: FontWeight.w700,
-            height: 1.1,
-          ),
+          style:
+              nameStyle ??
+              Italia90.body.copyWith(fontWeight: FontWeight.w700, height: 1.1),
         ),
         const SizedBox(height: 6),
         Semantics(
@@ -1038,26 +1061,36 @@ class ItaliaSharedUndoAction extends StatelessWidget {
                 child: Text('ANNULLA', style: Italia90.label),
               ),
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: _UndoHitTarget(
-                    key: ValueKey('score-undo-team-${first.team.number}'),
-                    team: first.team,
-                    enabled: firstEnabled,
-                    onPressed: first.onUndo,
-                  ),
+            if (firstEnabled != secondEnabled)
+              _UndoHitTarget(
+                key: ValueKey(
+                  'score-undo-team-${firstEnabled ? first.team.number : second.team.number}',
                 ),
-                Expanded(
-                  child: _UndoHitTarget(
-                    key: ValueKey('score-undo-team-${second.team.number}'),
-                    team: second.team,
-                    enabled: secondEnabled,
-                    onPressed: second.onUndo,
+                team: firstEnabled ? first.team : second.team,
+                enabled: true,
+                onPressed: firstEnabled ? first.onUndo : second.onUndo,
+              )
+            else
+              Row(
+                children: [
+                  Expanded(
+                    child: _UndoHitTarget(
+                      key: ValueKey('score-undo-team-${first.team.number}'),
+                      team: first.team,
+                      enabled: firstEnabled,
+                      onPressed: first.onUndo,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                  Expanded(
+                    child: _UndoHitTarget(
+                      key: ValueKey('score-undo-team-${second.team.number}'),
+                      team: second.team,
+                      enabled: secondEnabled,
+                      onPressed: second.onUndo,
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
       ),

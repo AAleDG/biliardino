@@ -137,6 +137,9 @@ void main() {
         HomeDestination.values.byName(metadata['destination'] as String),
       );
       await tester.pumpAndSettle();
+      if (isLiveScoreAcceptance) {
+        expect(find.byType(NavigationBar), findsOneWidget);
+      }
       if (name.endsWith('-scorers') || name == 'flows-standings-large') {
         ranks.selectTab(1);
         await tester.pumpAndSettle();

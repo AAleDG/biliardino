@@ -4,17 +4,24 @@ import '../../theme/italia90_tokens.dart';
 
 /// Full-height editorial poster for the live match screen.
 ///
-/// The source image only supplies the editorial artwork. Navigation and the
-/// overflow action stay native controls layered above it.
+/// The source image only supplies the editorial artwork. The overflow action
+/// stays native and layered above it; the fixed back action belongs to the
+/// screen layer outside this scrollable poster widget.
 class LivePosterHeader extends StatelessWidget {
-  const LivePosterHeader({
-    super.key,
-    required this.onBack,
-    required this.onReset,
-  });
+  const LivePosterHeader({super.key, required this.onReset, this.overlay});
 
-  final VoidCallback? onBack;
+  static const sourceWidth = 941.0;
+  static const sourceHeight = 1672.0;
+
+  // Keep only the header, scores and tricolour. Player content and actions
+  // below this boundary are native widgets, not baked into the poster.
+  static const visibleArtworkHeight = 1015.0;
+
+  static double sourceHeightForWidth(double width) =>
+      width * sourceHeight / sourceWidth;
+
   final VoidCallback? onReset;
+  final Widget? overlay;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -22,7 +29,7 @@ class LivePosterHeader extends StatelessWidget {
       final width = constraints.maxWidth.isFinite
           ? constraints.maxWidth
           : MediaQuery.sizeOf(context).width;
-      final height = width * 1672 / 941;
+      final height = width * visibleArtworkHeight / sourceWidth;
       return Semantics(
         container: true,
         label: "Italia '90. Partita in corso",
@@ -44,16 +51,7 @@ class LivePosterHeader extends StatelessWidget {
                     ),
                   ),
                 ),
-                Positioned(
-                  top: 4,
-                  left: 4,
-                  child: _PosterIconButton(
-                    tooltip: 'Torna alla composizione',
-                    icon: Icons.arrow_back,
-                    onPressed: onBack,
-                    key: const ValueKey('new-match-back'),
-                  ),
-                ),
+                if (overlay != null) Positioned.fill(child: overlay!),
                 Positioned(
                   top: 4,
                   right: 4,
@@ -81,34 +79,5 @@ class LivePosterHeader extends StatelessWidget {
         ),
       );
     },
-  );
-}
-
-class _PosterIconButton extends StatelessWidget {
-  const _PosterIconButton({
-    super.key,
-    required this.tooltip,
-    required this.icon,
-    required this.onPressed,
-  });
-
-  final String tooltip;
-  final IconData icon;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) => Material(
-    color: Italia90.surface.withValues(alpha: .86),
-    shape: const CircleBorder(),
-    child: IconButton(
-      onPressed: onPressed,
-      tooltip: tooltip,
-      icon: Icon(icon),
-      color: Italia90.ink,
-      constraints: const BoxConstraints.tightFor(
-        width: Italia90.touch,
-        height: Italia90.touch,
-      ),
-    ),
   );
 }

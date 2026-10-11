@@ -237,6 +237,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
                     Expanded(
                       child: state.showScoreboard
                           ? LiveMatchView(
+                              mode: state.mode,
                               rules: state.rules,
                               rivalry: state.isRivalry
                                   ? StatsService.rivalryOverview(
@@ -264,6 +265,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
                               onReset: () => _confirmResetScore(context, cubit),
                               onRemoveGoal: cubit.removeGoal,
                               onSave: cubit.save,
+                              showInteractivePanel: false,
                             )
                           : MatchSetupView(
                               players: state.players,
