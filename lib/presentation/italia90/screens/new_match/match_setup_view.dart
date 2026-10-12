@@ -49,12 +49,14 @@ class MatchSetupView extends StatelessWidget {
   Widget build(BuildContext context) {
     final requiredPlayers = mode.teamSize * 2;
     final enoughPlayers = present.length >= requiredPlayers;
-    final showArtwork = MediaQuery.textScalerOf(context).scale(1) <= 1.35;
+    final scaledKickoffText = MediaQuery.textScalerOf(context).scale(28);
     final kickoffHeight =
-        (MediaQuery.textScalerOf(context).scale(28) * 1.15 + 24).clamp(
-          60.0,
-          double.infinity,
-        );
+        (scaledKickoffText > 56
+                ? scaledKickoffText * 2.8 + 32
+                : scaledKickoffText > 36
+                ? scaledKickoffText * 2.2 + 24
+                : scaledKickoffText * 1.15 + 24)
+            .clamp(60.0, double.infinity);
 
     return Stack(
       children: [
@@ -95,7 +97,6 @@ class MatchSetupView extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               MatchTeamStage(
-                showArtwork: showArtwork,
                 players: players,
                 team1: team1,
                 team2: team2,
@@ -125,47 +126,62 @@ class _KickoffButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) => DecoratedBox(
-    decoration: BoxDecoration(
-      color: AppColors.surface,
-      borderRadius: BorderRadius.circular(34),
-      boxShadow: const [
-        BoxShadow(
-          color: Color(0x18000000),
-          blurRadius: 8,
-          offset: Offset(0, 3),
-        ),
-      ],
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(4),
-      child: SizedBox(
-        height: height,
-        child: ElevatedButton.icon(
-          key: const ValueKey('setup-kickoff-action'),
-          onPressed: onPressed,
-          icon: const Icon(Icons.play_arrow_rounded, size: 34),
-          label: const Text('INIZIA PARTITA'),
-          style:
-              AppTheme.primaryButton(
-                background: AppColors.success,
-                foreground: AppColors.onPrimary,
-                pressed: AppColors.successPressed,
-              ).copyWith(
-                padding: const WidgetStatePropertyAll(
-                  EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                ),
-                shape: WidgetStatePropertyAll(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                textStyle: WidgetStatePropertyAll(
-                  AppType.action.copyWith(fontSize: 28),
-                ),
-              ),
-        ),
+  Widget build(BuildContext context) {
+    final verticalLayout = MediaQuery.textScalerOf(context).scale(28) > 56;
+    final style =
+        AppTheme.primaryButton(
+          background: AppColors.success,
+          foreground: AppColors.onPrimary,
+          pressed: AppColors.successPressed,
+        ).copyWith(
+          padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          ),
+          textStyle: WidgetStatePropertyAll(
+            AppType.action.copyWith(fontSize: 28),
+          ),
+        );
+    final button = verticalLayout
+        ? ElevatedButton(
+            key: const ValueKey('setup-kickoff-action'),
+            onPressed: onPressed,
+            style: style,
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.play_arrow_rounded, size: 34),
+                SizedBox(height: 4),
+                Text('INIZIA PARTITA', textAlign: TextAlign.center),
+              ],
+            ),
+          )
+        : ElevatedButton.icon(
+            key: const ValueKey('setup-kickoff-action'),
+            onPressed: onPressed,
+            icon: const Icon(Icons.play_arrow_rounded, size: 34),
+            label: const Text('INIZIA PARTITA'),
+            style: style,
+          );
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(34),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x18000000),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
       ),
-    ),
-  );
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: SizedBox(height: height, child: button),
+      ),
+    );
+  }
 }

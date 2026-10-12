@@ -47,8 +47,14 @@ void main() {
     final name = reference['name'] as String;
     // Issue 17 intentionally replaces the live composition; donor PNGs stay frozen.
     final isLiveScoreAcceptance = name.startsWith('core-live-');
+    // Issue 15 intentionally replaces the team-assignment composition; donor
+    // PNGs stay frozen and the new stage has dedicated acceptance goldens.
+    final isTeamAssignmentAcceptance =
+        name == 'core-setup' || name.startsWith('flows-setup-');
     final testTitle = isLiveScoreAcceptance
         ? 'Italia live-score acceptance'
+        : isTeamAssignmentAcceptance
+        ? 'Italia team-assignment acceptance'
         : 'Italia donor parity';
     testWidgets('$testTitle: $name', (tester) async {
       final metadata =
@@ -226,6 +232,8 @@ void main() {
                 ? 'appearance-altro-$name.png'
                 : isLiveScoreAcceptance
                 ? 'italia90-issue-17-reference/$name.png'
+                : isTeamAssignmentAcceptance
+                ? 'italia90-issue-15-reference/$name.png'
                 : expectedGolden,
           ),
         );
