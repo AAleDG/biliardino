@@ -7,7 +7,6 @@ import '../../../../models/game_match.dart';
 import '../../../../models/player.dart';
 import '../../../../services/stats_service.dart';
 import '../../theme/italia90_tokens.dart';
-import 'history_artwork.dart';
 
 /// Match card used by the grouped history list.
 class HistoryMatchCard extends StatelessWidget {
@@ -81,8 +80,7 @@ class HistoryMatchCard extends StatelessWidget {
                   score: match.t2Score,
                   isWinner: match.winningTeam == 2,
                 ),
-                const SizedBox(height: 8),
-                const HistoryRibbonArtwork(HistoryRibbon.card, height: 22),
+                const SizedBox(height: 10),
               ],
             ),
           ),
@@ -113,42 +111,49 @@ class _MetaRow extends StatelessWidget {
       final stacked =
           constraints.maxWidth < 260 ||
           MediaQuery.textScalerOf(context).scale(1) > 1.3;
-      final menu = PopupMenuButton<_CardAction>(
-        tooltip: 'Azioni partita',
-        padding: EdgeInsets.zero,
-        onSelected: (action) {
-          switch (action) {
-            case _CardAction.edit:
-              onEdit();
-            case _CardAction.delete:
-              onDelete();
-          }
-        },
-        itemBuilder: (_) => const [
-          PopupMenuItem(
-            value: _CardAction.edit,
-            child: ListTile(leading: Icon(Icons.edit), title: Text('Correggi')),
-          ),
-          PopupMenuItem(
-            value: _CardAction.delete,
-            child: ListTile(
-              leading: Icon(Icons.delete_outline),
-              title: Text('Elimina'),
+      final menu = SizedBox(
+        width: Italia90.touch,
+        height: Italia90.touch,
+        child: PopupMenuButton<_CardAction>(
+          tooltip: 'Azioni partita',
+          padding: EdgeInsets.zero,
+          icon: const Icon(Icons.more_vert),
+          onSelected: (action) {
+            switch (action) {
+              case _CardAction.edit:
+                onEdit();
+              case _CardAction.delete:
+                onDelete();
+            }
+          },
+          itemBuilder: (_) => const [
+            PopupMenuItem(
+              value: _CardAction.edit,
+              child: ListTile(
+                leading: Icon(Icons.edit),
+                title: Text('Correggi'),
+              ),
             ),
-          ),
-        ],
+            PopupMenuItem(
+              value: _CardAction.delete,
+              child: ListTile(
+                leading: Icon(Icons.delete_outline),
+                title: Text('Elimina'),
+              ),
+            ),
+          ],
+        ),
       );
       final time = Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.schedule, size: 16, color: Italia90.muted),
+          const Icon(Icons.schedule, size: 18, color: Italia90.muted),
           const SizedBox(width: 5),
-          Expanded(
-            child: Text(
-              timeLabel,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Italia90.caption.copyWith(fontWeight: FontWeight.w800),
-            ),
+          Text(
+            timeLabel,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Italia90.caption.copyWith(fontWeight: FontWeight.w800),
           ),
         ],
       );
@@ -172,24 +177,24 @@ class _MetaRow extends StatelessWidget {
       );
       if (stacked) {
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
-                Expanded(child: time),
+                Expanded(
+                  child: Align(alignment: Alignment.centerLeft, child: time),
+                ),
                 menu,
               ],
             ),
-            const SizedBox(height: 4),
-            mode,
+            Align(alignment: Alignment.center, child: mode),
           ],
         );
       }
       return Row(
         children: [
-          Expanded(child: time),
-          const SizedBox(width: 8),
-          Flexible(child: mode),
+          SizedBox(width: 88, child: time),
+          Expanded(child: Center(child: mode)),
           menu,
         ],
       );
@@ -224,14 +229,7 @@ class _TeamResultLine extends StatelessWidget {
     child: ExcludeSemantics(
       child: Row(
         children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: team.color.withValues(alpha: isWinner ? 1 : 0.35),
-              shape: BoxShape.circle,
-            ),
-          ),
+          _TeamMarker(team: team, isWinner: isWinner),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -244,7 +242,7 @@ class _TeamResultLine extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           SizedBox(
-            width: math.max(40, _scoreWidth(context, score)),
+            width: math.max(40.0, _scoreWidth(context, score)),
             child: Text(
               '$score',
               textAlign: TextAlign.right,
@@ -269,4 +267,24 @@ class _TeamResultLine extends StatelessWidget {
     painter.dispose();
     return width;
   }
+}
+
+class _TeamMarker extends StatelessWidget {
+  const _TeamMarker({required this.team, required this.isWinner});
+
+  final ItaliaTeam team;
+  final bool isWinner;
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 14,
+    height: 14,
+    child: DecoratedBox(
+      decoration: BoxDecoration(
+        color: isWinner ? team.color : team.container,
+        shape: BoxShape.circle,
+        border: Border.all(color: team.color, width: isWinner ? 1 : 2),
+      ),
+    ),
+  );
 }
