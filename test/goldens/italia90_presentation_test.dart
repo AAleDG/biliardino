@@ -9,6 +9,7 @@ import 'package:biliardino/models/match_rules.dart';
 import 'package:biliardino/models/player.dart';
 import 'package:biliardino/navigation/app_navigation.dart';
 import 'package:biliardino/presentation/italia90/screens/home_screen.dart';
+import 'package:biliardino/presentation/italia90/screens/history_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -61,6 +62,7 @@ void main() {
               as Map<String, dynamic>;
       final viewport = metadata['viewport'] as Map;
       final safe = metadata['safe_area'] as Map;
+      final capturedAt = DateTime.parse(metadata['captured_at'] as String);
       tester.view.physicalSize = Size(
         (viewport['width'] as num).toDouble(),
         (viewport['height'] as num).toDouble(),
@@ -93,7 +95,12 @@ void main() {
       await fixture.load();
       await fixture.styleRepository.save(AppStyle.italia90);
       final key = GlobalKey();
-      await tester.pumpWidget(RepaintBoundary(key: key, child: fixture.app));
+      await tester.pumpWidget(
+        RepaintBoundary(
+          key: key,
+          child: HistoryClockScope(now: () => capturedAt, child: fixture.app),
+        ),
+      );
       await tester.pumpAndSettle();
       final ctx = tester.element(find.byType(HomeScreen));
       await tester.runAsync(
@@ -200,6 +207,9 @@ void main() {
         () => boundary.toImage(pixelRatio: 2),
       );
       try {
+        final expectedGolden = name.startsWith('flows-history')
+            ? 'italia90-history-reference/$name.png'
+            : 'italia90-reference/${reference['corrected_expected'] ?? '$name.png'}';
         await expectLater(
           image,
           matchesGoldenFile(
@@ -207,7 +217,7 @@ void main() {
                 ? 'appearance-altro-$name.png'
                 : isTeamAssignmentAcceptance
                 ? 'italia90-issue-15-reference/$name.png'
-                : 'italia90-reference/${reference['corrected_expected'] ?? '$name.png'}',
+                : expectedGolden,
           ),
         );
       } finally {
