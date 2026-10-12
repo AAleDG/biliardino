@@ -1084,26 +1084,44 @@ class ItaliaSharedUndoAction extends StatelessWidget {
     final firstEnabled = first.enabled && first.score > 0;
     final secondEnabled = second.enabled && second.score > 0;
     final splitLabels = firstEnabled && secondEnabled;
-    final singleLabel = firstEnabled != secondEnabled;
+    final teamControls = IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _UndoHitTarget(
+              key: ValueKey('score-undo-team-${first.team.number}'),
+              team: first.team,
+              enabled: firstEnabled,
+              onPressed: first.onUndo,
+              showTeamLabel: splitLabels,
+            ),
+          ),
+          if (splitLabels)
+            const SizedBox(width: 1, child: ColoredBox(color: Italia90.error)),
+          Expanded(
+            child: _UndoHitTarget(
+              key: ValueKey('score-undo-team-${second.team.number}'),
+              team: second.team,
+              enabled: secondEnabled,
+              onPressed: second.onUndo,
+              showTeamLabel: splitLabels,
+            ),
+          ),
+        ],
+      ),
+    );
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Italia90.surface,
         border: Border.all(color: Italia90.error, width: 1.5),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: SizedBox(
-        height: 64,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (!splitLabels && !singleLabel)
-              const Center(
-                child: ExcludeSemantics(
-                  child: Text('ANNULLA', style: Italia90.label),
-                ),
-              ),
-            if (firstEnabled != secondEnabled)
-              _UndoHitTarget(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 64),
+        child: firstEnabled != secondEnabled
+            ? _UndoHitTarget(
                 key: ValueKey(
                   'score-undo-team-${firstEnabled ? first.team.number : second.team.number}',
                 ),
@@ -1112,36 +1130,18 @@ class ItaliaSharedUndoAction extends StatelessWidget {
                 onPressed: firstEnabled ? first.onUndo : second.onUndo,
                 showTeamLabel: true,
               )
-            else
-              Row(
+            : Stack(
+                fit: StackFit.loose,
                 children: [
-                  Expanded(
-                    child: _UndoHitTarget(
-                      key: ValueKey('score-undo-team-${first.team.number}'),
-                      team: first.team,
-                      enabled: firstEnabled,
-                      onPressed: first.onUndo,
-                      showTeamLabel: splitLabels,
+                  if (!splitLabels)
+                    const Center(
+                      child: ExcludeSemantics(
+                        child: Text('ANNULLA', style: Italia90.label),
+                      ),
                     ),
-                  ),
-                  if (splitLabels)
-                    const SizedBox(
-                      width: 1,
-                      child: ColoredBox(color: Italia90.error),
-                    ),
-                  Expanded(
-                    child: _UndoHitTarget(
-                      key: ValueKey('score-undo-team-${second.team.number}'),
-                      team: second.team,
-                      enabled: secondEnabled,
-                      onPressed: second.onUndo,
-                      showTeamLabel: splitLabels,
-                    ),
-                  ),
+                  teamControls,
                 ],
               ),
-          ],
-        ),
       ),
     );
   }
@@ -1175,48 +1175,50 @@ class _UndoHitTarget extends StatelessWidget {
           foregroundColor: Colors.transparent,
           disabledForegroundColor: Colors.transparent,
           overlayColor: Colors.transparent,
-          minimumSize: Size.zero,
+          minimumSize: const Size(0, 64),
           padding: EdgeInsets.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         child: showTeamLabel
-            ? SizedBox.expand(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: enabled ? team.container : Italia90.subtle,
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'ANNULLA',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Italia90.label.copyWith(
-                            color: enabled
-                                ? team.onNeutralSurface
-                                : Italia90.muted,
-                            fontSize: 12,
-                            height: 1.1,
-                            letterSpacing: .8,
+            ? SizedBox(
+                width: double.infinity,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 64),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: enabled ? team.container : Italia90.subtle,
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'ANNULLA',
+                            textAlign: TextAlign.center,
+                            style: Italia90.label.copyWith(
+                              color: enabled
+                                  ? team.onNeutralSurface
+                                  : Italia90.muted,
+                              fontSize: 12,
+                              height: 1.1,
+                              letterSpacing: .8,
+                            ),
                           ),
-                        ),
-                        Text(
-                          team.label.toUpperCase(),
-                          maxLines: 2,
-                          softWrap: true,
-                          textAlign: TextAlign.center,
-                          style: Italia90.caption.copyWith(
-                            color: enabled
-                                ? team.onNeutralSurface
-                                : Italia90.muted,
-                            fontWeight: FontWeight.w700,
-                            height: 1.1,
-                            letterSpacing: .6,
+                          Text(
+                            team.label.toUpperCase(),
+                            softWrap: true,
+                            textAlign: TextAlign.center,
+                            style: Italia90.caption.copyWith(
+                              color: enabled
+                                  ? team.onNeutralSurface
+                                  : Italia90.muted,
+                              fontWeight: FontWeight.w700,
+                              height: 1.1,
+                              letterSpacing: .6,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

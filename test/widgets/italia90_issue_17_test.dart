@@ -299,6 +299,52 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('grows split undo controls at very large text', (tester) async {
+    await _pumpLiveMatch(
+      tester,
+      size: const Size(320, 568),
+      textScale: 3,
+      score1: 1,
+      score2: 2,
+      canRegisterResult: false,
+    );
+
+    expect(
+      tester.getSize(find.byType(ItaliaSharedUndoAction)).height,
+      greaterThan(64),
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey('score-undo-team-1'))).height,
+      greaterThan(64),
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey('score-undo-team-2'))).height,
+      greaterThan(64),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('grows a single undo control at very large text', (tester) async {
+    await _pumpLiveMatch(
+      tester,
+      size: const Size(320, 568),
+      textScale: 3,
+      score1: 0,
+      score2: 2,
+      canRegisterResult: false,
+    );
+
+    expect(
+      tester.getSize(find.byType(ItaliaSharedUndoAction)).height,
+      greaterThan(64),
+    );
+    expect(
+      tester.getSize(find.byKey(const ValueKey('score-undo-team-2'))).height,
+      greaterThan(64),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('renders live poster scores from the current match state', (
     tester,
   ) async {
