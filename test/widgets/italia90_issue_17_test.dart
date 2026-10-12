@@ -160,11 +160,25 @@ void main() {
     expect(find.byType(TeamScorePanel), findsNWidgets(2));
     expect(find.byKey(const ValueKey('live-team-panel-1')), findsOneWidget);
     expect(find.byKey(const ValueKey('live-team-panel-2')), findsOneWidget);
-    expect(find.text('SQUADRA 1'), findsOneWidget);
-    expect(find.text('SQUADRA 2'), findsOneWidget);
+    expect(find.text('SQUADRA 1'), findsNWidgets(2));
+    expect(find.text('SQUADRA 2'), findsNWidgets(2));
     expect(find.text('DIVERTITI, GIOCA LEALE, SEMPRE'), findsNothing);
     expect(find.text('PUNTEGGIO LIBERO'), findsNothing);
-    expect(find.text('ANNULLA'), findsOneWidget);
+    expect(find.text('ANNULLA'), findsNWidgets(2));
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('score-undo-team-1')),
+        matching: find.text('SQUADRA 1'),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('score-undo-team-2')),
+        matching: find.text('SQUADRA 2'),
+      ),
+      findsOneWidget,
+    );
     expect(
       find.descendant(
         of: find.byKey(const ValueKey('live-team-panel-1')),
@@ -218,7 +232,12 @@ void main() {
       semantics.dispose();
     }
 
-    final teamTwoHeading = tester.widget<Text>(find.text('SQUADRA 2'));
+    final teamTwoHeading = tester.widget<Text>(
+      find.descendant(
+        of: find.byKey(const ValueKey('live-team-panel-2')),
+        matching: find.text('SQUADRA 2'),
+      ),
+    );
     expect(teamTwoHeading.style?.color, Italia90.ink);
     expect(
       _contrastRatio(Italia90.ink, Italia90.teamTwo),
@@ -259,6 +278,24 @@ void main() {
           .hasAction(SemanticsAction.tap),
       isTrue,
     );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps the saving label readable at large text', (tester) async {
+    await _pumpLiveMatch(
+      tester,
+      size: const Size(320, 568),
+      textScale: 2,
+      isSaving: true,
+      canRegisterResult: false,
+    );
+
+    expect(find.text('SALVATAGGIO...'), findsOneWidget);
+    expect(
+      tester.getSize(find.byKey(const ValueKey('live-save-action'))).height,
+      greaterThan(64),
+    );
+    expect(tester.getSize(find.text('SALVATAGGIO...')).height, greaterThan(45));
     expect(tester.takeException(), isNull);
   });
 
@@ -324,7 +361,7 @@ void main() {
     expect(find.text('Luca'), findsNothing);
     expect(find.text('Marco'), findsNothing);
     expect(find.text('+1 GOAL'), findsNWidgets(2));
-    expect(find.text('ANNULLA'), findsOneWidget);
+    expect(find.text('ANNULLA'), findsNWidgets(2));
     expect(find.text('REGISTRA RISULTATO'), findsOneWidget);
     for (final (team, name) in [(1, 'Alex'), (2, 'Maruzzo')]) {
       final roster = find.byKey(ValueKey('live-roster-team-$team'));
@@ -556,6 +593,14 @@ void main() {
 
     expect(find.text('99'), findsOneWidget);
     expect(find.text('100'), findsOneWidget);
+    expect(
+      tester.getSize(find.byKey(const ValueKey('live-save-action'))).height,
+      greaterThan(64),
+    );
+    expect(
+      tester.getSize(find.text('REGISTRA RISULTATO')).height,
+      greaterThan(45),
+    );
     expect(find.byKey(const ValueKey('live-match-scroll')), findsOneWidget);
     for (final team in [1, 2]) {
       for (final prefix in ['score-add-team-', 'score-undo-team-']) {

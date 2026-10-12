@@ -1045,6 +1045,8 @@ class ItaliaSharedUndoAction extends StatelessWidget {
   Widget build(BuildContext context) {
     final firstEnabled = first.enabled && first.score > 0;
     final secondEnabled = second.enabled && second.score > 0;
+    final splitLabels = firstEnabled && secondEnabled;
+    final singleLabel = firstEnabled != secondEnabled;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Italia90.surface,
@@ -1056,11 +1058,12 @@ class ItaliaSharedUndoAction extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            const Center(
-              child: ExcludeSemantics(
-                child: Text('ANNULLA', style: Italia90.label),
+            if (!splitLabels && !singleLabel)
+              const Center(
+                child: ExcludeSemantics(
+                  child: Text('ANNULLA', style: Italia90.label),
+                ),
               ),
-            ),
             if (firstEnabled != secondEnabled)
               _UndoHitTarget(
                 key: ValueKey(
@@ -1069,6 +1072,7 @@ class ItaliaSharedUndoAction extends StatelessWidget {
                 team: firstEnabled ? first.team : second.team,
                 enabled: true,
                 onPressed: firstEnabled ? first.onUndo : second.onUndo,
+                showTeamLabel: true,
               )
             else
               Row(
@@ -1079,14 +1083,21 @@ class ItaliaSharedUndoAction extends StatelessWidget {
                       team: first.team,
                       enabled: firstEnabled,
                       onPressed: first.onUndo,
+                      showTeamLabel: splitLabels,
                     ),
                   ),
+                  if (splitLabels)
+                    const SizedBox(
+                      width: 1,
+                      child: ColoredBox(color: Italia90.error),
+                    ),
                   Expanded(
                     child: _UndoHitTarget(
                       key: ValueKey('score-undo-team-${second.team.number}'),
                       team: second.team,
                       enabled: secondEnabled,
                       onPressed: second.onUndo,
+                      showTeamLabel: splitLabels,
                     ),
                   ),
                 ],
@@ -1104,11 +1115,13 @@ class _UndoHitTarget extends StatelessWidget {
     required this.team,
     required this.enabled,
     required this.onPressed,
+    this.showTeamLabel = false,
   });
 
   final ItaliaTeam team;
   final bool enabled;
   final VoidCallback onPressed;
+  final bool showTeamLabel;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -1128,7 +1141,49 @@ class _UndoHitTarget extends StatelessWidget {
           padding: EdgeInsets.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
-        child: const SizedBox.expand(),
+        child: showTeamLabel
+            ? SizedBox.expand(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: enabled ? team.container : Italia90.subtle,
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'ANNULLA',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Italia90.label.copyWith(
+                            color: enabled
+                                ? team.onNeutralSurface
+                                : Italia90.muted,
+                            fontSize: 12,
+                            height: 1.1,
+                            letterSpacing: .8,
+                          ),
+                        ),
+                        Text(
+                          team.label.toUpperCase(),
+                          maxLines: 2,
+                          softWrap: true,
+                          textAlign: TextAlign.center,
+                          style: Italia90.caption.copyWith(
+                            color: enabled
+                                ? team.onNeutralSurface
+                                : Italia90.muted,
+                            fontWeight: FontWeight.w700,
+                            height: 1.1,
+                            letterSpacing: .6,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            : const SizedBox.expand(),
       ),
     ),
   );

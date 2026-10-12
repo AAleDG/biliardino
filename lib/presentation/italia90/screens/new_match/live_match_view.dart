@@ -414,14 +414,10 @@ class _ResultButton extends StatelessWidget {
                   ),
                 )
               : const SizedBox.shrink(),
-          label: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              isSaving ? 'SALVATAGGIO...' : 'REGISTRA RISULTATO',
-              maxLines: 1,
-              softWrap: false,
-              textAlign: TextAlign.center,
-            ),
+          label: Text(
+            isSaving ? 'SALVATAGGIO...' : 'REGISTRA RISULTATO',
+            textAlign: TextAlign.center,
+            softWrap: true,
           ),
           style:
               AppTheme.primaryButton(
