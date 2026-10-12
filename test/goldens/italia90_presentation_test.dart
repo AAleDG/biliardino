@@ -44,7 +44,14 @@ void main() {
           as Map<String, dynamic>;
   for (final reference in references['references'] as List) {
     final name = reference['name'] as String;
-    testWidgets('Italia donor parity: $name', (tester) async {
+    // Issue 15 intentionally replaces the team-assignment composition; donor
+    // PNGs stay frozen and the new stage has dedicated acceptance goldens.
+    final isTeamAssignmentAcceptance =
+        name == 'core-setup' || name.startsWith('flows-setup-');
+    final testTitle = isTeamAssignmentAcceptance
+        ? 'Italia team-assignment acceptance'
+        : 'Italia donor parity';
+    testWidgets('$testTitle: $name', (tester) async {
       final metadata =
           jsonDecode(
                 File(
@@ -198,6 +205,8 @@ void main() {
           matchesGoldenFile(
             name.startsWith('supplement-more-')
                 ? 'appearance-altro-$name.png'
+                : isTeamAssignmentAcceptance
+                ? 'italia90-issue-15-reference/$name.png'
                 : 'italia90-reference/${reference['corrected_expected'] ?? '$name.png'}',
           ),
         );
