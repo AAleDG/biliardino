@@ -56,7 +56,7 @@ class RankingRow extends StatelessWidget {
                   PlayerAvatar(
                     name: stats.player.name,
                     size: 40,
-                    color: _rankColor(rank),
+                    color: Italia90.avatarNeutral,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -156,12 +156,6 @@ class RankingRow extends StatelessWidget {
     ),
   );
 
-  static Color _rankColor(int rank) => switch (rank) {
-    1 => Italia90.red,
-    2 => Italia90.teamOne,
-    3 => Italia90.teamTwo,
-    _ => Italia90.primary,
-  };
 }
 
 class _Metric extends StatelessWidget {
