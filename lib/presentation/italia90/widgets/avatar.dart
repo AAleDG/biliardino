@@ -69,7 +69,8 @@ class PlayerAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final light = Theme.of(context).brightness == Brightness.light;
-    final accent = color ?? (light ? Italia90.primary : hudColorForName(name));
+    final accent =
+        color ?? (light ? Italia90.avatarNeutral : hudColorForName(name));
     final foreground =
         foregroundColor ??
         (light
