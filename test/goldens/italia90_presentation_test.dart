@@ -80,43 +80,10 @@ void main() {
           (p) => Player.fromMap(Map<String, dynamic>.from(p as Map)),
         ),
       );
-      final capturedDay = DateUtils.dateOnly(
-        DateTime.parse(metadata['captured_at'] as String),
-      );
-      final today = DateUtils.dateOnly(DateTime.now());
       fixture.database.matches.addAll(
-        (metadata['matches'] as List).map((m) {
-          final match = GameMatch.fromMap(Map<String, dynamic>.from(m as Map));
-          final day = DateUtils.dateOnly(match.playedAt);
-          // Preserve relative-day fixtures (Oggi/Ieri) from the donor capture.
-          // Absolute historical dates remain exactly as recorded.
-          final relativeDay = metadata['destination'] != 'history'
-              ? null
-              : day == capturedDay
-              ? 0
-              : day ==
-                    DateTime(
-                      capturedDay.year,
-                      capturedDay.month,
-                      capturedDay.day - 1,
-                    )
-              ? 1
-              : null;
-          if (relativeDay == null) return match;
-          final time = match.playedAt;
-          return match.copyWith(
-            playedAt: DateTime(
-              today.year,
-              today.month,
-              today.day - relativeDay,
-              time.hour,
-              time.minute,
-              time.second,
-              time.millisecond,
-              time.microsecond,
-            ),
-          );
-        }),
+        (metadata['matches'] as List).map(
+          (m) => GameMatch.fromMap(Map<String, dynamic>.from(m as Map)),
+        ),
       );
       await fixture.load();
       await fixture.styleRepository.save(AppStyle.italia90);
