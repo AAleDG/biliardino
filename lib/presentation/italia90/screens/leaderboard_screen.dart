@@ -201,7 +201,7 @@ class _LeaderboardModeSelector extends StatelessWidget {
     constraints: BoxConstraints(maxWidth: largeText ? 320 : 236),
     child: Semantics(
       container: true,
-      label: 'Modalita classifica',
+      label: 'Modalità classifica',
       child: SegmentedButton<MatchMode>(
         key: const ValueKey('leaderboard-mode-selector'),
         segments: const [

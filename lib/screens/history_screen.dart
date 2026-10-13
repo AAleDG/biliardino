@@ -192,7 +192,7 @@ Future<void> _confirmDeleteMatch(
     context: rootContext,
     builder: (dialogContext) => AlertDialog(
       title: const Text('Eliminare partita?'),
-      content: const Text('La partita verra rimossa dallo storico.'),
+      content: const Text('La partita verrà rimossa dallo storico.'),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
