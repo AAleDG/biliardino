@@ -169,19 +169,22 @@ class _Metric extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: Italia90.caption.copyWith(fontWeight: FontWeight.w700),
-        ),
-        Text(
+        _fitText(label, Italia90.caption.copyWith(fontWeight: FontWeight.w700)),
+        _fitText(
           value,
-          style: Italia90.body.copyWith(
+          Italia90.body.copyWith(
             fontSize: 18,
             fontWeight: emphasized ? FontWeight.w800 : FontWeight.w700,
           ),
         ),
       ],
     ),
+  );
+
+  Widget _fitText(String text, TextStyle style) => FittedBox(
+    fit: BoxFit.scaleDown,
+    alignment: Alignment.centerLeft,
+    child: Text(text, maxLines: 1, style: style),
   );
 }
 

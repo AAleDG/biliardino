@@ -358,7 +358,13 @@ class _PodiumPlace extends StatelessWidget {
     padding: const EdgeInsets.all(16),
     child: Row(
       children: [
-        SizedBox(width: 36, child: Text('$rank', style: Italia90.heading)),
+        SizedBox(
+          width: 36,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text('$rank', style: Italia90.heading),
+          ),
+        ),
         const SizedBox(width: 12),
         _avatars(40),
         const SizedBox(width: 12),

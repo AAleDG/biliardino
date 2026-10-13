@@ -679,7 +679,7 @@ class _TeamLedgerRows extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Column(
     children: [
-      const _WideLedgerHeader(),
+      compact ? const _CompactTeamLedgerHeader() : const _WideLedgerHeader(),
       for (var i = 0; i < ranked.length; i++) ...[
         if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
         _TeamLedgerRow(
@@ -720,42 +720,110 @@ class _TeamLedgerRow extends StatelessWidget {
     child: ExcludeSemantics(
       child: InkWell(
         onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 3, 14, 3),
+        child: compact ? _compactContent() : _wideContent(),
+      ),
+    ),
+  );
+
+  Widget _wideContent() => Padding(
+    padding: const EdgeInsets.fromLTRB(14, 3, 14, 3),
+    child: Row(
+      children: [
+        _TeamRankMarker(rank: rank, compact: false),
+        const SizedBox(width: 8),
+        RankingAvatar(name: _avatarName, size: 28),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            stats.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Italia90.title.copyWith(fontSize: 16),
+          ),
+        ),
+        _TeamMetric(
+          key: ValueKey('leaderboard-${stats.id}-pg'),
+          value: stats.games.toString(),
+        ),
+        _TeamMetric(
+          key: ValueKey('leaderboard-${stats.id}-gol'),
+          value: stats.goalsScored.toString(),
+        ),
+        _TeamMetric(
+          key: ValueKey('leaderboard-${stats.id}-v'),
+          value: stats.wins.toString(),
+        ),
+        _TeamMetric(
+          key: ValueKey('leaderboard-${stats.id}-pt'),
+          value: stats.points.toString(),
+          emphasized: true,
+        ),
+      ],
+    ),
+  );
+
+  Widget _compactContent() => Padding(
+    padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            _TeamRankMarker(rank: rank, compact: true),
+            const SizedBox(width: 8),
+            RankingAvatar(name: _avatarName, size: 40),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                stats.name,
+                style: Italia90.title.copyWith(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 76, top: 8),
           child: Row(
             children: [
-              _TeamRankMarker(rank: rank, compact: compact),
-              const SizedBox(width: 8),
-              RankingAvatar(name: stats.players.first.name, size: 28),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  stats.name,
-                  style: Italia90.title.copyWith(fontSize: compact ? 15 : 16),
-                ),
-              ),
-              _TeamMetric(
+              _TeamCompactMetric(
                 key: ValueKey('leaderboard-${stats.id}-pg'),
+                label: 'PG',
                 value: stats.games.toString(),
               ),
-              _TeamMetric(
+              _TeamCompactMetric(
                 key: ValueKey('leaderboard-${stats.id}-gol'),
+                label: 'GOL',
                 value: stats.goalsScored.toString(),
               ),
-              _TeamMetric(
+              _TeamCompactMetric(
                 key: ValueKey('leaderboard-${stats.id}-v'),
+                label: 'V',
                 value: stats.wins.toString(),
               ),
-              _TeamMetric(
+              _TeamCompactMetric(
                 key: ValueKey('leaderboard-${stats.id}-pt'),
+                label: 'PT',
                 value: stats.points.toString(),
                 emphasized: true,
               ),
             ],
           ),
         ),
-      ),
+      ],
     ),
+  );
+
+  String get _avatarName =>
+      stats.players.isEmpty ? stats.name : stats.players.first.name;
+}
+
+class _CompactTeamLedgerHeader extends StatelessWidget {
+  const _CompactTeamLedgerHeader();
+
+  @override
+  Widget build(BuildContext context) => const Padding(
+    padding: EdgeInsets.fromLTRB(14, 12, 14, 8),
+    child: Align(alignment: Alignment.centerLeft, child: Text('GIOCATORE')),
   );
 }
 
@@ -779,12 +847,52 @@ class _TeamRankMarker extends StatelessWidget {
       height: compact ? 28 : 30,
       alignment: Alignment.center,
       decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      child: Text(
-        '$rank',
-        style: Italia90.label.copyWith(color: foreground, fontSize: 15),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          '$rank',
+          style: Italia90.label.copyWith(color: foreground, fontSize: 15),
+        ),
       ),
     );
   }
+}
+
+class _TeamCompactMetric extends StatelessWidget {
+  const _TeamCompactMetric({
+    super.key,
+    required this.label,
+    required this.value,
+    this.emphasized = false,
+  });
+
+  final String label;
+  final String value;
+  final bool emphasized;
+
+  @override
+  Widget build(BuildContext context) => Expanded(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _fitText(label, Italia90.caption.copyWith(fontWeight: FontWeight.w700)),
+        _fitText(
+          value,
+          Italia90.body.copyWith(
+            fontSize: 18,
+            fontWeight: emphasized ? FontWeight.w800 : FontWeight.w700,
+            color: emphasized ? Italia90.teamOne : Italia90.ink,
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _fitText(String text, TextStyle style) => FittedBox(
+    fit: BoxFit.scaleDown,
+    alignment: Alignment.centerLeft,
+    child: Text(text, maxLines: 1, style: style),
+  );
 }
 
 class _TeamMetric extends StatelessWidget {
@@ -796,13 +904,16 @@ class _TeamMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
     width: 34,
-    child: Text(
-      value,
-      textAlign: TextAlign.center,
-      style: Italia90.body.copyWith(
-        fontSize: 17,
-        fontWeight: emphasized ? FontWeight.w800 : FontWeight.w700,
-        color: emphasized ? Italia90.teamOne : Italia90.ink,
+    child: FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        value,
+        textAlign: TextAlign.center,
+        style: Italia90.body.copyWith(
+          fontSize: 17,
+          fontWeight: emphasized ? FontWeight.w800 : FontWeight.w700,
+          color: emphasized ? Italia90.teamOne : Italia90.ink,
+        ),
       ),
     ),
   );

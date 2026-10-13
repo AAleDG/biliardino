@@ -165,7 +165,7 @@ void main() {
     },
   );
 
-  for (final scale in [1.0, 3.0]) {
+  for (final scale in [2.0, 3.0]) {
     testWidgets(
       'Italia leaderboard keeps modes, tabs and ledger scrollable at ${scale}x text',
       (tester) async {
@@ -213,6 +213,26 @@ void main() {
           find.byKey(const ValueKey('leaderboard-ledger')),
           findsOneWidget,
         );
+
+        final firstTeam = ranks.state.teamGeneral.first;
+        final teamRow = find.byKey(ValueKey('leaderboard-row-${firstTeam.id}'));
+        expect(teamRow, findsOneWidget);
+        final teamRowRect = tester.getRect(teamRow);
+        expect(teamRowRect.left, greaterThanOrEqualTo(0));
+        expect(teamRowRect.right, lessThanOrEqualTo(320));
+        for (final suffix in ['pg', 'gol', 'v', 'pt']) {
+          final metricRect = tester.getRect(
+            find.byKey(ValueKey('leaderboard-${firstTeam.id}-$suffix')),
+          );
+          expect(metricRect.left, greaterThanOrEqualTo(teamRowRect.left));
+          expect(metricRect.right, lessThanOrEqualTo(teamRowRect.right));
+        }
+        final chips = find.byType(Chip);
+        for (var i = 0; i < chips.evaluate().length; i++) {
+          final chipRect = tester.getRect(chips.at(i));
+          expect(chipRect.left, greaterThanOrEqualTo(0));
+          expect(chipRect.right, lessThanOrEqualTo(320));
+        }
 
         await tester.tap(find.text('Marcatori'));
         await tester.pumpAndSettle();
