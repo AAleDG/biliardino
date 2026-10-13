@@ -67,7 +67,7 @@ void main() {
             ('grinder', 'Presenza Fissa'),
             ('dominant', 'Implacabile'),
             ('streak', 'Hot Streak'),
-            ('rivalry', 'Re delle Rivalita'),
+            ('rivalry', 'Re delle Rivalità'),
           ];
           final badges = [
             for (final award in pair ? awards.take(3) : awards)

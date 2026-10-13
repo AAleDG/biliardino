@@ -115,7 +115,7 @@ void main() {
     final centeredLabels = [
       (formatChips[0], 'Tutti i formati'),
       (formatChips[1], '1v1'),
-      (formatChips[2], 'Rivalita'),
+      (formatChips[2], 'Rivalità'),
       (formatChips[3], '2v2'),
     ];
     for (final (chip, label) in centeredLabels) {
@@ -168,7 +168,7 @@ void main() {
     );
     expectCentered(
       find.byKey(const ValueKey('history-filter-rivalry')),
-      'Rivalita',
+      'Rivalità',
     );
     expectCentered(
       find.byKey(const ValueKey('history-filter-twoVsTwo')),
