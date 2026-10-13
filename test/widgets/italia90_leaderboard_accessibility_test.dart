@@ -10,6 +10,7 @@ import 'package:biliardino/presentation/italia90/screens/home_screen.dart'
     as italia90;
 import 'package:biliardino/presentation/italia90/theme/app_theme.dart';
 import 'package:biliardino/presentation/italia90/widgets/design/ranking_podium.dart';
+import 'package:biliardino/presentation/italia90/widgets/design/ranking_metrics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/services.dart';
@@ -221,11 +222,16 @@ void main() {
         expect(teamRowRect.left, greaterThanOrEqualTo(0));
         expect(teamRowRect.right, lessThanOrEqualTo(320));
         for (final suffix in ['pg', 'gol', 'v', 'pt']) {
-          final metricRect = tester.getRect(
-            find.byKey(ValueKey('leaderboard-${firstTeam.id}-$suffix')),
+          final metric = find.byKey(
+            ValueKey('leaderboard-${firstTeam.id}-$suffix'),
           );
+          final metricRect = tester.getRect(metric);
           expect(metricRect.left, greaterThanOrEqualTo(teamRowRect.left));
           expect(metricRect.right, lessThanOrEqualTo(teamRowRect.right));
+          expect(
+            find.ancestor(of: metric, matching: find.byType(FittedBox)),
+            findsNothing,
+          );
         }
         final chips = find.byType(Chip);
         for (var i = 0; i < chips.evaluate().length; i++) {
@@ -242,6 +248,18 @@ void main() {
         await tester.pumpAndSettle();
         expect(ranks.state.selectedMode, MatchMode.oneVsOne);
         expect(find.text('Alessandro Antonio Delgaudio'), findsWidgets);
+
+        final firstPlayer = ranks.state.general.first.player;
+        for (final suffix in ['pg', 'gol', 'v', 'pt']) {
+          final metric = find.byKey(
+            ValueKey('leaderboard-${firstPlayer.id}-$suffix'),
+          );
+          expect(metric, findsOneWidget);
+          expect(
+            find.ancestor(of: metric, matching: find.byType(FittedBox)),
+            findsNothing,
+          );
+        }
 
         final scroll = find.byKey(const ValueKey('leaderboard-scroll')).first;
         final scrollable = find
@@ -263,6 +281,105 @@ void main() {
       },
     );
   }
+
+  testWidgets(
+    'Italia leaderboard scrolls its header controls at 200% text in landscape',
+    (tester) async {
+      _setViewport(tester, const Size(844, 390));
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+      final fixture = DesignFixture(populatedDashboard: true, longRoster: true);
+      await fixture.load();
+      await fixture.styleRepository.save(AppStyle.italia90);
+      addTearDown(fixture.dispose);
+
+      await tester.pumpWidget(fixture.app);
+      await tester.pumpAndSettle();
+      final context = tester.element(find.byType(italia90.HomeScreen));
+      context.read<HomeCubit>().select(HomeDestination.leaderboard);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('leaderboard-shell-scroll')),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+
+      final tabs = find.text('Marcatori');
+      await tester.ensureVisible(tabs);
+      await tester.pumpAndSettle();
+      final tabRect = tester.getRect(tabs);
+      expect(tabRect.top, greaterThanOrEqualTo(0));
+      expect(tabRect.bottom, lessThanOrEqualTo(390));
+
+      final modeSelector = find.byKey(
+        const ValueKey('leaderboard-mode-selector'),
+      );
+      await tester.ensureVisible(modeSelector);
+      await tester.pumpAndSettle();
+      final modeRect = tester.getRect(modeSelector);
+      expect(modeRect.top, greaterThanOrEqualTo(0));
+      expect(modeRect.bottom, lessThanOrEqualTo(390));
+
+      final ranks = context.read<LeaderboardCubit>();
+      await tester.tap(find.text('1vs1'));
+      await tester.pumpAndSettle();
+      expect(ranks.state.selectedMode, MatchMode.oneVsOne);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'Ranking metrics keep the requested scale and reflow on narrow screens',
+    (tester) async {
+      _setViewport(tester, const Size(320, 700));
+      tester.platformDispatcher.textScaleFactorTestValue = 3;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.italia90(),
+          home: const Scaffold(
+            body: Padding(
+              padding: EdgeInsets.all(14),
+              child: RankingMetrics(
+                id: 'large-text',
+                metrics: [
+                  RankingMetricSpec(keySuffix: 'pg', label: 'PG', value: '100'),
+                  RankingMetricSpec(
+                    keySuffix: 'gol',
+                    label: 'GOL',
+                    value: '200',
+                  ),
+                  RankingMetricSpec(keySuffix: 'v', label: 'V', value: '99'),
+                  RankingMetricSpec(
+                    keySuffix: 'pt',
+                    label: 'PT',
+                    value: '303',
+                    emphasized: true,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      final points = find.byKey(const ValueKey('leaderboard-large-text-pt'));
+      expect(points, findsOneWidget);
+      expect(
+        find.ancestor(of: points, matching: find.byType(FittedBox)),
+        findsNothing,
+      );
+      expect(find.text('303'), findsOneWidget);
+      final pointsRect = tester.getRect(points);
+      expect(pointsRect.left, greaterThanOrEqualTo(0));
+      expect(pointsRect.right, lessThanOrEqualTo(320));
+    },
+  );
 }
 
 Widget _podiumApp(
