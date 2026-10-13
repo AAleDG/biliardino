@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../models/player.dart';
 import '../theme/italia90_motion.dart';
 import '../theme/italia90_tokens.dart';
 import 'avatar.dart';
+import 'design/ranking_podium_artwork.dart';
 import 'italia90_artwork.dart';
 
 class BrandMasthead extends StatelessWidget {
@@ -474,6 +476,7 @@ class ItaliaAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
+    key: key,
     container: true,
     button: true,
     enabled: !busy && onPressed != null,
@@ -699,105 +702,322 @@ class TeamScorePanel extends StatelessWidget {
   const TeamScorePanel({
     super.key,
     required this.team,
-    required this.playerNames,
+    required this.players,
     required this.score,
     required this.onAdd,
     required this.onUndo,
     this.enabled = true,
   });
   final ItaliaTeam team;
-  final List<String> playerNames;
+  final List<Player> players;
   final int score;
-  final VoidCallback onAdd;
+  final ValueChanged<String> onAdd;
   final VoidCallback onUndo;
   final bool enabled;
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      DecoratedBox(
-        decoration: BoxDecoration(
-          color: team.color,
-          borderRadius: BorderRadius.circular(Italia90.panelRadius),
+  Widget build(BuildContext context) {
+    final largeText = MediaQuery.textScalerOf(context).scale(16) > 22;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _ItaliaTeamScoreCard(team: team, score: score),
+        const SizedBox(height: 10),
+        ItaliaTeamRoster(
+          team: team,
+          players: players,
+          largeText: largeText,
+          enabled: enabled,
+          score: score,
+          onAdd: onAdd,
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              Text(
-                team.label.toUpperCase(),
-                textAlign: TextAlign.center,
-                style: Italia90.heading.copyWith(color: team.onColor),
-              ),
-              const SizedBox(height: 8),
-              Semantics(
-                key: ValueKey('score-team-${team.number}'),
-                container: true,
-                liveRegion: true,
-                label: 'Punteggio ${team.label.toUpperCase()}: $score',
-                child: ExcludeSemantics(
-                  child: AnimatedSwitcher(
-                    key: ValueKey(Italia90Motion.reducedOf(context)),
-                    duration: Italia90Motion.durationOf(
-                      context,
-                      Italia90Motion.score,
-                    ),
-                    switchInCurve: Italia90Motion.curve,
-                    child: FittedBox(
-                      key: ValueKey(score),
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        '$score',
-                        style: Italia90.score.copyWith(color: team.onColor),
+      ],
+    );
+  }
+}
+
+class ItaliaScoreValue extends StatelessWidget {
+  const ItaliaScoreValue({
+    super.key,
+    required this.score,
+    required this.style,
+    this.fit = BoxFit.scaleDown,
+  });
+
+  final int score;
+  final TextStyle style;
+  final BoxFit fit;
+
+  @override
+  Widget build(BuildContext context) => TweenAnimationBuilder<double>(
+    key: ValueKey(score),
+    tween: Tween(begin: 0.96, end: 1),
+    duration: Italia90Motion.durationOf(context, Italia90Motion.score),
+    curve: Italia90Motion.curve,
+    child: FittedBox(
+      fit: fit,
+      child: Text('$score', style: style),
+    ),
+    builder: (context, scale, child) =>
+        Transform.scale(scale: scale, child: child),
+  );
+}
+
+class _ItaliaTeamScoreCard extends StatelessWidget {
+  const _ItaliaTeamScoreCard({required this.team, required this.score});
+
+  final ItaliaTeam team;
+  final int score;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final height = (constraints.maxWidth * 1.15).clamp(190.0, 248.0);
+      return ClipPath(
+        clipper: _ItaliaTeamScoreClipper(team),
+        child: ColoredBox(
+          color: team.color,
+          child: SizedBox(
+            height: height,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 16, 8, 10),
+              child: Column(
+                children: [
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      team.label.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: Italia90.heading.copyWith(
+                        color: team.onColor,
+                        fontSize: 24,
                       ),
                     ),
                   ),
+                  Expanded(
+                    child: Center(
+                      child: Semantics(
+                        key: ValueKey('score-team-${team.number}'),
+                        container: true,
+                        liveRegion: true,
+                        label: 'Punteggio ${team.label.toUpperCase()}: $score',
+                        child: ExcludeSemantics(
+                          child: ItaliaScoreValue(
+                            score: score,
+                            style: Italia90.score.copyWith(
+                              color: team.onColor,
+                              fontSize: 112,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+class _ItaliaTeamScoreClipper extends CustomClipper<Path> {
+  const _ItaliaTeamScoreClipper(this.team);
+
+  final ItaliaTeam team;
+
+  @override
+  Path getClip(Size size) {
+    const slant = 18.0;
+    final path = Path();
+    if (team == ItaliaTeam.one) {
+      path
+        ..moveTo(0, slant)
+        ..lineTo(size.width, 0);
+    } else {
+      path
+        ..moveTo(0, 0)
+        ..lineTo(size.width, slant);
+    }
+    path
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(_ItaliaTeamScoreClipper oldClipper) =>
+      oldClipper.team != team;
+}
+
+class ItaliaTeamRoster extends StatelessWidget {
+  const ItaliaTeamRoster({
+    super.key,
+    required this.team,
+    required this.players,
+    required this.largeText,
+    required this.enabled,
+    required this.score,
+    required this.onAdd,
+    this.avatar,
+    this.nameStyle,
+  });
+
+  final ItaliaTeam team;
+  final List<Player> players;
+  final bool largeText;
+  final bool enabled;
+  final int score;
+  final ValueChanged<String> onAdd;
+  final Widget? avatar;
+  final TextStyle? nameStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    if (players.isEmpty) return const SizedBox(height: 92);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final itemWidth = constraints.maxWidth / players.length;
+        final stack = largeText && itemWidth < 150;
+        final items = [
+          for (var index = 0; index < players.length; index++)
+            _ItaliaTeamRosterPlayer(
+              team: team,
+              player: players[index],
+              enabled: enabled,
+              score: score,
+              onAdd: onAdd,
+              avatar: avatar,
+              nameStyle: nameStyle,
+              actionKey: index == 0
+                  ? ValueKey('score-add-team-${team.number}')
+                  : ValueKey('score-add-team-${team.number}-player-$index'),
+            ),
+        ];
+        if (stack) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var index = 0; index < items.length; index++) ...[
+                if (index > 0) const SizedBox(height: 8),
+                items[index],
+              ],
+            ],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [for (final item in items) Expanded(child: item)],
+        );
+      },
+    );
+  }
+}
+
+class _ItaliaTeamRosterPlayer extends StatelessWidget {
+  const _ItaliaTeamRosterPlayer({
+    required this.team,
+    required this.player,
+    required this.enabled,
+    required this.score,
+    required this.onAdd,
+    required this.actionKey,
+    required this.avatar,
+    required this.nameStyle,
+  });
+
+  final ItaliaTeam team;
+  final Player player;
+  final bool enabled;
+  final int score;
+  final ValueChanged<String> onAdd;
+  final Key actionKey;
+  final Widget? avatar;
+  final TextStyle? nameStyle;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 2),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        avatar ?? _ItaliaFoosballPlayerBadge(team: team),
+        const SizedBox(height: 4),
+        Text(
+          player.name,
+          textAlign: TextAlign.center,
+          style:
+              nameStyle ??
+              Italia90.body.copyWith(fontWeight: FontWeight.w700, height: 1.1),
+        ),
+        const SizedBox(height: 6),
+        Semantics(
+          key: actionKey,
+          container: true,
+          button: true,
+          enabled: enabled,
+          label:
+              'Aggiungi un goal a ${player.name} per ${team.label.toUpperCase()}. '
+              'Punteggio attuale $score.',
+          onTap: enabled ? () => onAdd(player.id) : null,
+          child: ExcludeSemantics(
+            child: FilledButton(
+              onPressed: enabled ? () => onAdd(player.id) : null,
+              style: FilledButton.styleFrom(
+                backgroundColor: Italia90.surface,
+                foregroundColor: team.onNeutralSurface,
+                disabledBackgroundColor: Italia90.subtle,
+                disabledForegroundColor: Italia90.muted,
+                minimumSize: const Size(48, 52),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                side: BorderSide(color: team.color, width: 2),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                textStyle: Italia90.label.copyWith(
+                  fontSize: 15,
+                  letterSpacing: 1,
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-      TeamSummary(team: team, playerNames: playerNames),
-      const SizedBox(height: 8),
-      Semantics(
-        key: ValueKey('score-add-team-${team.number}'),
-        container: true,
-        button: true,
-        enabled: enabled,
-        label:
-            'Aggiungi un goal a ${team.label.toUpperCase()}. Punteggio attuale $score.',
-        onTap: enabled ? onAdd : null,
-        child: ExcludeSemantics(
-          child: FilledButton(
-            onPressed: enabled ? onAdd : null,
-            style: FilledButton.styleFrom(
-              backgroundColor: team.color,
-              foregroundColor: team.onColor,
+              child: const Text('+1 GOAL'),
             ),
-            child: const Text('+1 GOAL'),
           ),
         ),
-      ),
-      const SizedBox(height: 4),
-      Semantics(
-        key: ValueKey('score-undo-team-${team.number}'),
-        container: true,
-        button: true,
-        enabled: enabled && score > 0,
-        label: 'Annulla ultimo goal di ${team.label.toUpperCase()}',
-        onTap: enabled && score > 0 ? onUndo : null,
-        child: ExcludeSemantics(
-          child: OutlinedButton(
-            onPressed: enabled && score > 0 ? onUndo : null,
-            style: OutlinedButton.styleFrom(foregroundColor: Italia90.ink),
-            child: const Text('Annulla'),
-          ),
+      ],
+    ),
+  );
+}
+
+class _ItaliaFoosballPlayerBadge extends StatelessWidget {
+  const _ItaliaFoosballPlayerBadge({required this.team});
+
+  final ItaliaTeam team;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 64,
+    height: 64,
+    decoration: BoxDecoration(
+      color: team.color,
+      shape: BoxShape.circle,
+      border: Border.all(color: Italia90.surface, width: 2),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x22000000),
+          blurRadius: 3,
+          offset: Offset(0, 1),
         ),
-      ),
-    ],
+      ],
+    ),
+    clipBehavior: Clip.antiAlias,
+    child: Padding(
+      padding: const EdgeInsets.all(3),
+      child: RankingFoosballFigure(shirtColor: team.onColor),
+    ),
   );
 }
 
@@ -806,26 +1026,206 @@ class ItaliaScoreboard extends StatelessWidget {
     super.key,
     required this.first,
     required this.second,
+    this.showUndo = true,
   });
   final TeamScorePanel first;
   final TeamScorePanel second;
+  final bool showUndo;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       final largeText = MediaQuery.textScalerOf(context).scale(16) > 22;
       if (constraints.maxWidth < 340 || largeText) {
-        return Column(children: [first, const SizedBox(height: 16), second]);
+        return Column(
+          children: [
+            first,
+            const SizedBox(height: 16),
+            second,
+            if (showUndo) ...[
+              const SizedBox(height: 10),
+              ItaliaSharedUndoAction(first: first, second: second),
+            ],
+          ],
+        );
       }
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      return Column(
         children: [
-          Expanded(child: first),
-          const SizedBox(width: 12),
-          Expanded(child: second),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: first),
+              const SizedBox(width: 12),
+              Expanded(child: second),
+            ],
+          ),
+          if (showUndo) ...[
+            const SizedBox(height: 10),
+            ItaliaSharedUndoAction(first: first, second: second),
+          ],
         ],
       );
     },
+  );
+}
+
+class ItaliaSharedUndoAction extends StatelessWidget {
+  const ItaliaSharedUndoAction({
+    super.key,
+    required this.first,
+    required this.second,
+  });
+
+  final TeamScorePanel first;
+  final TeamScorePanel second;
+
+  @override
+  Widget build(BuildContext context) {
+    final firstEnabled = first.enabled && first.score > 0;
+    final secondEnabled = second.enabled && second.score > 0;
+    final splitLabels = firstEnabled && secondEnabled;
+    final teamControls = IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: _UndoHitTarget(
+              key: ValueKey('score-undo-team-${first.team.number}'),
+              team: first.team,
+              enabled: firstEnabled,
+              onPressed: first.onUndo,
+              showTeamLabel: splitLabels,
+            ),
+          ),
+          if (splitLabels)
+            const SizedBox(width: 1, child: ColoredBox(color: Italia90.error)),
+          Expanded(
+            child: _UndoHitTarget(
+              key: ValueKey('score-undo-team-${second.team.number}'),
+              team: second.team,
+              enabled: secondEnabled,
+              onPressed: second.onUndo,
+              showTeamLabel: splitLabels,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Italia90.surface,
+        border: Border.all(color: Italia90.error, width: 1.5),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 64),
+        child: firstEnabled != secondEnabled
+            ? _UndoHitTarget(
+                key: ValueKey(
+                  'score-undo-team-${firstEnabled ? first.team.number : second.team.number}',
+                ),
+                team: firstEnabled ? first.team : second.team,
+                enabled: true,
+                onPressed: firstEnabled ? first.onUndo : second.onUndo,
+                showTeamLabel: true,
+              )
+            : Stack(
+                fit: StackFit.loose,
+                children: [
+                  if (!splitLabels)
+                    const Center(
+                      child: ExcludeSemantics(
+                        child: Text('ANNULLA', style: Italia90.label),
+                      ),
+                    ),
+                  teamControls,
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class _UndoHitTarget extends StatelessWidget {
+  const _UndoHitTarget({
+    super.key,
+    required this.team,
+    required this.enabled,
+    required this.onPressed,
+    this.showTeamLabel = false,
+  });
+
+  final ItaliaTeam team;
+  final bool enabled;
+  final VoidCallback onPressed;
+  final bool showTeamLabel;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    container: true,
+    button: true,
+    enabled: enabled,
+    label: 'Annulla ultimo goal di ${team.label.toUpperCase()}',
+    onTap: enabled ? onPressed : null,
+    child: ExcludeSemantics(
+      child: TextButton(
+        onPressed: enabled ? onPressed : null,
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.transparent,
+          disabledForegroundColor: Colors.transparent,
+          overlayColor: Colors.transparent,
+          minimumSize: const Size(0, 64),
+          padding: EdgeInsets.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+        child: showTeamLabel
+            ? SizedBox(
+                width: double.infinity,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 64),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: enabled ? team.container : Italia90.subtle,
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'ANNULLA',
+                            textAlign: TextAlign.center,
+                            style: Italia90.label.copyWith(
+                              color: enabled
+                                  ? team.onNeutralSurface
+                                  : Italia90.muted,
+                              fontSize: 12,
+                              height: 1.1,
+                              letterSpacing: .8,
+                            ),
+                          ),
+                          Text(
+                            team.label.toUpperCase(),
+                            softWrap: true,
+                            textAlign: TextAlign.center,
+                            style: Italia90.caption.copyWith(
+                              color: enabled
+                                  ? team.onNeutralSurface
+                                  : Italia90.muted,
+                              fontWeight: FontWeight.w700,
+                              height: 1.1,
+                              letterSpacing: .6,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : const SizedBox.expand(),
+      ),
+    ),
   );
 }
 
