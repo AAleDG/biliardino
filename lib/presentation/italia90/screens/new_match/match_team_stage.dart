@@ -83,6 +83,7 @@ class _TeamCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final teamColor = team == 1 ? Italia90.teamOne : Italia90.teamTwo;
     final onTeamColor = team == 1 ? Colors.white : Italia90.ink;
+    final statusColor = team == 2 ? Italia90.ink : teamColor;
     final hasCapacity = playerIds.length < capacity;
     final complete = playerIds.length >= capacity;
     final panelColor = Italia90.surface.withValues(alpha: .9);
@@ -142,7 +143,7 @@ class _TeamCard extends StatelessWidget {
                       key: ValueKey('team-$team-complete'),
                       icon: Icons.check_circle_outline,
                       label: 'SQUADRA COMPLETA',
-                      color: teamColor,
+                      color: statusColor,
                     ),
                   if (!enabled && hasCapacity) ...[
                     const SizedBox(height: 8),
@@ -308,6 +309,11 @@ class _EmptyTeamSlot extends StatelessWidget {
     final icon = enabled
         ? Icons.person_outline_rounded
         : Icons.lock_outline_rounded;
+    final foreground = enabled
+        ? team == 2
+              ? Italia90.ink
+              : color
+        : Italia90.muted;
     return Semantics(
       container: true,
       label: '$label per Squadra $team',
@@ -325,14 +331,12 @@ class _EmptyTeamSlot extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 7),
           child: Row(
             children: [
-              Icon(icon, color: enabled ? color : Italia90.muted, size: 28),
+              Icon(icon, color: foreground, size: 28),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   label,
-                  style: AppType.utility.copyWith(
-                    color: enabled ? color : Italia90.muted,
-                  ),
+                  style: AppType.utility.copyWith(color: foreground),
                 ),
               ),
             ],

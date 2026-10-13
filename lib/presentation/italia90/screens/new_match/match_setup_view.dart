@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../../models/game_match.dart';
@@ -46,88 +48,145 @@ class MatchSetupView extends StatelessWidget {
   final VoidCallback? onKickoff;
 
   @override
-  Widget build(BuildContext context) {
-    final requiredPlayers = mode.teamSize * 2;
-    final enoughPlayers = present.length >= requiredPlayers;
-    final scaledKickoffText = MediaQuery.textScalerOf(context).scale(28);
-    final kickoffHeight =
-        (scaledKickoffText > 56
-                ? scaledKickoffText * 2.8 + 32
-                : scaledKickoffText > 36
-                ? scaledKickoffText * 2.2 + 24
-                : scaledKickoffText * 1.15 + 24)
-            .clamp(60.0, double.infinity);
-
-    return Stack(
-      children: [
-        SafeArea(
-          bottom: false,
-          child: ListView(
-            key: const ValueKey('setup-scroll-view'),
-            padding: EdgeInsets.only(bottom: kickoffHeight + 56),
-            children: [
-              const MatchSetupHeader(),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                child: MatchModeSelector(
-                  selectedMode: mode,
-                  onChanged: isPersistingRules ? null : onModeChanged,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                child: MatchOptionsSummary(
-                  rules: rules,
-                  isRivalry: isRivalry,
-                  onPressed: onOptionsPressed,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
-                child: MatchRosterSummary(
-                  players: present.take(4).toList(growable: false),
-                  totalCount: present.length,
-                  assignment: assignment,
-                  enoughPlayers: enoughPlayers,
-                  neededMessage:
-                      'Servono almeno $requiredPlayers giocatori presenti per '
-                      'una partita ${matchModeTitle(mode)}.',
-                  onShowAll: present.length > 4 ? onShowAllPlayers : null,
-                ),
-              ),
-              const SizedBox(height: 6),
-              MatchTeamStage(
-                players: players,
-                team1: team1,
-                team2: team2,
-                capacity: mode.teamSize,
-                enabled: enoughPlayers && !isPersistingRules,
-                onAdd: onAddPlayer,
-                onEdit: onEditPlayer,
-              ),
-            ],
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final requiredPlayers = mode.teamSize * 2;
+      final enoughPlayers = present.length >= requiredPlayers;
+      final textScaler = MediaQuery.textScalerOf(context);
+      final verticalKickoff = textScaler.scale(28) > 56;
+      final kickoffHeight = _kickoffButtonHeight(
+        context,
+        constraints.maxWidth,
+        verticalLayout: verticalKickoff,
+      );
+      final scrollKickoff = _shouldScrollKickoff(constraints);
+      final content = <Widget>[
+        const MatchSetupHeader(),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          child: MatchModeSelector(
+            selectedMode: mode,
+            onChanged: isPersistingRules ? null : onModeChanged,
           ),
         ),
-        Positioned(
-          left: 16,
-          right: 16,
-          bottom: 12,
-          child: _KickoffButton(height: kickoffHeight, onPressed: onKickoff),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: MatchOptionsSummary(
+            rules: rules,
+            isRivalry: isRivalry,
+            onPressed: onOptionsPressed,
+          ),
         ),
-      ],
-    );
-  }
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
+          child: MatchRosterSummary(
+            players: present.take(4).toList(growable: false),
+            totalCount: present.length,
+            assignment: assignment,
+            enoughPlayers: enoughPlayers,
+            neededMessage:
+                'Servono almeno $requiredPlayers giocatori presenti per '
+                'una partita ${matchModeTitle(mode)}.',
+            onShowAll: present.length > 4 ? onShowAllPlayers : null,
+          ),
+        ),
+        const SizedBox(height: 6),
+        MatchTeamStage(
+          players: players,
+          team1: team1,
+          team2: team2,
+          capacity: mode.teamSize,
+          enabled: enoughPlayers && !isPersistingRules,
+          onAdd: onAddPlayer,
+          onEdit: onEditPlayer,
+        ),
+        if (scrollKickoff)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            child: _KickoffButton(
+              minHeight: kickoffHeight,
+              verticalLayout: verticalKickoff,
+              onPressed: onKickoff,
+            ),
+          ),
+      ];
+
+      return Stack(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: ListView(
+              key: const ValueKey('setup-scroll-view'),
+              padding: EdgeInsets.only(
+                bottom: scrollKickoff ? 56 : kickoffHeight + 56,
+              ),
+              children: content,
+            ),
+          ),
+          if (!scrollKickoff)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 12,
+              child: _KickoffButton(
+                minHeight: kickoffHeight,
+                verticalLayout: verticalKickoff,
+                onPressed: onKickoff,
+              ),
+            ),
+        ],
+      );
+    },
+  );
+}
+
+bool _shouldScrollKickoff(BoxConstraints constraints) {
+  if (!constraints.hasBoundedHeight) return false;
+
+  // Keep the action in the same scroll view when a large label can cover the
+  // team rows in a short portrait or landscape viewport.
+  return constraints.maxHeight < 600;
+}
+
+double _kickoffButtonHeight(
+  BuildContext context,
+  double viewportWidth, {
+  required bool verticalLayout,
+}) {
+  final textScaler = MediaQuery.textScalerOf(context);
+  final labelStyle = AppType.action.copyWith(fontSize: 28);
+  final actionWidth = viewportWidth.isFinite
+      ? math.max(0.0, viewportWidth - 32).toDouble()
+      : 320.0;
+  final buttonWidth = math.max(1.0, actionWidth - 8).toDouble();
+  final labelWidth = verticalLayout
+      ? math.max(1.0, buttonWidth - 24).toDouble()
+      : math.max(1.0, buttonWidth - 24 - 34 - 8).toDouble();
+  final labelPainter = TextPainter(
+    text: TextSpan(text: 'INIZIA PARTITA', style: labelStyle),
+    textAlign: TextAlign.center,
+    textDirection: TextDirection.ltr,
+    textScaler: textScaler,
+  )..layout(maxWidth: labelWidth);
+  final contentHeight = verticalLayout
+      ? 34 + 4 + labelPainter.height
+      : math.max(labelPainter.height, 34.0).toDouble();
+  return math.max(60.0, contentHeight + 16).toDouble();
 }
 
 class _KickoffButton extends StatelessWidget {
-  const _KickoffButton({required this.height, required this.onPressed});
+  const _KickoffButton({
+    required this.minHeight,
+    required this.verticalLayout,
+    required this.onPressed,
+  });
 
-  final double height;
+  final double minHeight;
+  final bool verticalLayout;
   final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final verticalLayout = MediaQuery.textScalerOf(context).scale(28) > 56;
     final style =
         AppTheme.primaryButton(
           background: AppColors.success,
@@ -144,27 +203,33 @@ class _KickoffButton extends StatelessWidget {
             AppType.action.copyWith(fontSize: 28),
           ),
         );
-    final button = verticalLayout
-        ? ElevatedButton(
-            key: const ValueKey('setup-kickoff-action'),
-            onPressed: onPressed,
-            style: style,
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.play_arrow_rounded, size: 34),
-                SizedBox(height: 4),
-                Text('INIZIA PARTITA', textAlign: TextAlign.center),
-              ],
-            ),
+    final content = verticalLayout
+        ? const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.play_arrow_rounded, size: 34),
+              SizedBox(height: 4),
+              Flexible(
+                child: Text('INIZIA PARTITA', textAlign: TextAlign.center),
+              ),
+            ],
           )
-        : ElevatedButton.icon(
-            key: const ValueKey('setup-kickoff-action'),
-            onPressed: onPressed,
-            icon: const Icon(Icons.play_arrow_rounded, size: 34),
-            label: const Text('INIZIA PARTITA'),
-            style: style,
+        : const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.play_arrow_rounded, size: 34),
+              SizedBox(width: 8),
+              Flexible(
+                child: Text('INIZIA PARTITA', textAlign: TextAlign.center),
+              ),
+            ],
           );
+    final button = ElevatedButton(
+      key: const ValueKey('setup-kickoff-action'),
+      onPressed: onPressed,
+      style: style,
+      child: content,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -180,7 +245,10 @@ class _KickoffButton extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(4),
-        child: SizedBox(height: height, child: button),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: minHeight),
+          child: button,
+        ),
       ),
     );
   }
