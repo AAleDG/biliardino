@@ -955,7 +955,7 @@ class _CompactLeaderRow extends StatelessWidget {
                   PlayerAvatar(
                     name: stats.player.name,
                     size: 40,
-                    color: _rankColor(rank),
+                    color: Italia90.avatarNeutral,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -1077,7 +1077,7 @@ class _LeaderRow extends StatelessWidget {
               PlayerAvatar(
                 name: stats.player.name,
                 size: 40,
-                color: _rankColor(rank),
+                color: Italia90.avatarNeutral,
               ),
               const SizedBox(width: 10),
               Expanded(

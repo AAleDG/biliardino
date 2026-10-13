@@ -18,16 +18,20 @@ class ItaliaGraphicBackdrop extends StatelessWidget {
   final ItaliaBackdropVariant variant;
 
   @override
-  Widget build(BuildContext context) => Stack(
-    fit: StackFit.passthrough,
-    children: [
-      Positioned.fill(
-        child: ExcludeSemantics(
-          child: IgnorePointer(child: _ItaliaBackdropArtwork(variant: variant)),
+  Widget build(BuildContext context) => SizedBox.expand(
+    child: Stack(
+      fit: StackFit.expand,
+      children: [
+        Positioned.fill(
+          child: ExcludeSemantics(
+            child: IgnorePointer(
+              child: _ItaliaBackdropArtwork(variant: variant),
+            ),
+          ),
         ),
-      ),
-      child,
-    ],
+        child,
+      ],
+    ),
   );
 }
 

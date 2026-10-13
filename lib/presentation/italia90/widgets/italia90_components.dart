@@ -489,30 +489,68 @@ class ItaliaAction extends StatelessWidget {
         style: result
             ? FilledButton.styleFrom(backgroundColor: Italia90.red)
             : null,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (busy) ...[
-              const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Italia90.muted,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ] else if (icon != null) ...[
-              Icon(icon, size: 22),
-              const SizedBox(width: 8),
-            ],
-            Flexible(child: Text(label, textAlign: TextAlign.center)),
-          ],
+        child: _ItaliaActionContent(
+          label: label,
+          busy: busy,
+          icon: icon,
         ),
       ),
     ),
   );
+}
+
+/// Centers the label in the button while keeping leading status/icon content
+/// in a stable accessory slot.
+class _ItaliaActionContent extends StatelessWidget {
+  const _ItaliaActionContent({
+    required this.label,
+    required this.busy,
+    required this.icon,
+  });
+
+  final String label;
+  final bool busy;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final leading = busy
+        ? const SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Italia90.muted,
+            ),
+          )
+        : icon == null
+            ? null
+            : Icon(icon, size: 22);
+
+    if (leading == null) {
+      return Center(child: Text(label, textAlign: TextAlign.center));
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(label, textAlign: TextAlign.center),
+          ),
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 32,
+            child: Center(child: leading),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Presentation only. Repository actions and menu contents stay with the screen.
