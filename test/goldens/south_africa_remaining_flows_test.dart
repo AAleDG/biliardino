@@ -40,6 +40,7 @@ void main() {
           await expectLater(
             find.byKey(const ValueKey('capture')),
             matchesGoldenFile(
+              '${name == 'filters' ? 'reference-corrections/' : ''}'
               'south-africa-$name${compact ? '-compact' : ''}.png',
             ),
           );

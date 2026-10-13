@@ -1,0 +1,18 @@
+Use case: ui-mockup
+Asset type: a review-only proposal for a new Biliardino in-app feedback screen. Not a production asset or implementation specification.
+Primary request: create ONE polished full-screen flat mobile UI screenshot for a feedback form. Use the reference screenshot strictly for the existing style frame, type proportions and decorations; replace the appearance selector content entirely with this form. No device frame, no perspective, no desk, no second screen, no presentation captions.
+Composition: portrait, equivalent to a 402 x 874 logical-pixel mobile screen. Warm light canvas. Back arrow at top returns to Altro. A clear title FEEDBACK. No bottom navigation on this pushed form route. An uncluttered central readable surface with generous gutters and no graphics behind text. Existing artwork remains peripheral; do not introduce a mascot hero on this utility screen. Keep all controls visible and comfortably sized. The form fills the useful central space without looking like a generic web page.
+Content order and text, verbatim Italian:
+1. Heading: "FEEDBACK"
+2. Intro: "Hai un’idea o qualcosa non funziona?"
+3. Supporting sentence: "Raccontacelo qui."
+4. Field label: "Messaggio"
+5. Large empty multiline field, placeholder: "Scrivi il tuo messaggio…"
+6. Field label: "Email (facoltativa)"
+7. Email field placeholder: "Per ricevere una risposta"
+8. Small clear privacy/context text on the warm plain surface: "Invieremo anche versione dell’app, sistema operativo e stile scelto."
+9. Strong full-width primary action: "INVIA FEEDBACK"
+10. Secondary quiet reassurance below: "La bozza resta salvata su questo dispositivo."
+Constraints: Exactly one required message field and one optional email field. No category, name, rating, screenshot upload, sign-in, checkbox, phone number, Formspree branding, promotional copy, or extra fields. No sample personal data. Functional back icon and field outlines clear. Readable body typography and neutral dark secondary copy. Button white text with good contrast. No keyboard. Preserve current branch's visual identity, clean control geometry and Italian punctuation. Decoration never touches fields, copy or action. No content clipping.
+Input images: Image 1 is the original Italia ’90 board, authority for tricolour/football/pitch character; Image 2 is the CURRENT running Italia ’90 Aspetto screen, authority for the accepted utility-screen frame, brick-red primary color and current typography. Use neither image’s existing product content.
+Style: current Italia ’90 Biliardino. Anton-like heavy narrow display title and Barlow utility copy. Warm ivory #FFFCF5 with calm white fields, dark ink. Primary action and focused details brick red #A83A2D as currently implemented in the style-selection branch. Keep small BILIARDINO brand row and tricolour football at top, compact utility heading beneath. Retain current muted tricolour diagonal edge frame and cropped pitch footer, without adding new artwork or the large home mascot. Graphics stay peripheral and subordinate to clear form content.

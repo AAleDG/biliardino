@@ -1,6 +1,7 @@
 import 'package:biliardino/presentation/app_presentation.dart';
 import 'package:biliardino/presentation/south_africa/south_africa_presentation.dart';
 import 'package:biliardino/repositories/app_style_repository.dart';
+import 'package:biliardino/repositories/feedback_repository.dart';
 import 'package:biliardino/repositories/data_management_repository.dart';
 import 'package:biliardino/services/data_management_coordinator.dart';
 import 'package:biliardino/services/data_file_share_service.dart';
@@ -102,6 +103,7 @@ class DesignFixture {
     styleRepository = AppStyleRepository(database);
   }
   final CsvShareService? csvShareService;
+  FeedbackRepository? feedbackRepository;
   late final FakeDatabaseHelper database;
   late final PlayerRepository playersRepository;
   late final MatchRepository matchesRepository;
@@ -119,6 +121,7 @@ class DesignFixture {
     matchRulesRepository: rulesRepository,
     dataManagementRepository: dataCoordinator,
     appStyleRepository: styleRepository,
+    feedbackRepository: feedbackRepository,
   );
 
   DataManagementRepository get dataCoordinator => DataManagementCoordinator(

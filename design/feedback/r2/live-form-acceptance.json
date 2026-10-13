@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-13",
+  "approval": "Accept these live forms",
+  "scope": "Live Flutter forms including existing fonts/logo shapes, stronger field outlines and solid button colors; approved R2 decorative backgrounds. Supersedes unresolved typography/outline/button-color differences from generated R1 screen references.",
+  "accepted_capture": {
+    "path": "accepted-live-forms.png",
+    "sha256": "322c84c5d0dff736405f60f40e2533b92425da09520b238963034449c106e8d5"
+  },
+  "subsequent_correction": {
+    "request": "Italia Invia feedback button text is not vertically centered",
+    "implementation": "Anton label optical offset of 3.5 logical pixels, scaled with text; button bounds unchanged.",
+    "path": "italia-button-correction.png",
+    "sha256": "7017e822d34824eb9bc22970fccb0ea455aace2280bb2fde31bacf138d3c2ed1",
+    "status": "Corrective alignment change, not a new artwork master."
+  }
+}

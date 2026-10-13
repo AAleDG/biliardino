@@ -45,6 +45,14 @@ class MoreScreen extends StatelessWidget {
           subtitle: 'Scegli lo stile dell’app',
           onPressed: () => openAppearance(context),
         ),
+        const SizedBox(height: 14),
+        ItaliaDataActionSlip(
+          key: const ValueKey('more-feedback'),
+          icon: Icons.chat_bubble_outline,
+          title: 'Invia feedback',
+          subtitle: 'Hai un’idea o qualcosa non funziona?',
+          onPressed: () => openFeedback(context),
+        ),
       ],
     ),
   );

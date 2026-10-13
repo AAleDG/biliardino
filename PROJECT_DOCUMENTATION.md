@@ -83,6 +83,16 @@ La verifica usa entrambe le vere presentazioni, persistenza SQLite, identità de
 
 La verifica finale e i limiti mantenuti sono documentati in `design/runtime-style-selection/IMPLEMENTATION.md`. Il piano temporaneo rimane ignorato fino alla conferma del landing sul ramo primario; AGENTS.md viene preservato verbatim come richiesto dall’utente.
 
+### Feedback nell’app
+
+**Altro → Invia feedback** apre una route completa in entrambe le presentazioni, con messaggio obbligatorio ed email facoltativa. `FeedbackScreen` conserva controller e Cubit durante i rebuild dello stile. `FeedbackPageFrame` applica i token esistenti e i soli sfondi R2 approvati; testo, logo, campi e controlli restano widget Flutter. La cornice scorre con tastiera e testo ingrandito.
+
+`FeedbackRepository`, creato in modo lazy, salva una sola bozza condivisa tra gli stili nella chiave `feedback.draft.v1` della tabella settings. Le scritture serializzate includono la cancellazione dopo un invio riconosciuto; una scrittura fallita non interrompe la coda. La chiusura attende il salvataggio e, se fallisce, consente di restare o chiudere consapevolmente. Le notifiche distinguono salvataggio in corso, errore e bozza salvata.
+
+`FormspreeFeedback` invia JSON HTTPS a `https://formspree.io/f/meaerkro`: messaggio, eventuale email, versione/build, piattaforma e stile scelto. Non invia dati di giocatori o partite. I metadati hanno un timeout di 5 secondi; la richiesta HTTP ha una scadenza di 20 secondi e chiude sempre il client. Il trasporto non segue redirect e accetta solo una risposta JSON 2xx con `next` stringa, senza errori o challenge. Il form blocca modifiche, invii concorrenti e Back fino all’esito; il retry è manuale. Un esito riconosciuto mostra “Grazie! Feedback inviato.” e “Torna ad Altro”; un errore di cancellazione locale della bozza non diventa un errore di invio.
+
+Il form Formspree deve avere reCAPTCHA disabilitato e nessuna restrizione Referer/Domain per questo client nativo. L’acknowledgement HTTP non dimostra una voce nell’inbox: la verifica di consegna richiede un riscontro separato. Il perimetro di questa versione è iOS/Android; la consegna macOS non è supportata/verificata. Stato ed evidenze dell’incremento sono in `design/feedback/IMPLEMENTATION.md`.
+
 ## Motivazioni delle scelte tecniche
 
 ### Flutter

@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.biliardino.biliardino">
+   <uses-permission android:name="android.permission.INTERNET" />
    <application
         android:label="biliardino"
         android:name="${applicationName}"

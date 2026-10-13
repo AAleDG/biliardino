@@ -1,0 +1,28 @@
+{
+  "status": "user-approved isolated background masters",
+  "date": "2026-10-13",
+  "reply": "Approve both R2 backgrounds",
+  "review": "design/feedback/r2/isolated-review.png at 402x874 proportions",
+  "route": "CLIProxyAPI via image-gen-proxy",
+  "model": "gpt-image-2",
+  "assets": [
+    {
+      "asset": "assets/feedback/italia90-backdrop-r2.png",
+      "sha256": "8ad6941ff4b150e0bf1ac768c563e7804202122d6350ca94d8787a9559b3a294",
+      "size": [
+        851,
+        1848
+      ],
+      "reference": "design/feedback/r1/italia90-feedback.png"
+    },
+    {
+      "asset": "assets/feedback/south-africa-backdrop-r2.png",
+      "sha256": "28f3bcfcf1f76eef384a2fbe10bba2af9829b6c937514c4bf676bdd1ab465b44",
+      "size": [
+        851,
+        1848
+      ],
+      "reference": "design/feedback/r1/south-africa-feedback.png"
+    }
+  ]
+}

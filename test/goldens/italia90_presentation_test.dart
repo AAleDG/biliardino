@@ -36,6 +36,29 @@ void main() {
       await loader.load();
     }
   });
+  // Independently reviewed corrections; original donor references remain frozen.
+  const referenceCorrections = <String, String>{
+    'flows-history-detail': 'reference-corrections/flows-history-detail.png',
+    'flows-history-edit': 'reference-corrections/flows-history-edit.png',
+    'flows-history-empty': 'reference-corrections/flows-history-empty.png',
+    'flows-history-filters': 'reference-corrections/flows-history-filters.png',
+    'flows-history-large': 'reference-corrections/flows-history-large.png',
+    'flows-history': 'reference-corrections/flows-history.png',
+    'flows-scorers': 'reference-corrections/flows-scorers.png',
+    'flows-standings-1': 'reference-corrections/flows-standings-1.png',
+    'flows-standings-2': 'reference-corrections/flows-standings-2.png',
+    'flows-standings-intesa':
+        'reference-corrections/flows-standings-intesa.png',
+    'flows-standings': 'reference-corrections/flows-standings.png',
+    'supplement-players-compact-large':
+        'reference-corrections/supplement-players-compact-large.png',
+    'supplement-players-long-name-compact-large':
+        'reference-corrections/supplement-players-long-name-compact-large.png',
+    'supplement-players-long-name-normal':
+        'reference-corrections/supplement-players-long-name-normal.png',
+    'supplement-players-normal':
+        'reference-corrections/supplement-players-normal-corrected.png',
+  };
   final references =
       jsonDecode(
             File(
@@ -45,7 +68,10 @@ void main() {
           as Map<String, dynamic>;
   for (final reference in references['references'] as List) {
     final name = reference['name'] as String;
-    testWidgets('Italia donor parity: $name', (tester) async {
+    final description = referenceCorrections.containsKey(name)
+        ? 'Italia presentation correction: $name'
+        : 'Italia donor parity: $name';
+    testWidgets(description, (tester) async {
       final metadata =
           jsonDecode(
                 File(
@@ -200,9 +226,11 @@ void main() {
         () => boundary.toImage(pixelRatio: 2),
       );
       try {
-        final expectedGolden = name.startsWith('flows-history')
-            ? 'italia90-history-reference/$name.png'
-            : 'italia90-reference/${reference['corrected_expected'] ?? '$name.png'}';
+        final expectedGolden =
+            referenceCorrections[name] ??
+            (name.startsWith('flows-history')
+                ? 'italia90-history-reference/$name.png'
+                : 'italia90-reference/${reference['corrected_expected'] ?? '$name.png'}');
         await expectLater(
           image,
           matchesGoldenFile(
