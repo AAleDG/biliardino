@@ -1,0 +1,201 @@
+{
+  "candidate": "ranking-award-tickets-r1",
+  "date": "2026-10-13",
+  "branch": "codex/runtime-style-selection",
+  "baseline": "70d720ac8a867284538849b179739f8921f5ff05",
+  "status": "approved implementation; awaiting primary-branch landing",
+  "runtime_assets_added": [],
+  "sources": [
+    {
+      "file": "lib/widgets/design/ranking_award_ticket_artwork.dart",
+      "sha256": "47f879ba609c28dfb4aeedbff2901439e75a5b70f6855b7a717622fa35abdc95"
+    },
+    {
+      "file": "lib/widgets/design/ranking_award_ticket.dart",
+      "sha256": "baf1561070fbed1fc293d41e6bb1874528b4f6c61dc7ae1192427bd76fe2c915"
+    },
+    {
+      "file": "lib/widgets/design/ticket_perforation.dart",
+      "sha256": "fe62f15d4100ec73fcf670aa1de79fcef0c537be33fbd1b0756a924a7be4253f"
+    },
+    {
+      "file": "lib/widgets/design/pass_ticket.dart",
+      "sha256": "35e0a2867fce192f4a35c674840b0d97af5b0c4097fda7522434319453c1c965"
+    },
+    {
+      "file": "lib/widgets/design/ranking_badges.dart",
+      "sha256": "8c5d14a55ee20bbc5c97dabc39ecc9062f7af64e139cf94c2bc3de068e4c85b2"
+    },
+    {
+      "file": "lib/widgets/design/ranking_podium.dart",
+      "sha256": "d012d5f6f2af5a366376ae17b3c60cee628c069b4431b3257fe269543cdb3765"
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "tickets-normal.png",
+      "kind": "production-component specimen; synthetic fixture",
+      "source_sha256": "5bd4ec6cb2283f4ca0f5321f87c83068938bda8aa8ee2cdf3754ea3194855986",
+      "source_dimensions": [
+        1206,
+        2100
+      ],
+      "crop": [
+        0,
+        0,
+        1206,
+        1155
+      ],
+      "pixel_ratio": 3,
+      "sha256": "0be60f6a89a9fb39af2a5a1d2a7c31f22cef0455bd2cff5e2c6a4a0a12491715"
+    },
+    {
+      "file": "tickets-large.png",
+      "kind": "production-component specimen; synthetic fixture",
+      "source_sha256": "078262aca598469ffb6a5f97ff5ff40271977b3ebf8b9a7ad326f9ba6f2acd9c",
+      "source_dimensions": [
+        960,
+        3300
+      ],
+      "crop": [
+        0,
+        0,
+        960,
+        2355
+      ],
+      "pixel_ratio": 3,
+      "sha256": "3d7a00b701dab36302fc6d0808f438610116197c6100595180da689ebf40f62f"
+    },
+    {
+      "file": "tickets-long-pair.png",
+      "kind": "production-component specimen; synthetic fixture",
+      "source_sha256": "7e7e71bf24d612939782f5cf78df3635e65235de17b792a00274ee11936a5973",
+      "source_dimensions": [
+        1206,
+        2550
+      ],
+      "crop": [
+        0,
+        0,
+        1206,
+        708
+      ],
+      "pixel_ratio": 3,
+      "sha256": "d76598bdaf11d5217330ed4ddfdcf95b4fae754e45bb8b99b1381bb7aaa37889"
+    },
+    {
+      "file": "ticket-artwork-isolated.png",
+      "kind": "isolated painter",
+      "dimensions": [
+        1110,
+        720
+      ],
+      "sha256": "e90d25bf7326768f6fdef4f46b6d57dcbacefe79888afc8e791f237c702ebc8d"
+    },
+    {
+      "file": "native-final-preview.png",
+      "kind": "native simulator screenshot",
+      "dimensions": [
+        1320,
+        2868
+      ],
+      "sha256": "34464c91bf62939e3aa6eb6b2962e8c0efd901c133dc3147d77c5e7db063dbb5"
+    },
+    {
+      "file": "native-pair-tickets.png",
+      "kind": "native simulator screenshot",
+      "dimensions": [
+        1320,
+        2868
+      ],
+      "sha256": "60eaeab1d0c45406c68fbec52ccb5b5b9d7a74af65983f1680cca2f0d62e5311"
+    },
+    {
+      "file": "native-large-scroll.png",
+      "kind": "native simulator screenshot",
+      "dimensions": [
+        1320,
+        2868
+      ],
+      "sha256": "65023a1601654029b8ad12f8a57e73af128da7095bc5e7063e44575bc430a44d"
+    },
+    {
+      "file": "native-altro.png",
+      "kind": "native simulator screenshot",
+      "dimensions": [
+        1320,
+        2868
+      ],
+      "sha256": "54ee9602eeea16a9b20437ecff819e351bea70d178c8bfb6b9f62217b27d9af0"
+    },
+    {
+      "file": "native-data.png",
+      "kind": "native simulator screenshot",
+      "dimensions": [
+        1320,
+        2868
+      ],
+      "sha256": "fa5436c0ed098bd0d04242bf7f6eb4c21d9be3d8c7b14806fb5c94caf81a3a36"
+    },
+    {
+      "file": "native-italia-ranking.png",
+      "kind": "native simulator screenshot",
+      "dimensions": [
+        1320,
+        2868
+      ],
+      "sha256": "d6f8b53d9796261312a498d2778cd534247147ef2b801383c9a0417b8d586378"
+    },
+    {
+      "file": "native-tickets-closeup.png",
+      "kind": "native screenshot crop; no retouching or resizing",
+      "source": "native-final-preview.png",
+      "crop": [
+        24,
+        1377,
+        1296,
+        2472
+      ],
+      "sha256": "4ea38af09d41c16bdf2892267d6846f8d859f1b13c3ea4a7ddd6b1740caf1044"
+    },
+    {
+      "file": "selected-concept.png",
+      "kind": "user-selected concept 3; CLIProxyAPI gpt-image-2; review only",
+      "sha256": "c768d9f5e515493927bcb58ef1ef1fccefc3a1f46bf8ccee22a765b8339508c2"
+    },
+    {
+      "file": "selected-concept-prompt.txt",
+      "kind": "exact original prompt",
+      "sha256": "3887138996de289a4c10e4f9597dc637d87ba6340ac540d9362d4a3b985c36b9"
+    }
+  ],
+  "native": {
+    "device": "iPhone 17 Pro Max",
+    "ios": "26.5",
+    "udid": "9BD8A107-8FB1-4B79-83FC-9400DE997961",
+    "bundle": "com.biliardino.runtime-style.qa",
+    "production_flutter_resources_identical": 29,
+    "fixture": "existing isolated QA data; one reversible pair match added to reach existing three-game badge threshold, then removed",
+    "original_records_restored": {
+      "players": 8,
+      "matches": 9,
+      "settings": 4
+    },
+    "content_size_restored": "large",
+    "excluded": [
+      "landscape",
+      "VoiceOver",
+      "Reduce Motion",
+      "performance expansion"
+    ]
+  },
+  "approval": {
+    "concept": 3,
+    "painter": "approved by user after exact-version native preview",
+    "approved_at": "2026-10-13",
+    "recorded_at_utc": "2026-10-13T09:55:12Z",
+    "user_response": "approved",
+    "painter_sha256": "47f879ba609c28dfb4aeedbff2901439e75a5b70f6855b7a717622fa35abdc95",
+    "reviewed_preview": "native-tickets-closeup.png"
+  }
+}

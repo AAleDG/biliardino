@@ -6,6 +6,7 @@ import 'package:biliardino/models/ranking_stats.dart';
 import 'package:biliardino/models/team_leaderboard_stats.dart';
 import 'package:biliardino/theme/app_theme.dart';
 import 'package:biliardino/widgets/design/ranking_podium.dart';
+import 'package:biliardino/widgets/design/ranking_award_ticket.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -73,7 +74,7 @@ void main() {
               PlayerBadge(
                 code: award.$1,
                 label: award.$2,
-                description: award.$2,
+                description: 'Descrizione di ${award.$2}',
               ),
           ];
           final alex = entrants.first.player.copyWith(name: 'Alex');
@@ -99,21 +100,20 @@ void main() {
                   badges: badges,
                 );
           String? opened;
-          await tester.pumpWidget(
-            MaterialApp(
-              theme: AppTheme.southAfrica(),
-              home: Scaffold(
-                body: SingleChildScrollView(
-                  child: RankingPodium(
-                    top: [stats],
-                    metricLabel: (_) =>
-                        longMetric ? '12345678901234567890 pt' : '9 pt',
-                    onOpen: (id) => opened = id,
-                  ),
+          Widget podiumApp(RankingStats entry) => MaterialApp(
+            theme: AppTheme.southAfrica(),
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: RankingPodium(
+                  top: [entry],
+                  metricLabel: (_) =>
+                      longMetric ? '12345678901234567890 pt' : '9 pt',
+                  onOpen: (id) => opened = id,
                 ),
               ),
             ),
           );
+          await tester.pumpWidget(podiumApp(stats));
           final ctx = tester.element(find.byType(Scaffold));
           await tester.runAsync(
             () => precacheImage(
@@ -130,6 +130,9 @@ void main() {
             expect(find.text(badge.label), findsOneWidget);
           }
           if (!longMetric) {
+            for (final badge in badges.skip(2)) {
+              expect(find.text(badge.description), findsOneWidget);
+            }
             expect(
               tester.getTopLeft(find.text('Presenza Fissa')).dy,
               greaterThan(tester.getBottomRight(pedestal).dy),
@@ -143,6 +146,20 @@ void main() {
               ),
             );
           }
+          if (!longMetric) {
+            tester.platformDispatcher.textScaleFactorTestValue = 2;
+            addTearDown(
+              tester.platformDispatcher.clearTextScaleFactorTestValue,
+            );
+            await tester.pumpAndSettle();
+            expect(pedestal, findsNothing);
+            for (final badge in badges) {
+              expect(find.text(badge.label), findsOneWidget);
+            }
+            await tester.ensureVisible(
+              find.byKey(ValueKey('leaderboard-podium-${stats.id}')),
+            );
+          }
           await tester.tap(
             find.byKey(ValueKey('leaderboard-podium-${stats.id}')),
           );
@@ -151,6 +168,55 @@ void main() {
         },
       );
     }
+  }
+  for (final textScale in [1.0, 2.0]) {
+    testWidgets(
+      'pair award ticket is readable at narrow width and $textScale text',
+      (tester) async {
+        await loadDesignFonts();
+        tester.view.physicalSize = const Size(343, 568);
+        tester.view.devicePixelRatio = 1;
+        tester.platformDispatcher.textScaleFactorTestValue = textScale;
+        addTearDown(tester.view.reset);
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        const badge = PlayerBadge(
+          code: 'grinder',
+          label: 'Presenza Fissa',
+          description: 'È la coppia più presente nelle partite 2vs2.',
+        );
+        final stats = TeamLeaderboardStats(
+          id: 'pair',
+          players: [
+            entrants[0].player.copyWith(name: 'A'),
+            entrants[1].player.copyWith(name: 'B'),
+          ],
+          games: 3,
+          wins: 3,
+          losses: 0,
+          goalsScored: 4,
+          badges: const [badge],
+        );
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.southAfrica(),
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: RankingAwardTicket(stats: stats, badges: stats.badges),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('A + B'), findsOneWidget);
+        expect(find.text(badge.label), findsOneWidget);
+        await tester.ensureVisible(find.text(badge.description));
+        expect(tester.takeException(), isNull);
+        expect(
+          tester.getBottomRight(find.text(badge.description)).dy,
+          lessThanOrEqualTo(568),
+        );
+      },
+    );
   }
   testWidgets(
     'Podium waits for first visibility and settles on live reduced motion',
