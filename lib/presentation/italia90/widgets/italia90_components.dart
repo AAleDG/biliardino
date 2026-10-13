@@ -26,11 +26,15 @@ class BrandMasthead extends StatelessWidget {
     children: [
       if (leading != null) ...[leading!, const SizedBox(width: 4)],
       Expanded(
-        child: Text(
-          'BILIARDINO',
-          maxLines: 1,
-          softWrap: false,
-          style: compact ? Italia90.heading : Italia90.display,
+        child: FittedBox(
+          alignment: Alignment.centerLeft,
+          fit: BoxFit.scaleDown,
+          child: Text(
+            'BILIARDINO',
+            maxLines: 1,
+            softWrap: false,
+            style: compact ? Italia90.heading : Italia90.display,
+          ),
         ),
       ),
       if (actions.isNotEmpty) ...[const SizedBox(width: 4), ...actions],

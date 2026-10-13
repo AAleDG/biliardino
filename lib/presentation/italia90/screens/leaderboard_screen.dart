@@ -12,6 +12,7 @@ import '../../../services/leaderboard_csv_service.dart';
 import '../theme/italia90_tokens.dart';
 import '../widgets/avatar.dart';
 import '../widgets/design/ranking_podium.dart';
+import '../widgets/design/ranking_avatar.dart';
 import '../widgets/italia90_components.dart';
 import '../widgets/italia90_page.dart';
 import '../widgets/italia_graphic_backdrop.dart';
@@ -67,7 +68,6 @@ class LeaderboardScreen extends StatelessWidget {
                 )
                 .toList(growable: false);
       final largeText = MediaQuery.textScalerOf(context).scale(16) > 22;
-      final tabHeight = largeText ? 60.0 : 40.0;
       return RankingTabs(
         child: Scaffold(
           body: ItaliaGraphicBackdrop(
@@ -128,37 +128,13 @@ class LeaderboardScreen extends StatelessWidget {
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
-                    child: Material(
-                      color: Italia90.panel,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          Italia90.controlRadius,
-                        ),
-                        side: const BorderSide(color: Italia90.outline),
-                      ),
-                      child: TabBar(
-                        dividerColor: Colors.transparent,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        labelColor: Colors.white,
-                        unselectedLabelColor: Italia90.ink,
-                        labelStyle: Italia90.label,
-                        indicator: BoxDecoration(
-                          color: Italia90.teamOne,
-                          borderRadius: BorderRadius.circular(
-                            Italia90.controlRadius,
-                          ),
-                        ),
-                        tabs: [
-                          Tab(text: 'Generale', height: tabHeight),
-                          Tab(text: 'Marcatori', height: tabHeight),
-                        ],
-                      ),
-                    ),
+                    child: _LeaderboardTabSelector(largeText: largeText),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: _LeaderboardModeSelector(
                       selectedMode: state.selectedMode,
+                      largeText: largeText,
                       onChanged: context.read<LeaderboardCubit>().selectMode,
                     ),
                   ),
@@ -212,15 +188,17 @@ String _teamGoalsLabel(int goals) => '$goals gol';
 class _LeaderboardModeSelector extends StatelessWidget {
   const _LeaderboardModeSelector({
     required this.selectedMode,
+    required this.largeText,
     required this.onChanged,
   });
 
   final MatchMode selectedMode;
+  final bool largeText;
   final ValueChanged<MatchMode> onChanged;
 
   @override
   Widget build(BuildContext context) => ConstrainedBox(
-    constraints: const BoxConstraints(maxWidth: 236),
+    constraints: BoxConstraints(maxWidth: largeText ? 320 : 236),
     child: Semantics(
       container: true,
       label: 'Modalita classifica',
@@ -240,9 +218,9 @@ class _LeaderboardModeSelector extends StatelessWidget {
         onSelectionChanged: (selection) => onChanged(selection.single),
         showSelectedIcon: false,
         style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(Size(0, 36)),
-          padding: const WidgetStatePropertyAll(
-            EdgeInsets.symmetric(horizontal: 18),
+          minimumSize: WidgetStatePropertyAll(Size(0, largeText ? 56 : 36)),
+          padding: WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: largeText ? 12 : 18),
           ),
           textStyle: const WidgetStatePropertyAll(Italia90.label),
           backgroundColor: WidgetStateProperty.resolveWith(
@@ -267,6 +245,117 @@ class _LeaderboardModeSelector extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Keeps both ranking tabs fully readable at accessibility-extra-large sizes.
+///
+/// The ordinary tab bar remains unchanged for the approved normal layout. At
+/// large text it becomes a vertical pair of full-width actions, while the
+/// existing DefaultTabController and TabBarView continue to own navigation.
+class _LeaderboardTabSelector extends StatelessWidget {
+  const _LeaderboardTabSelector({required this.largeText});
+
+  final bool largeText;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = DefaultTabController.of(context);
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        if (!largeText) {
+          return Material(
+            color: Italia90.panel,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Italia90.controlRadius),
+              side: const BorderSide(color: Italia90.outline),
+            ),
+            child: const TabBar(
+              dividerColor: Colors.transparent,
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelColor: Colors.white,
+              unselectedLabelColor: Italia90.ink,
+              labelStyle: Italia90.label,
+              indicator: BoxDecoration(
+                color: Italia90.teamOne,
+                borderRadius: BorderRadius.all(
+                  Radius.circular(Italia90.controlRadius),
+                ),
+              ),
+              tabs: [
+                Tab(text: 'Generale', height: 40),
+                Tab(text: 'Marcatori', height: 40),
+              ],
+            ),
+          );
+        }
+
+        return DecoratedBox(
+          decoration: ShapeDecoration(
+            color: Italia90.panel,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Italia90.controlRadius),
+              side: const BorderSide(color: Italia90.outline),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _largeTextTab(
+                  controller: controller,
+                  index: 0,
+                  label: 'Generale',
+                ),
+                const SizedBox(height: 4),
+                _largeTextTab(
+                  controller: controller,
+                  index: 1,
+                  label: 'Marcatori',
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _largeTextTab({
+    required TabController controller,
+    required int index,
+    required String label,
+  }) {
+    final selected = controller.index == index;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      hint: selected ? 'Scheda selezionata' : 'Mostra la scheda $label',
+      onTap: () => controller.animateTo(index),
+      child: ExcludeSemantics(
+        child: Material(
+          color: selected ? Italia90.teamOne : Italia90.panel,
+          borderRadius: BorderRadius.circular(Italia90.controlRadius),
+          child: InkWell(
+            onTap: () => controller.animateTo(index),
+            borderRadius: BorderRadius.circular(Italia90.controlRadius),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: Italia90.label.copyWith(
+                  color: selected ? Colors.white : Italia90.ink,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 Color _rankColor(int rank) => switch (rank) {
@@ -311,7 +400,10 @@ class _LeaderboardPane extends StatelessWidget {
         children: [
           RankingPodium(
             entries: podiumEntries,
-            showArtwork: true,
+            // The impact painter is still a review candidate. The approved
+            // poster backdrop and live Flutter cards provide the production
+            // composition until that artwork receives explicit approval.
+            showArtwork: false,
             onOpen: (id) {
               if (teamRanked.any((stats) => stats.id == id)) {
                 openPairProfile(context, id);
@@ -620,6 +712,7 @@ class _TeamLedgerRow extends StatelessWidget {
     container: true,
     button: true,
     enabled: true,
+    hint: 'Apri il profilo della coppia',
     label:
         'Posizione $rank: ${stats.name}. ${stats.games} partite, '
         '${stats.goalsScored} gol, ${stats.wins} vittorie, ${stats.points} punti.',
@@ -633,18 +726,11 @@ class _TeamLedgerRow extends StatelessWidget {
             children: [
               _TeamRankMarker(rank: rank, compact: compact),
               const SizedBox(width: 8),
-              PlayerAvatar(
-                name: stats.players.first.name,
-                size: 28,
-                color: _avatarColor(rank),
-                foregroundColor: Colors.white,
-              ),
+              RankingAvatar(name: stats.players.first.name, size: 28),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   stats.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: Italia90.title.copyWith(fontSize: compact ? 15 : 16),
                 ),
               ),
@@ -671,13 +757,6 @@ class _TeamLedgerRow extends StatelessWidget {
       ),
     ),
   );
-
-  static Color _avatarColor(int rank) => switch (rank) {
-    1 => Italia90.red,
-    2 => Italia90.teamOne,
-    3 => Italia90.green,
-    _ => Italia90.primary,
-  };
 }
 
 class _TeamRankMarker extends StatelessWidget {

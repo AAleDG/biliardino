@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../models/player_stats.dart';
 import '../../theme/italia90_tokens.dart';
-import '../../widgets/avatar.dart';
 import '../../widgets/design/ranking_badges.dart';
+import '../../widgets/design/ranking_avatar.dart';
 
 /// Responsive row shared by the general and goals ranking ledgers.
 class RankingRow extends StatelessWidget {
@@ -28,6 +28,7 @@ class RankingRow extends StatelessWidget {
     container: true,
     button: true,
     enabled: true,
+    hint: 'Apri il profilo',
     label:
         'Posizione $rank: ${stats.player.name}. $metric. $detail.'
         '${stats.badges.isEmpty ? '' : ' ${stats.badges.map((badge) => badge.label).join(', ')}.'}',
@@ -53,11 +54,7 @@ class RankingRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  PlayerAvatar(
-                    name: stats.player.name,
-                    size: 40,
-                    color: _rankColor(rank),
-                  ),
+                  RankingAvatar(name: stats.player.name, size: 40),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -65,8 +62,6 @@ class RankingRow extends StatelessWidget {
                       children: [
                         Text(
                           stats.player.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                           style: Italia90.title.copyWith(fontSize: 18),
                         ),
                         if (compact)
@@ -155,13 +150,6 @@ class RankingRow extends StatelessWidget {
       ),
     ),
   );
-
-  static Color _rankColor(int rank) => switch (rank) {
-    1 => Italia90.red,
-    2 => Italia90.teamOne,
-    3 => Italia90.teamTwo,
-    _ => Italia90.primary,
-  };
 }
 
 class _Metric extends StatelessWidget {
