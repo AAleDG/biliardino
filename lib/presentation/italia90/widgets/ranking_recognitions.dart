@@ -46,49 +46,13 @@ class RankingRecognitions extends StatelessWidget {
               spacing: 12,
               runSpacing: 4,
               children: [
-                for (final item in items)
-                  SizedBox(
-                    key: ValueKey(
-                      '$keyPrefix-achievement-${item.ownerId}-${item.badge.code}',
-                    ),
+                for (var index = 0; index < items.length; index++)
+                  _RecognitionItem(
+                    key: ValueKey('$keyPrefix-achievement-$index'),
+                    item: items[index],
                     width: width,
-                    child: Tooltip(
-                      message: '${item.badge.description} ${item.ownerName}',
-                      excludeFromSemantics: true,
-                      child: Semantics(
-                        label: '${item.badge.label}: ${item.ownerName}',
-                        excludeSemantics: true,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Italia90.subtle,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                _iconFor(item.badge),
-                                size: 20,
-                                color: item.badge.code == 'leader'
-                                    ? Italia90.success
-                                    : Italia90.primary,
-                              ),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  item.badge.label,
-                                  style: Italia90.label.copyWith(fontSize: 14),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                    itemKey:
+                        '$keyPrefix-achievement-${items[index].ownerId}-${items[index].badge.code}',
                   ),
               ],
             );
@@ -106,4 +70,84 @@ class RankingRecognitions extends StatelessWidget {
     'rivalry' => Icons.sports_soccer,
     _ => Icons.local_fire_department_outlined,
   };
+}
+
+class _RecognitionItem extends StatelessWidget {
+  const _RecognitionItem({
+    super.key,
+    required this.item,
+    required this.width,
+    required this.itemKey,
+  });
+
+  final RankingRecognition item;
+  final double width;
+  final String itemKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final visibleLabel = '${item.badge.label}: ${item.ownerName}';
+    final semanticsLabel = '$visibleLabel. ${item.badge.description}';
+    return SizedBox(
+      key: ValueKey(itemKey),
+      width: width,
+      child: Tooltip(
+        message: semanticsLabel,
+        excludeFromSemantics: true,
+        child: Semantics(
+          container: true,
+          label: semanticsLabel,
+          excludeSemantics: true,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Italia90.subtle, width: 2),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Icon(
+                    RankingRecognitions._iconFor(item.badge),
+                    size: 20,
+                    color: item.badge.code == 'leader'
+                        ? Italia90.success
+                        : Italia90.primary,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.badge.label,
+                        style: Italia90.label.copyWith(fontSize: 14),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.ownerName,
+                        style: Italia90.body.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        item.badge.description,
+                        style: Italia90.caption.copyWith(fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

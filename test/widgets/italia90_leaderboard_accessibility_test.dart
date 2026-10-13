@@ -89,45 +89,47 @@ void main() {
           );
         }
         expect(find.text('Alessandro Antonio Delgaudio'), findsWidgets);
-        expect(find.text('Capoclassifica'), findsWidgets);
+        expect(
+          find.text('Capoclassifica'),
+          findsNothing,
+          reason: 'Recognition content belongs to the dedicated section.',
+        );
       },
     );
   }
 
-  testWidgets('Italia podium exposes profile and recognition semantics', (
-    tester,
-  ) async {
-    final semanticsHandle = tester.ensureSemantics();
-    _setViewport(tester, const Size(402, 874));
-    final entry = _entries().first;
+  testWidgets(
+    'Italia podium exposes profile semantics separately from recognitions',
+    (tester) async {
+      final semanticsHandle = tester.ensureSemantics();
+      _setViewport(tester, const Size(402, 874));
+      final entry = _entries().first;
 
-    await tester.pumpWidget(_podiumApp([entry]));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(_podiumApp([entry]));
+      await tester.pumpAndSettle();
 
-    expect(
-      tester.getSemantics(
-        find.byKey(ValueKey('leaderboard-podium-${entry.id}')),
-      ),
-      isSemantics(
-        label:
-            'Posizione 1: Alessandro Antonio Delgaudio. 12 pt. '
-            'Capoclassifica.',
-        hint: 'Apri il profilo',
-        isButton: true,
-        hasTapAction: true,
-      ),
-    );
-    expect(
-      tester.getSemantics(
-        find.byKey(const ValueKey('leaderboard-achievements')),
-      ),
-      isSemantics(
-        label: 'Riconoscimenti\nCapoclassifica: Alessandro Antonio Delgaudio',
-      ),
-    );
-    expect(tester.takeException(), isNull);
-    semanticsHandle.dispose();
-  });
+      expect(
+        tester.getSemantics(
+          find.byKey(ValueKey('leaderboard-podium-${entry.id}')),
+        ),
+        isSemantics(
+          label: 'Posizione 1: Alessandro Antonio Delgaudio. 12 pt.',
+          hint: 'Apri il profilo',
+          isButton: true,
+          hasTapAction: true,
+        ),
+      );
+      expect(
+        find.descendant(
+          of: find.byKey(ValueKey('leaderboard-podium-${entry.id}')),
+          matching: find.byKey(const ValueKey('leaderboard-achievements')),
+        ),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+      semanticsHandle.dispose();
+    },
+  );
 
   testWidgets(
     'Italia podium settles immediately when animations are disabled',

@@ -41,6 +41,18 @@ void main() {
       'test/goldens/italia90-reference/provenance.json',
     ).readAsStringSync(),
   ) as Map<String, dynamic>;
+  const awardRecognitionAcceptanceNames = {
+    'flows-standings',
+    'flows-standings-intesa',
+    'flows-standings-large',
+    'flows-standings-0',
+    'flows-standings-1',
+    'flows-standings-2',
+    'flows-scorers',
+    'supplement-leaderboard-compact-large',
+    'supplement-leaderboard-long-name-normal',
+    'supplement-leaderboard-long-name-compact-large',
+  };
   for (final reference in references['references'] as List) {
     final name = reference['name'] as String;
     // Issue 17 intentionally replaces the live composition; donor PNGs stay frozen.
@@ -49,10 +61,14 @@ void main() {
     // PNGs stay frozen and the new stage has dedicated acceptance goldens.
     final isTeamAssignmentAcceptance =
         name == 'core-setup' || name.startsWith('flows-setup-');
+    final isAwardRecognitionAcceptance =
+        awardRecognitionAcceptanceNames.contains(name);
     final testTitle = isLiveScoreAcceptance
         ? 'Italia live-score acceptance'
         : isTeamAssignmentAcceptance
             ? 'Italia team-assignment acceptance'
+            : isAwardRecognitionAcceptance
+                ? 'Italia award-recognition acceptance'
             : 'Italia donor parity';
     testWidgets('$testTitle: $name', (tester) async {
       final metadata = jsonDecode(
@@ -230,6 +246,8 @@ void main() {
                     ? 'italia90-issue-17-reference/$name.png'
                     : isTeamAssignmentAcceptance
                         ? 'italia90-issue-15-reference/$name.png'
+                        : isAwardRecognitionAcceptance
+                            ? 'italia90-issue-14-reference/${reference['corrected_expected'] ?? '$name.png'}'
                         : expectedGolden,
           ),
         );
