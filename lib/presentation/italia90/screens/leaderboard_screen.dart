@@ -12,6 +12,8 @@ import '../../../services/leaderboard_csv_service.dart';
 import '../theme/italia90_tokens.dart';
 import '../widgets/avatar.dart';
 import '../widgets/design/ranking_podium.dart';
+import '../widgets/design/ranking_avatar.dart';
+import '../widgets/design/ranking_metrics.dart';
 import '../widgets/italia90_components.dart';
 import '../widgets/italia90_page.dart';
 import '../widgets/italia_graphic_backdrop.dart';
@@ -24,181 +26,117 @@ class LeaderboardScreen extends StatelessWidget {
   @override
   Widget build(
     BuildContext context,
-  ) => BlocBuilder<LeaderboardCubit, LeaderboardState>(
-    builder: (context, state) {
-      final rankedByPoints = state.general;
-      final rankedByGoals = state.scorers;
-      final podiumByPoints = state.selectedMode == MatchMode.twoVsTwo
-          ? state.teamGeneral
-                .take(3)
-                .map(
-                  (stats) => RankingPodiumEntry.team(
-                    stats,
-                    metric: _teamPointsLabel(stats.points),
-                  ),
-                )
-                .toList(growable: false)
-          : rankedByPoints
-                .take(3)
-                .map(
-                  (stats) => RankingPodiumEntry.player(
-                    stats,
-                    metric: _pointsLabel(stats),
-                  ),
-                )
-                .toList(growable: false);
-      final podiumByGoals = state.selectedMode == MatchMode.twoVsTwo
-          ? state.teamScorers
-                .take(3)
-                .map(
-                  (stats) => RankingPodiumEntry.team(
-                    stats,
-                    metric: _teamGoalsLabel(stats.goalsScored),
-                  ),
-                )
-                .toList(growable: false)
-          : rankedByGoals
-                .take(3)
-                .map(
-                  (stats) => RankingPodiumEntry.player(
-                    stats,
-                    metric: _goalsLabel(stats),
-                  ),
-                )
-                .toList(growable: false);
-      final largeText = MediaQuery.textScalerOf(context).scale(16) > 22;
-      final tabHeight = largeText ? 60.0 : 40.0;
-      return RankingTabs(
-        child: Scaffold(
-          body: ItaliaGraphicBackdrop(
-            variant: ItaliaBackdropVariant.working,
-            child: SafeArea(
-              child: Column(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(20, 12, 20, 0),
-                    child: ItaliaCompactMasthead(
-                      semanticsKey: ValueKey('leaderboard-masthead'),
-                      footballKey: ValueKey('leaderboard-brand-football'),
+  ) =>
+      BlocBuilder<LeaderboardCubit, LeaderboardState>(
+        builder: (context, state) {
+          final rankedByPoints = state.general;
+          final rankedByGoals = state.scorers;
+          final podiumByPoints = state.selectedMode == MatchMode.twoVsTwo
+              ? state.teamGeneral
+                  .take(3)
+                  .map(
+                    (stats) => RankingPodiumEntry.team(
+                      stats,
+                      metric: _teamPointsLabel(stats.points),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: Semantics(
-                            header: true,
-                            child: FittedBox(
-                              alignment: Alignment.centerLeft,
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                'CLASSIFICA',
-                                style: Italia90.display.copyWith(
-                                  fontSize: 56,
-                                  height: 0.96,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Builder(
-                          builder: (buttonContext) => IconButton(
-                            key: const ValueKey('leaderboard-export-csv'),
-                            icon: const Icon(Icons.ios_share),
-                            tooltip: 'Esporta CSV',
-                            onPressed:
-                                (state.selectedMode == MatchMode.twoVsTwo
-                                    ? state.teamGeneral.isEmpty
-                                    : rankedByPoints.isEmpty)
-                                ? null
-                                : () => _shareLeaderboardCsv(
-                                    context: buttonContext,
-                                    ranked: rankedByPoints,
-                                    teams:
-                                        state.selectedMode == MatchMode.twoVsTwo
-                                        ? state.teamGeneral
-                                        : null,
-                                  ),
-                          ),
-                        ),
-                      ],
+                  )
+                  .toList(growable: false)
+              : rankedByPoints
+                  .take(3)
+                  .map(
+                    (stats) => RankingPodiumEntry.player(
+                      stats,
+                      metric: _pointsLabel(stats),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
-                    child: Material(
-                      color: Italia90.panel,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          Italia90.controlRadius,
-                        ),
-                        side: const BorderSide(color: Italia90.outline),
-                      ),
-                      child: TabBar(
-                        dividerColor: Colors.transparent,
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        labelColor: Colors.white,
-                        unselectedLabelColor: Italia90.ink,
-                        labelStyle: Italia90.label,
-                        indicator: BoxDecoration(
-                          color: Italia90.teamOne,
-                          borderRadius: BorderRadius.circular(
-                            Italia90.controlRadius,
-                          ),
-                        ),
-                        tabs: [
-                          Tab(text: 'Generale', height: tabHeight),
-                          Tab(text: 'Marcatori', height: tabHeight),
-                        ],
-                      ),
+                  )
+                  .toList(growable: false);
+          final podiumByGoals = state.selectedMode == MatchMode.twoVsTwo
+              ? state.teamScorers
+                  .take(3)
+                  .map(
+                    (stats) => RankingPodiumEntry.team(
+                      stats,
+                      metric: _teamGoalsLabel(stats.goalsScored),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: _LeaderboardModeSelector(
-                      selectedMode: state.selectedMode,
-                      onChanged: context.read<LeaderboardCubit>().selectMode,
+                  )
+                  .toList(growable: false)
+              : rankedByGoals
+                  .take(3)
+                  .map(
+                    (stats) => RankingPodiumEntry.player(
+                      stats,
+                      metric: _goalsLabel(stats),
                     ),
-                  ),
-                  Expanded(
-                    child: TabBarView(
-                      children: [
-                        _LeaderboardPane(
-                          ranked: rankedByPoints,
-                          podiumEntries: podiumByPoints,
-                          teamRanked: state.selectedMode == MatchMode.twoVsTwo
-                              ? state.teamGeneral
-                              : const [],
-                          sectionLabel: 'CLASSIFICA COMPLETA',
-                          emptyTitle: 'Nessuna partita giocata',
-                          emptyDescription:
-                              'Registra una partita per vedere la classifica.',
+                  )
+                  .toList(growable: false);
+          final largeText = MediaQuery.textScalerOf(context).scale(16) > 22;
+          final header = _LeaderboardHeader(
+            largeText: largeText,
+            selectedMode: state.selectedMode,
+            canExport: state.selectedMode == MatchMode.twoVsTwo
+                ? state.teamGeneral.isNotEmpty
+                : rankedByPoints.isNotEmpty,
+            ranked: rankedByPoints,
+            teams: state.selectedMode == MatchMode.twoVsTwo
+                ? state.teamGeneral
+                : null,
+            onModeChanged: context.read<LeaderboardCubit>().selectMode,
+          );
+          final panes = TabBarView(
+            children: [
+              _LeaderboardPane(
+                ranked: rankedByPoints,
+                podiumEntries: podiumByPoints,
+                teamRanked: state.selectedMode == MatchMode.twoVsTwo
+                    ? state.teamGeneral
+                    : const [],
+                sectionLabel: 'CLASSIFICA COMPLETA',
+                emptyTitle: 'Nessuna partita giocata',
+                emptyDescription:
+                    'Registra una partita per vedere la classifica.',
+              ),
+              _LeaderboardPane(
+                ranked: rankedByGoals,
+                podiumEntries: podiumByGoals,
+                teamRanked: state.selectedMode == MatchMode.twoVsTwo
+                    ? state.teamScorers
+                    : const [],
+                sectionLabel: 'CLASSIFICA MARCATORI',
+                emptyTitle: 'Nessun marcatore disponibile',
+                emptyDescription:
+                    'I gol compariranno qui dalle partite salvate con assegnazione marcatore.',
+                emptyIcon: Icons.sports_soccer,
+              ),
+            ],
+          );
+          final useScrollableHeader =
+              largeText || MediaQuery.sizeOf(context).height < 500;
+          return RankingTabs(
+            child: Scaffold(
+              body: ItaliaGraphicBackdrop(
+                variant: ItaliaBackdropVariant.working,
+                child: SafeArea(
+                  child: useScrollableHeader
+                      ? NestedScrollView(
+                          key: const ValueKey('leaderboard-shell-scroll'),
+                          headerSliverBuilder: (context, innerBoxIsScrolled) =>
+                              [
+                            SliverToBoxAdapter(child: header),
+                          ],
+                          body: panes,
+                        )
+                      : Column(
+                          children: [
+                            header,
+                            Expanded(child: panes),
+                          ],
                         ),
-                        _LeaderboardPane(
-                          ranked: rankedByGoals,
-                          podiumEntries: podiumByGoals,
-                          teamRanked: state.selectedMode == MatchMode.twoVsTwo
-                              ? state.teamScorers
-                              : const [],
-                          sectionLabel: 'CLASSIFICA MARCATORI',
-                          emptyTitle: 'Nessun marcatore disponibile',
-                          emptyDescription:
-                              'I gol compariranno qui dalle partite salvate con assegnazione marcatore.',
-                          emptyIcon: Icons.sports_soccer,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       );
-    },
-  );
 }
 
 String _pointsLabel(PlayerStats stats) => '${stats.points} pt';
@@ -209,72 +147,266 @@ String _teamPointsLabel(int points) => '$points pt';
 
 String _teamGoalsLabel(int goals) => '$goals gol';
 
+class _LeaderboardHeader extends StatelessWidget {
+  const _LeaderboardHeader({
+    required this.largeText,
+    required this.selectedMode,
+    required this.canExport,
+    required this.ranked,
+    required this.teams,
+    required this.onModeChanged,
+  });
+
+  final bool largeText;
+  final MatchMode selectedMode;
+  final bool canExport;
+  final List<PlayerStats> ranked;
+  final List<TeamLeaderboardStats>? teams;
+  final ValueChanged<MatchMode> onModeChanged;
+
+  @override
+  Widget build(BuildContext context) => Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 12, 20, 0),
+            child: ItaliaCompactMasthead(
+              semanticsKey: ValueKey('leaderboard-masthead'),
+              footballKey: ValueKey('leaderboard-brand-football'),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: Semantics(
+                    header: true,
+                    child: FittedBox(
+                      alignment: Alignment.centerLeft,
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'CLASSIFICA',
+                        style: Italia90.display.copyWith(
+                          fontSize: 56,
+                          height: 0.96,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Builder(
+                  builder: (buttonContext) => IconButton(
+                    key: const ValueKey('leaderboard-export-csv'),
+                    icon: const Icon(Icons.ios_share),
+                    tooltip: 'Esporta CSV',
+                    onPressed: !canExport
+                        ? null
+                        : () => _shareLeaderboardCsv(
+                              context: buttonContext,
+                              ranked: ranked,
+                              teams: teams,
+                            ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+            child: _LeaderboardTabSelector(largeText: largeText),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: _LeaderboardModeSelector(
+              selectedMode: selectedMode,
+              largeText: largeText,
+              onChanged: onModeChanged,
+            ),
+          ),
+        ],
+      );
+}
+
 class _LeaderboardModeSelector extends StatelessWidget {
   const _LeaderboardModeSelector({
     required this.selectedMode,
+    required this.largeText,
     required this.onChanged,
   });
 
   final MatchMode selectedMode;
+  final bool largeText;
   final ValueChanged<MatchMode> onChanged;
 
   @override
   Widget build(BuildContext context) => ConstrainedBox(
-    constraints: const BoxConstraints(maxWidth: 236),
-    child: Semantics(
-      container: true,
-      label: 'Modalità classifica',
-      child: SegmentedButton<MatchMode>(
-        key: const ValueKey('leaderboard-mode-selector'),
-        segments: const [
-          ButtonSegment<MatchMode>(
-            value: MatchMode.twoVsTwo,
-            label: Text('2vs2'),
+        constraints: BoxConstraints(maxWidth: largeText ? 320 : 236),
+        child: Semantics(
+          container: true,
+          label: 'Modalità classifica',
+          child: SegmentedButton<MatchMode>(
+            key: const ValueKey('leaderboard-mode-selector'),
+            segments: const [
+              ButtonSegment<MatchMode>(
+                value: MatchMode.twoVsTwo,
+                label: Text('2vs2'),
+              ),
+              ButtonSegment<MatchMode>(
+                value: MatchMode.oneVsOne,
+                label: Text('1vs1'),
+              ),
+            ],
+            selected: {selectedMode},
+            onSelectionChanged: (selection) => onChanged(selection.single),
+            showSelectedIcon: false,
+            style: ButtonStyle(
+              minimumSize: WidgetStatePropertyAll(Size(0, largeText ? 56 : 36)),
+              padding: WidgetStatePropertyAll(
+                EdgeInsets.symmetric(horizontal: largeText ? 12 : 18),
+              ),
+              textStyle: const WidgetStatePropertyAll(Italia90.label),
+              backgroundColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.selected)
+                    ? Italia90.teamOne
+                    : Italia90.panel,
+              ),
+              foregroundColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.selected)
+                    ? Colors.white
+                    : Italia90.ink,
+              ),
+              side: const WidgetStatePropertyAll(
+                BorderSide(color: Italia90.outline),
+              ),
+              shape: WidgetStatePropertyAll(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(Italia90.controlRadius),
+                ),
+              ),
+            ),
           ),
-          ButtonSegment<MatchMode>(
-            value: MatchMode.oneVsOne,
-            label: Text('1vs1'),
-          ),
-        ],
-        selected: {selectedMode},
-        onSelectionChanged: (selection) => onChanged(selection.single),
-        showSelectedIcon: false,
-        style: ButtonStyle(
-          minimumSize: const WidgetStatePropertyAll(Size(0, 36)),
-          padding: const WidgetStatePropertyAll(
-            EdgeInsets.symmetric(horizontal: 18),
-          ),
-          textStyle: const WidgetStatePropertyAll(Italia90.label),
-          backgroundColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.selected)
-                ? Italia90.teamOne
-                : Italia90.panel,
-          ),
-          foregroundColor: WidgetStateProperty.resolveWith(
-            (states) => states.contains(WidgetState.selected)
-                ? Colors.white
-                : Italia90.ink,
-          ),
-          side: const WidgetStatePropertyAll(
-            BorderSide(color: Italia90.outline),
-          ),
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(
+        ),
+      );
+}
+
+/// Keeps both ranking tabs fully readable at accessibility-extra-large sizes.
+///
+/// The ordinary tab bar remains unchanged for the approved normal layout. At
+/// large text it becomes a vertical pair of full-width actions, while the
+/// existing DefaultTabController and TabBarView continue to own navigation.
+class _LeaderboardTabSelector extends StatelessWidget {
+  const _LeaderboardTabSelector({required this.largeText});
+
+  final bool largeText;
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = DefaultTabController.of(context);
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        if (!largeText) {
+          return Material(
+            color: Italia90.panel,
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(Italia90.controlRadius),
+              side: const BorderSide(color: Italia90.outline),
+            ),
+            child: const TabBar(
+              dividerColor: Colors.transparent,
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelColor: Colors.white,
+              unselectedLabelColor: Italia90.ink,
+              labelStyle: Italia90.label,
+              indicator: BoxDecoration(
+                color: Italia90.teamOne,
+                borderRadius: BorderRadius.all(
+                  Radius.circular(Italia90.controlRadius),
+                ),
+              ),
+              tabs: [
+                Tab(text: 'Generale', height: 40),
+                Tab(text: 'Marcatori', height: 40),
+              ],
+            ),
+          );
+        }
+
+        return DecoratedBox(
+          decoration: ShapeDecoration(
+            color: Italia90.panel,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Italia90.controlRadius),
+              side: const BorderSide(color: Italia90.outline),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _largeTextTab(
+                  controller: controller,
+                  index: 0,
+                  label: 'Generale',
+                ),
+                const SizedBox(height: 4),
+                _largeTextTab(
+                  controller: controller,
+                  index: 1,
+                  label: 'Marcatori',
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _largeTextTab({
+    required TabController controller,
+    required int index,
+    required String label,
+  }) {
+    final selected = controller.index == index;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      hint: selected ? 'Scheda selezionata' : 'Mostra la scheda $label',
+      onTap: () => controller.animateTo(index),
+      child: ExcludeSemantics(
+        child: Material(
+          color: selected ? Italia90.teamOne : Italia90.panel,
+          borderRadius: BorderRadius.circular(Italia90.controlRadius),
+          child: InkWell(
+            onTap: () => controller.animateTo(index),
+            borderRadius: BorderRadius.circular(Italia90.controlRadius),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: Italia90.label.copyWith(
+                  color: selected ? Colors.white : Italia90.ink,
+                ),
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 Color _rankColor(int rank) => switch (rank) {
-  1 => Italia90.red,
-  2 => Italia90.teamOne,
-  3 => Italia90.teamTwo,
-  _ => Italia90.primary,
-};
+      1 => Italia90.red,
+      2 => Italia90.teamOne,
+      3 => Italia90.teamTwo,
+      _ => Italia90.primary,
+    };
 
 class _LeaderboardPane extends StatelessWidget {
   const _LeaderboardPane({
@@ -311,7 +443,10 @@ class _LeaderboardPane extends StatelessWidget {
         children: [
           RankingPodium(
             entries: podiumEntries,
-            showArtwork: true,
+            // The impact painter is still a review candidate. The approved
+            // poster backdrop and live Flutter cards provide the production
+            // composition until that artwork receives explicit approval.
+            showArtwork: false,
             onOpen: (id) {
               if (teamRanked.any((stats) => stats.id == id)) {
                 openPairProfile(context, id);
@@ -342,47 +477,47 @@ class _Podium extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      if (top.isEmpty) {
-        return const SizedBox.shrink();
-      }
-      final stacked =
-          constraints.maxWidth < 340 ||
-          MediaQuery.textScalerOf(context).scale(16) > 22;
-      Widget place(int index) => _PodiumPlace(
-        rank: index + 1,
-        stats: top[index],
-        metricLabel: metricLabel,
+        builder: (context, constraints) {
+          if (top.isEmpty) {
+            return const SizedBox.shrink();
+          }
+          final stacked = constraints.maxWidth < 340 ||
+              MediaQuery.textScalerOf(context).scale(16) > 22;
+          Widget place(int index) => _PodiumPlace(
+                rank: index + 1,
+                stats: top[index],
+                metricLabel: metricLabel,
+              );
+          if (stacked) {
+            return Column(
+              children: [
+                for (var i = 0; i < top.length; i++)
+                  Padding(
+                    padding:
+                        EdgeInsets.only(bottom: i == top.length - 1 ? 0 : 12),
+                    child: place(i),
+                  ),
+              ],
+            );
+          }
+          final order = top.length == 3
+              ? [1, 0, 2]
+              : [for (var i = 0; i < top.length; i++) i];
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              for (final i in order)
+                Expanded(
+                  flex: i == 0 ? 10 : 9,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(4, i == 0 ? 18 : 0, 4, 0),
+                    child: SizedBox(width: double.infinity, child: place(i)),
+                  ),
+                ),
+            ],
+          );
+        },
       );
-      if (stacked) {
-        return Column(
-          children: [
-            for (var i = 0; i < top.length; i++)
-              Padding(
-                padding: EdgeInsets.only(bottom: i == top.length - 1 ? 0 : 12),
-                child: place(i),
-              ),
-          ],
-        );
-      }
-      final order = top.length == 3
-          ? [1, 0, 2]
-          : [for (var i = 0; i < top.length; i++) i];
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          for (final i in order)
-            Expanded(
-              flex: i == 0 ? 10 : 9,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(4, i == 0 ? 18 : 0, 4, 0),
-                child: SizedBox(width: double.infinity, child: place(i)),
-              ),
-            ),
-        ],
-      );
-    },
-  );
 }
 
 class _PodiumPlace extends StatelessWidget {
@@ -537,45 +672,44 @@ class _LeaderboardLedger extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-    key: const ValueKey('leaderboard-ledger'),
-    color: Italia90.panel,
-    clipBehavior: Clip.antiAlias,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(Italia90.panelRadius),
-      side: const BorderSide(color: Italia90.outline),
-    ),
-    child: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(14, 8, 14, 6),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Semantics(
-              header: true,
-              child: Text(
-                sectionLabel,
-                style: Italia90.heading.copyWith(fontSize: 18),
+        key: const ValueKey('leaderboard-ledger'),
+        color: Italia90.panel,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Italia90.panelRadius),
+          side: const BorderSide(color: Italia90.outline),
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 8, 14, 6),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    sectionLabel,
+                    style: Italia90.heading.copyWith(fontSize: 18),
+                  ),
+                ),
               ),
             ),
-          ),
+            const Divider(height: 1),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final compact = constraints.maxWidth < 340 ||
+                    MediaQuery.textScalerOf(context).scale(16) > 22;
+                if (teamRanked.isNotEmpty) {
+                  return _TeamLedgerRows(ranked: teamRanked, compact: compact);
+                }
+                return compact
+                    ? _CompactLedgerRows(ranked: ranked)
+                    : _WideLedgerRows(ranked: ranked);
+              },
+            ),
+          ],
         ),
-        const Divider(height: 1),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final compact =
-                constraints.maxWidth < 340 ||
-                MediaQuery.textScalerOf(context).scale(16) > 22;
-            if (teamRanked.isNotEmpty) {
-              return _TeamLedgerRows(ranked: teamRanked, compact: compact);
-            }
-            return compact
-                ? _CompactLedgerRows(ranked: ranked)
-                : _WideLedgerRows(ranked: ranked);
-          },
-        ),
-      ],
-    ),
-  );
+      );
 }
 
 class _TeamLedgerRows extends StatelessWidget {
@@ -586,19 +720,21 @@ class _TeamLedgerRows extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-    children: [
-      const _WideLedgerHeader(),
-      for (var i = 0; i < ranked.length; i++) ...[
-        if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
-        _TeamLedgerRow(
-          rank: i + 1,
-          stats: ranked[i],
-          compact: compact,
-          onOpen: () => openPairProfile(context, ranked[i].id),
-        ),
-      ],
-    ],
-  );
+        children: [
+          compact
+              ? const _CompactTeamLedgerHeader()
+              : const _WideLedgerHeader(),
+          for (var i = 0; i < ranked.length; i++) ...[
+            if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
+            _TeamLedgerRow(
+              rank: i + 1,
+              stats: ranked[i],
+              compact: compact,
+              onOpen: () => openPairProfile(context, ranked[i].id),
+            ),
+          ],
+        ],
+      );
 }
 
 class _TeamLedgerRow extends StatelessWidget {
@@ -616,61 +752,120 @@ class _TeamLedgerRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    key: ValueKey('leaderboard-row-${stats.id}'),
-    container: true,
-    button: true,
-    enabled: true,
-    label:
-        'Posizione $rank: ${stats.name}. ${stats.games} partite, '
-        '${stats.goalsScored} gol, ${stats.wins} vittorie, ${stats.points} punti.',
-    onTap: onOpen,
-    child: ExcludeSemantics(
-      child: InkWell(
+        key: ValueKey('leaderboard-row-${stats.id}'),
+        container: true,
+        button: true,
+        enabled: true,
+        hint: 'Apri il profilo della coppia',
+        label: 'Posizione $rank: ${stats.name}. ${stats.games} partite, '
+            '${stats.goalsScored} gol, ${stats.wins} vittorie, ${stats.points} punti.',
         onTap: onOpen,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 3, 14, 3),
-          child: Row(
-            children: [
-              _TeamRankMarker(rank: rank, compact: compact),
-              const SizedBox(width: 8),
-              PlayerAvatar(
-                name: stats.players.first.name,
-                size: 28,
-                color: Italia90.avatarNeutral,
-                foregroundColor: Colors.white,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  stats.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Italia90.title.copyWith(fontSize: compact ? 15 : 16),
-                ),
-              ),
-              _TeamMetric(
-                key: ValueKey('leaderboard-${stats.id}-pg'),
-                value: stats.games.toString(),
-              ),
-              _TeamMetric(
-                key: ValueKey('leaderboard-${stats.id}-gol'),
-                value: stats.goalsScored.toString(),
-              ),
-              _TeamMetric(
-                key: ValueKey('leaderboard-${stats.id}-v'),
-                value: stats.wins.toString(),
-              ),
-              _TeamMetric(
-                key: ValueKey('leaderboard-${stats.id}-pt'),
-                value: stats.points.toString(),
-                emphasized: true,
-              ),
-            ],
+        child: ExcludeSemantics(
+          child: InkWell(
+            onTap: onOpen,
+            child: compact ? _compactContent() : _wideContent(),
           ),
         ),
-      ),
-    ),
-  );
+      );
+
+  Widget _wideContent() => Padding(
+        padding: const EdgeInsets.fromLTRB(14, 3, 14, 3),
+        child: Row(
+          children: [
+            _TeamRankMarker(rank: rank, compact: false),
+            const SizedBox(width: 8),
+            RankingAvatar(name: _avatarName, size: 28),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                stats.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Italia90.title.copyWith(fontSize: 16),
+              ),
+            ),
+            _TeamMetric(
+              key: ValueKey('leaderboard-${stats.id}-pg'),
+              value: stats.games.toString(),
+            ),
+            _TeamMetric(
+              key: ValueKey('leaderboard-${stats.id}-gol'),
+              value: stats.goalsScored.toString(),
+            ),
+            _TeamMetric(
+              key: ValueKey('leaderboard-${stats.id}-v'),
+              value: stats.wins.toString(),
+            ),
+            _TeamMetric(
+              key: ValueKey('leaderboard-${stats.id}-pt'),
+              value: stats.points.toString(),
+              emphasized: true,
+            ),
+          ],
+        ),
+      );
+
+  Widget _compactContent() => Padding(
+        padding: const EdgeInsets.fromLTRB(14, 8, 14, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                _TeamRankMarker(rank: rank, compact: true),
+                const SizedBox(width: 8),
+                RankingAvatar(name: _avatarName, size: 40),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    stats.name,
+                    style: Italia90.title.copyWith(fontSize: 18),
+                  ),
+                ),
+              ],
+            ),
+            RankingMetrics(
+              id: stats.id,
+              metrics: [
+                RankingMetricSpec(
+                  keySuffix: 'pg',
+                  label: 'PG',
+                  value: stats.games.toString(),
+                ),
+                RankingMetricSpec(
+                  keySuffix: 'gol',
+                  label: 'GOL',
+                  value: stats.goalsScored.toString(),
+                ),
+                RankingMetricSpec(
+                  keySuffix: 'v',
+                  label: 'V',
+                  value: stats.wins.toString(),
+                ),
+                RankingMetricSpec(
+                  keySuffix: 'pt',
+                  label: 'PT',
+                  value: stats.points.toString(),
+                  emphasized: true,
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+
+  String get _avatarName =>
+      stats.players.isEmpty ? stats.name : stats.players.first.name;
+}
+
+class _CompactTeamLedgerHeader extends StatelessWidget {
+  const _CompactTeamLedgerHeader();
+
+  @override
+  Widget build(BuildContext context) => const Padding(
+        padding: EdgeInsets.fromLTRB(14, 12, 14, 8),
+        child: Align(alignment: Alignment.centerLeft, child: Text('GIOCATORE')),
+      );
 }
 
 class _TeamRankMarker extends StatelessWidget {
@@ -693,9 +888,12 @@ class _TeamRankMarker extends StatelessWidget {
       height: compact ? 28 : 30,
       alignment: Alignment.center,
       decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      child: Text(
-        '$rank',
-        style: Italia90.label.copyWith(color: foreground, fontSize: 15),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          '$rank',
+          style: Italia90.label.copyWith(color: foreground, fontSize: 15),
+        ),
       ),
     );
   }
@@ -709,17 +907,20 @@ class _TeamMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    width: 34,
-    child: Text(
-      value,
-      textAlign: TextAlign.center,
-      style: Italia90.body.copyWith(
-        fontSize: 17,
-        fontWeight: emphasized ? FontWeight.w800 : FontWeight.w700,
-        color: emphasized ? Italia90.teamOne : Italia90.ink,
-      ),
-    ),
-  );
+        width: 34,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            textAlign: TextAlign.center,
+            style: Italia90.body.copyWith(
+              fontSize: 17,
+              fontWeight: emphasized ? FontWeight.w800 : FontWeight.w700,
+              color: emphasized ? Italia90.teamOne : Italia90.ink,
+            ),
+          ),
+        ),
+      );
 }
 
 class _WideLedgerRows extends StatelessWidget {
@@ -729,22 +930,22 @@ class _WideLedgerRows extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(
-    children: [
-      const _WideLedgerHeader(),
-      for (var i = 0; i < ranked.length; i++) ...[
-        if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
-        RankingRow(
-          rank: i + 1,
-          stats: ranked[i],
-          metric: '${ranked[i].points} pt',
-          detail:
-              '${ranked[i].games} partite, ${ranked[i].goalsScored} gol, '
-              '${ranked[i].wins} vittorie',
-          onOpen: () => openPlayerProfile(context, ranked[i].player.id),
-        ),
-      ],
-    ],
-  );
+        children: [
+          const _WideLedgerHeader(),
+          for (var i = 0; i < ranked.length; i++) ...[
+            if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
+            RankingRow(
+              rank: i + 1,
+              stats: ranked[i],
+              metric: '${ranked[i].points} pt',
+              detail:
+                  '${ranked[i].games} partite, ${ranked[i].goalsScored} gol, '
+                  '${ranked[i].wins} vittorie',
+              onOpen: () => openPlayerProfile(context, ranked[i].player.id),
+            ),
+          ],
+        ],
+      );
 }
 
 class _WideLedgerHeader extends StatelessWidget {
@@ -752,46 +953,6 @@ class _WideLedgerHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
-    child: Row(
-      children: [
-        const SizedBox(width: 28),
-        const SizedBox(width: 8),
-        const SizedBox(width: 40),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            'GIOCATORE',
-            style: Italia90.label.copyWith(color: Italia90.muted, fontSize: 14),
-          ),
-        ),
-        for (final label in ['PG', 'GOL', 'V', 'PT'])
-          SizedBox(
-            key: ValueKey('leaderboard-header-${label.toLowerCase()}'),
-            width: 34,
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: Italia90.label.copyWith(
-                color: Italia90.muted,
-                fontSize: 14,
-              ),
-            ),
-          ),
-      ],
-    ),
-  );
-}
-
-class _CompactLedgerRows extends StatelessWidget {
-  const _CompactLedgerRows({required this.ranked});
-
-  final List<PlayerStats> ranked;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Padding(
         padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
         child: Row(
           children: [
@@ -802,29 +963,70 @@ class _CompactLedgerRows extends StatelessWidget {
             Expanded(
               child: Text(
                 'GIOCATORE',
-                style: Italia90.label.copyWith(
-                  color: Italia90.muted,
-                  fontSize: 14,
-                ),
+                style: Italia90.label
+                    .copyWith(color: Italia90.muted, fontSize: 14),
               ),
             ),
+            for (final label in ['PG', 'GOL', 'V', 'PT'])
+              SizedBox(
+                key: ValueKey('leaderboard-header-${label.toLowerCase()}'),
+                width: 34,
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: Italia90.label.copyWith(
+                    color: Italia90.muted,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
           ],
         ),
-      ),
-      for (var i = 0; i < ranked.length; i++) ...[
-        if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
-        RankingRow(
-          rank: i + 1,
-          stats: ranked[i],
-          metric: '${ranked[i].points} pt',
-          detail:
-              '${ranked[i].games} partite, ${ranked[i].goalsScored} gol, '
-              '${ranked[i].wins} vittorie',
-          onOpen: () => openPlayerProfile(context, ranked[i].player.id),
-        ),
-      ],
-    ],
-  );
+      );
+}
+
+class _CompactLedgerRows extends StatelessWidget {
+  const _CompactLedgerRows({required this.ranked});
+
+  final List<PlayerStats> ranked;
+
+  @override
+  Widget build(BuildContext context) => Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+            child: Row(
+              children: [
+                const SizedBox(width: 28),
+                const SizedBox(width: 8),
+                const SizedBox(width: 40),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'GIOCATORE',
+                    style: Italia90.label.copyWith(
+                      color: Italia90.muted,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          for (var i = 0; i < ranked.length; i++) ...[
+            if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
+            RankingRow(
+              rank: i + 1,
+              stats: ranked[i],
+              metric: '${ranked[i].points} pt',
+              detail:
+                  '${ranked[i].games} partite, ${ranked[i].goalsScored} gol, '
+                  '${ranked[i].wins} vittorie',
+              onOpen: () => openPlayerProfile(context, ranked[i].player.id),
+            ),
+          ],
+        ],
+      );
 }
 
 // The responsive row now lives in the leaderboard feature module.
@@ -837,85 +1039,85 @@ class _CompactLeaderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    key: ValueKey('leaderboard-row-${stats.player.id}'),
-    container: true,
-    button: true,
-    enabled: true,
-    label:
-        'Posizione $rank: ${stats.player.name}. ${stats.games} partite, ${stats.goalsScored} gol, ${stats.wins} vittorie, ${stats.points} punti.',
-    onTap: () => openPlayerProfile(context, stats.player.id),
-    child: ExcludeSemantics(
-      child: InkWell(
+        key: ValueKey('leaderboard-row-${stats.player.id}'),
+        container: true,
+        button: true,
+        enabled: true,
+        label:
+            'Posizione $rank: ${stats.player.name}. ${stats.games} partite, ${stats.goalsScored} gol, ${stats.wins} vittorie, ${stats.points} punti.',
         onTap: () => openPlayerProfile(context, stats.player.id),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
+        child: ExcludeSemantics(
+          child: InkWell(
+            onTap: () => openPlayerProfile(context, stats.player.id),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(
-                    width: 28,
-                    child: Text(
-                      '$rank',
-                      textAlign: TextAlign.center,
-                      style: Italia90.heading.copyWith(
-                        color: Italia90.ink,
-                        fontSize: 24,
+                  Row(
+                    children: [
+                      SizedBox(
+                        width: 28,
+                        child: Text(
+                          '$rank',
+                          textAlign: TextAlign.center,
+                          style: Italia90.heading.copyWith(
+                            color: Italia90.ink,
+                            fontSize: 24,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      PlayerAvatar(
+                        name: stats.player.name,
+                        size: 40,
+                        color: Italia90.avatarNeutral,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          stats.player.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Italia90.title.copyWith(fontSize: 18),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  PlayerAvatar(
-                    name: stats.player.name,
-                    size: 40,
-                    color: Italia90.avatarNeutral,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      stats.player.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Italia90.title.copyWith(fontSize: 18),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 76, top: 8),
+                    child: Row(
+                      children: [
+                        _CompactMetric(
+                          key: ValueKey('leaderboard-${stats.player.id}-pg'),
+                          label: 'PG',
+                          value: stats.games.toString(),
+                        ),
+                        _CompactMetric(
+                          key: ValueKey('leaderboard-${stats.player.id}-gol'),
+                          label: 'GOL',
+                          value: stats.goalsScored.toString(),
+                        ),
+                        _CompactMetric(
+                          key: ValueKey('leaderboard-${stats.player.id}-v'),
+                          label: 'V',
+                          value: stats.wins.toString(),
+                        ),
+                        _CompactMetric(
+                          key: ValueKey('leaderboard-${stats.player.id}-pt'),
+                          label: 'PT',
+                          value: stats.points.toString(),
+                          emphasized: true,
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 76, top: 8),
-                child: Row(
-                  children: [
-                    _CompactMetric(
-                      key: ValueKey('leaderboard-${stats.player.id}-pg'),
-                      label: 'PG',
-                      value: stats.games.toString(),
-                    ),
-                    _CompactMetric(
-                      key: ValueKey('leaderboard-${stats.player.id}-gol'),
-                      label: 'GOL',
-                      value: stats.goalsScored.toString(),
-                    ),
-                    _CompactMetric(
-                      key: ValueKey('leaderboard-${stats.player.id}-v'),
-                      label: 'V',
-                      value: stats.wins.toString(),
-                    ),
-                    _CompactMetric(
-                      key: ValueKey('leaderboard-${stats.player.id}-pt'),
-                      label: 'PT',
-                      value: stats.points.toString(),
-                      emphasized: true,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 }
 
 class _CompactMetric extends StatelessWidget {
@@ -932,24 +1134,25 @@ class _CompactMetric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Expanded(
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: Italia90.label.copyWith(color: Italia90.muted, fontSize: 11),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style:
+                  Italia90.label.copyWith(color: Italia90.muted, fontSize: 11),
+            ),
+            Text(
+              value,
+              style: Italia90.body.copyWith(
+                fontWeight: emphasized ? FontWeight.w800 : FontWeight.w700,
+                color: Italia90.ink,
+                fontSize: 18,
+              ),
+            ),
+          ],
         ),
-        Text(
-          value,
-          style: Italia90.body.copyWith(
-            fontWeight: emphasized ? FontWeight.w800 : FontWeight.w700,
-            color: Italia90.ink,
-            fontSize: 18,
-          ),
-        ),
-      ],
-    ),
-  );
+      );
 }
 
 // The responsive row now lives in the leaderboard feature module.
@@ -961,75 +1164,75 @@ class _LeaderRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    key: ValueKey('leaderboard-row-${stats.player.id}'),
-    container: true,
-    button: true,
-    enabled: true,
-    label:
-        'Posizione $rank: ${stats.player.name}. ${stats.games} partite, ${stats.goalsScored} gol, ${stats.wins} vittorie, ${stats.points} punti.',
-    onTap: () => openPlayerProfile(context, stats.player.id),
-    child: ExcludeSemantics(
-      child: InkWell(
+        key: ValueKey('leaderboard-row-${stats.player.id}'),
+        container: true,
+        button: true,
+        enabled: true,
+        label:
+            'Posizione $rank: ${stats.player.name}. ${stats.games} partite, ${stats.goalsScored} gol, ${stats.wins} vittorie, ${stats.points} punti.',
         onTap: () => openPlayerProfile(context, stats.player.id),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 28,
-                child: Text(
-                  '$rank',
-                  style: Italia90.body.copyWith(
-                    color: Italia90.ink,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 18,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(width: 8),
-              PlayerAvatar(
-                name: stats.player.name,
-                size: 40,
-                color: Italia90.avatarNeutral,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      stats.player.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Italia90.title.copyWith(fontSize: 18),
+        child: ExcludeSemantics(
+          child: InkWell(
+            onTap: () => openPlayerProfile(context, stats.player.id),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 28,
+                    child: Text(
+                      '$rank',
+                      style: Italia90.body.copyWith(
+                        color: Italia90.ink,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  PlayerAvatar(
+                    name: stats.player.name,
+                    size: 40,
+                    color: Italia90.avatarNeutral,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          stats.player.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: Italia90.title.copyWith(fontSize: 18),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _MetricValue(
+                    key: ValueKey('leaderboard-${stats.player.id}-pg'),
+                    value: stats.games.toString(),
+                  ),
+                  _MetricValue(
+                    key: ValueKey('leaderboard-${stats.player.id}-gol'),
+                    value: stats.goalsScored.toString(),
+                  ),
+                  _MetricValue(
+                    key: ValueKey('leaderboard-${stats.player.id}-v'),
+                    value: stats.wins.toString(),
+                  ),
+                  _MetricValue(
+                    key: ValueKey('leaderboard-${stats.player.id}-pt'),
+                    value: stats.points.toString(),
+                    emphasized: true,
+                  ),
+                ],
               ),
-              _MetricValue(
-                key: ValueKey('leaderboard-${stats.player.id}-pg'),
-                value: stats.games.toString(),
-              ),
-              _MetricValue(
-                key: ValueKey('leaderboard-${stats.player.id}-gol'),
-                value: stats.goalsScored.toString(),
-              ),
-              _MetricValue(
-                key: ValueKey('leaderboard-${stats.player.id}-v'),
-                value: stats.wins.toString(),
-              ),
-              _MetricValue(
-                key: ValueKey('leaderboard-${stats.player.id}-pt'),
-                value: stats.points.toString(),
-                emphasized: true,
-              ),
-            ],
+            ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 }
 
 class _MetricValue extends StatelessWidget {
@@ -1040,20 +1243,20 @@ class _MetricValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    width: 34,
-    child: FittedBox(
-      fit: BoxFit.scaleDown,
-      child: Text(
-        value,
-        textAlign: TextAlign.center,
-        style: Italia90.body.copyWith(
-          fontWeight: emphasized ? FontWeight.w800 : FontWeight.w700,
-          color: Italia90.ink,
-          fontSize: 18,
+        width: 34,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            textAlign: TextAlign.center,
+            style: Italia90.body.copyWith(
+              fontWeight: emphasized ? FontWeight.w800 : FontWeight.w700,
+              color: Italia90.ink,
+              fontSize: 18,
+            ),
+          ),
         ),
-      ),
-    ),
-  );
+      );
 }
 
 Future<void> _shareLeaderboardCsv({
@@ -1066,12 +1269,12 @@ Future<void> _shareLeaderboardCsv({
         ? LeaderboardCsvService.build(ranked)
         : LeaderboardCsvService.buildPairs(teams);
     await context.read<CsvShareService>().shareCsv(
-      csv: csv,
-      fileName: 'classifica-biliardino.csv',
-      subject: 'Classifica Biliardino',
-      text: 'Classifica Biliardino in CSV',
-      sharePositionOrigin: _sharePositionOrigin(context),
-    );
+          csv: csv,
+          fileName: 'classifica-biliardino.csv',
+          subject: 'Classifica Biliardino',
+          text: 'Classifica Biliardino in CSV',
+          sharePositionOrigin: _sharePositionOrigin(context),
+        );
     if (!context.mounted) {
       return;
     }
