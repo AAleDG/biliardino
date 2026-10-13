@@ -63,7 +63,7 @@ class _MatchCard extends StatelessWidget {
                           ],
                         ),
                         if (match.isRivalry)
-                          const Text('Rivalita', style: AppType.utility),
+                          const Text('Rivalità', style: AppType.utility),
                       ],
                     ),
                   ),

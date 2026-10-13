@@ -14,12 +14,27 @@ import '../../../services/stats_service.dart';
 import '../theme/italia90_tokens.dart';
 import '../widgets/italia90_components.dart';
 import '../widgets/italia90_page.dart';
-import 'history/history_artwork.dart';
 import '../../app_presentation.dart';
 import 'history/history_details.dart';
 import 'history/history_filter_summary.dart';
 import 'history/history_filters_sheet.dart';
 import 'history/history_match_card.dart';
+
+/// Supplies a stable reference date to the history presentation when a
+/// caller needs deterministic relative date labels, such as a visual fixture.
+class HistoryClockScope extends InheritedWidget {
+  const HistoryClockScope({super.key, required this.now, required super.child});
+
+  final DateTime Function() now;
+
+  static DateTime nowOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<HistoryClockScope>()?.now() ??
+      DateTime.now();
+
+  @override
+  bool updateShouldNotify(HistoryClockScope oldWidget) =>
+      !identical(now, oldWidget.now);
+}
 
 class HistoryScreen extends StatelessWidget {
   const HistoryScreen({super.key, this.showBack = true});
@@ -62,6 +77,9 @@ class _HistoryView extends StatelessWidget {
         final media = MediaQuery.of(context);
         final compact =
             media.size.height < 650 || media.textScaler.scale(1) > 1.3;
+        final contentBottomPadding =
+            media.padding.bottom + (compact ? Italia90.page : Italia90.xl);
+        final now = HistoryClockScope.nowOf(context);
         final matches = state.filteredMatches;
         final daysByFirstMatch = {
           for (final group in state.groups) group.matches.first.id: group.day,
@@ -74,10 +92,6 @@ class _HistoryView extends StatelessWidget {
           child: CustomScrollView(
             key: const ValueKey('history-scroll'),
             slivers: [
-              if (!compact)
-                const SliverToBoxAdapter(
-                  child: HistoryRibbonArtwork(HistoryRibbon.header, height: 32),
-                ),
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(
                   Italia90.page,
@@ -102,8 +116,11 @@ class _HistoryView extends StatelessWidget {
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: Italia90.page,
+                  padding: EdgeInsets.fromLTRB(
+                    Italia90.page,
+                    Italia90.sm,
+                    Italia90.page,
+                    contentBottomPadding,
                   ),
                   sliver: SliverList.builder(
                     itemCount: matches.length,
@@ -114,11 +131,10 @@ class _HistoryView extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           if (day != null)
-                            _HistoryDayBand(
-                              label: dayLabel(day, DateTime.now()),
-                            )
+                            _HistoryDayBand(label: dayLabel(day, now))
                           else
-                            const SizedBox(height: Italia90.md),
+                            const SizedBox(height: Italia90.sm),
+                          const SizedBox(height: Italia90.sm),
                           HistoryMatchCard(
                             match: match,
                             players: state.players,
@@ -126,28 +142,10 @@ class _HistoryView extends StatelessWidget {
                             onEdit: () => _openEditMatchDialog(context, match),
                             onDelete: () => _confirmDeleteMatch(context, match),
                           ),
+                          const SizedBox(height: Italia90.sm),
                         ],
                       );
                     },
-                  ),
-                ),
-              if (matches.isNotEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        top: Italia90.page,
-                        bottom: media.padding.bottom,
-                      ),
-                      child: compact
-                          ? const SizedBox(height: Italia90.page)
-                          : const HistoryRibbonArtwork(
-                              HistoryRibbon.footer,
-                              height: 100,
-                            ),
-                    ),
                   ),
                 ),
             ],
@@ -230,7 +228,7 @@ Future<void> _confirmDeleteMatch(
     context: rootContext,
     builder: (dialogContext) => AlertDialog(
       title: const Text('Eliminare partita?'),
-      content: const Text('La partita verra rimossa dallo storico.'),
+      content: const Text('La partita verrà rimossa dallo storico.'),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -417,7 +415,7 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Rivalita'),
+                title: const Text('Rivalità'),
                 value: _isRivalry,
                 onChanged: (value) => setState(() => _isRivalry = value),
               ),
@@ -513,7 +511,7 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
     }
     final playerIds = [..._normalizedTeam(_team1), ..._normalizedTeam(_team2)];
     if (playerIds.toSet().length != _mode.teamSize * 2) {
-      return 'Ogni giocatore puo stare in una sola squadra.';
+      return 'Ogni giocatore può stare in una sola squadra.';
     }
     if (_team1Scorers.length != score1 || _team2Scorers.length != score2) {
       return 'Il numero di marcatori deve corrispondere allo score.';
@@ -1273,53 +1271,64 @@ class _HistoryDayBand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compact =
-        MediaQuery.sizeOf(context).width < 350 ||
-        MediaQuery.textScalerOf(context).scale(16) > 22;
-    final height = compact ? 48.0 : 60.0;
+    final narrow = MediaQuery.sizeOf(context).width < 350;
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    final compact = narrow || largeText;
+    final minHeight = narrow && !largeText ? 48.0 : 56.0;
+    final fontSize = narrow && !largeText ? 24.0 : 30.0;
+    final verticalPadding = largeText
+        ? 10.0
+        : narrow
+        ? 8.0
+        : 12.0;
+    final rightPadding = narrow ? 68.0 : 92.0;
     return Semantics(
       header: true,
       label: label,
       child: ExcludeSemantics(
         child: SizedBox(
-          height: height,
           width: double.infinity,
           child: ClipRRect(
             key: ValueKey('history-day-$label'),
             borderRadius: BorderRadius.circular(Italia90.panelRadius),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                const ColoredBox(color: Italia90.primary),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: minHeight),
+              child: Stack(
+                children: [
+                  const Positioned.fill(
+                    child: ColoredBox(color: Italia90.primary),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      verticalPadding,
+                      rightPadding,
+                      verticalPadding,
+                    ),
+                    child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
                         label,
-                        maxLines: 1,
+                        softWrap: true,
                         style: Italia90.heading.copyWith(
                           color: Colors.white,
-                          fontSize: compact ? 24 : 30,
+                          fontSize: fontSize,
                         ),
                       ),
                     ),
                   ),
-                ),
-                Positioned(
-                  top: -height * 0.35,
-                  right: 12,
-                  bottom: -height * 0.35,
-                  width: 76,
-                  child: ItaliaDiagonalStripes(
-                    backgroundColor: null,
-                    stripeColor: Colors.white.withValues(alpha: 0.88),
+                  Positioned(
+                    top: -minHeight * 0.35,
+                    right: 12,
+                    bottom: -minHeight * 0.35,
+                    width: compact ? 60 : 76,
+                    child: ItaliaDiagonalStripes(
+                      backgroundColor: null,
+                      stripeColor: Colors.white.withValues(alpha: 0.88),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -1350,7 +1359,7 @@ class _MatchCard extends StatelessWidget {
     final timeLabel = DateFormat('HH:mm').format(match.playedAt);
     final baseModeLabel = match.mode == MatchMode.oneVsOne ? '1v1' : '2v2';
     final modeLabel = match.isRivalry
-        ? 'Rivalita · $baseModeLabel'
+        ? 'Rivalità · $baseModeLabel'
         : baseModeLabel;
     final t1Names = match.team1
         .map((id) => StatsService.playerName(players, id))
@@ -1666,7 +1675,7 @@ class _MatchDetailsSheet extends StatelessWidget {
             _MatchDetailRow(label: 'Data e ora', value: '$date · $time'),
             _MatchDetailRow(
               label: 'Formato',
-              value: match.isRivalry ? 'Rivalita · $mode' : mode,
+              value: match.isRivalry ? 'Rivalità · $mode' : mode,
             ),
             _MatchDetailRow(
               label: 'Squadra 1',

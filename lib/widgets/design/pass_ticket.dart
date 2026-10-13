@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 import 'pass_artwork.dart';
+import 'ticket_perforation.dart';
 
 class PassTicketShape extends OutlinedBorder {
   const PassTicketShape({
@@ -166,7 +167,7 @@ class PassTicket extends StatelessWidget {
                                   const SizedBox(
                                     width: 1,
                                     child: CustomPaint(
-                                      painter: _Perforation(),
+                                      painter: TicketPerforation(),
                                       child: SizedBox.expand(),
                                     ),
                                   ),
@@ -187,20 +188,4 @@ class PassTicket extends StatelessWidget {
       ),
     );
   }
-}
-
-class _Perforation extends CustomPainter {
-  const _Perforation();
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.outline
-      ..strokeWidth = 1;
-    for (double y = 0; y + 3 <= size.height; y += 7) {
-      canvas.drawLine(Offset(0, y), Offset(0, y + 3), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _Perforation oldDelegate) => false;
 }

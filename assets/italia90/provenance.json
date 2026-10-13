@@ -69,6 +69,18 @@
       "production_path": "assets/italia90/backdrop-home-proposal-7.png",
       "dimensions": "941x1672",
       "generation": "Built-in image generation tool; standalone background derived from the seventh Home proposal selected by the user on 2026-09-19"
+    },
+    {
+      "id": "ASSET-6",
+      "name": "Live match editorial poster",
+      "version": "v1",
+      "master": "live-poster-editoriale.png",
+      "usage": "Decorative live-match header only; score, players and controls remain native Flutter widgets",
+      "sha256": "68c383ebb5b7ba3f77c15f8b0454358009d1b83492163c4cec3457c1322263bd",
+      "status": "approved-and-promoted",
+      "production_path": "assets/italia90/live-poster-editoriale.png",
+      "dimensions": "941x1672",
+      "generation": "User-provided Italia '90 live-match reference selected for implementation on 2026-10-11"
     }
   ],
   "football_source": {

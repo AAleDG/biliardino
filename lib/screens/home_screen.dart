@@ -106,7 +106,7 @@ Future<bool> _confirmLeaveStartedMatch(BuildContext context) async {
     context: context,
     builder: (dialogContext) => AlertDialog(
       title: const Text('Uscire dalla partita?'),
-      content: const Text('La partita in corso verra annullata.'),
+      content: const Text('La partita in corso verrà annullata.'),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),

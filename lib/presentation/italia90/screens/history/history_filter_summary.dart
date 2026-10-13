@@ -61,26 +61,36 @@ class HistoryFilterSummaryBar extends StatelessWidget {
                         Expanded(
                           child: LayoutBuilder(
                             builder: (context, constraints) {
-                              final compact =
-                                  constraints.maxWidth < 230 ||
-                                  MediaQuery.textScalerOf(context).scale(1) >
-                                      1.3;
+                              final textScale = MediaQuery.textScalerOf(
+                                context,
+                              ).scale(1);
+                              final stacked =
+                                  constraints.maxWidth < 190 || textScale > 1.3;
+                              final narrowInline =
+                                  !stacked && constraints.maxWidth < 220;
                               final summaryText = Text(
                                 summary,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: Italia90.body.copyWith(
+                                  fontSize: narrowInline ? 14 : null,
+                                  height: narrowInline ? 1.2 : null,
                                   fontWeight: FontWeight.w700,
                                 ),
                               );
                               final countText = Text(
                                 count,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.right,
                                 style: Italia90.caption.copyWith(
+                                  fontSize: narrowInline ? 11 : null,
+                                  height: narrowInline ? 1.2 : null,
                                   color: Italia90.muted,
                                   fontWeight: FontWeight.w700,
                                 ),
                               );
-                              return compact
+                              return stacked
                                   ? Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -95,7 +105,12 @@ class HistoryFilterSummaryBar extends StatelessWidget {
                                       children: [
                                         Expanded(child: summaryText),
                                         const SizedBox(width: Italia90.sm),
-                                        countText,
+                                        Flexible(
+                                          child: Align(
+                                            alignment: Alignment.centerRight,
+                                            child: countText,
+                                          ),
+                                        ),
                                       ],
                                     );
                             },

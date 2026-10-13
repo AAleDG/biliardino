@@ -275,7 +275,7 @@ class StatsService {
           const PlayerBadge(
             code: 'leader',
             label: 'Capoclassifica',
-            description: 'Ha il punteggio piu alto del ranking.',
+            description: 'Ha il punteggio più alto del ranking.',
           ),
         );
       }
@@ -294,7 +294,7 @@ class StatsService {
             code: 'grinder',
             label: 'Presenza Fissa',
             description:
-                'E il giocatore piu presente nelle partite registrate.',
+                'È il giocatore più presente nelle partite registrate.',
           ),
         );
       }
@@ -322,8 +322,8 @@ class StatsService {
         badges.add(
           const PlayerBadge(
             code: 'rivalry',
-            label: 'Re delle Rivalita',
-            description: 'Ha vinto piu duelli diretti in modalita Rivalita.',
+            label: 'Re delle Rivalità',
+            description: 'Ha vinto più duelli diretti in modalità Rivalità.',
           ),
         );
       }
@@ -426,7 +426,7 @@ class StatsService {
           const PlayerBadge(
             code: 'leader',
             label: 'Capoclassifica',
-            description: 'Ha il punteggio piu alto del ranking di coppia.',
+            description: 'Ha il punteggio più alto del ranking di coppia.',
           ),
         );
       }
@@ -435,7 +435,7 @@ class StatsService {
           const PlayerBadge(
             code: 'bomber',
             label: 'Bomber',
-            description: 'Ha segnato piu gol nella classifica 2vs2.',
+            description: 'Ha segnato più gol nella classifica 2vs2.',
           ),
         );
       }
@@ -444,7 +444,7 @@ class StatsService {
           const PlayerBadge(
             code: 'grinder',
             label: 'Presenza Fissa',
-            description: 'E la coppia piu presente nelle partite 2vs2.',
+            description: 'È la coppia più presente nelle partite 2vs2.',
           ),
         );
       }

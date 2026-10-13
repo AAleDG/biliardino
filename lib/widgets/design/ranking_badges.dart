@@ -27,13 +27,22 @@ class RankingBadges extends StatelessWidget {
     alignment: WrapAlignment.center,
     spacing: spacing,
     runSpacing: spacing,
-    children: [for (final badge in badges) _Badge(badge: badge)],
+    children: [for (final badge in badges) RankingBadge(badge: badge)],
   );
 }
 
-class _Badge extends StatelessWidget {
-  const _Badge({required this.badge});
+class RankingBadge extends StatelessWidget {
+  const RankingBadge({
+    super.key,
+    required this.badge,
+    this.icon,
+    this.labelStyle = RankingBadges.labelStyle,
+    this.iconSize = RankingBadges.iconSize,
+  });
   final PlayerBadge badge;
+  final IconData? icon;
+  final TextStyle labelStyle;
+  final double iconSize;
   @override
   Widget build(BuildContext context) {
     final leader = badge.code == 'leader';
@@ -54,12 +63,13 @@ class _Badge extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                leader
-                    ? Icons.emoji_events
-                    : bomber
-                    ? Icons.sports_soccer
-                    : Icons.local_fire_department,
-                size: RankingBadges.iconSize,
+                icon ??
+                    (leader
+                        ? Icons.emoji_events
+                        : bomber
+                        ? Icons.sports_soccer
+                        : Icons.local_fire_department),
+                size: iconSize,
                 color: foreground,
               ),
               const SizedBox(width: RankingBadges.iconGap),
@@ -67,7 +77,7 @@ class _Badge extends StatelessWidget {
                 child: Text(
                   badge.label,
                   textAlign: TextAlign.center,
-                  style: RankingBadges.labelStyle.copyWith(color: foreground),
+                  style: labelStyle.copyWith(color: foreground),
                 ),
               ),
             ],

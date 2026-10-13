@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 abstract final class Italia90 {
   static const primary = Color(0xFFA83A2D);
   static const teamOne = Color(0xFF0047D8);
-  static const homeAvatarBlue = Color(0xFF307BB4);
+
+  /// Neutral identity color for players outside an explicit team or rank.
+  static const avatarNeutral = primary;
   static const green = Color(0xFF00834D);
   static const red = Color(0xFFE31331);
   static const surface = Color(0xFFFFFCF5);

@@ -96,7 +96,8 @@ void main() {
       expect(find.text('Premio extra di Alex'), findsOneWidget);
       expect(find.text('Premio extra di Luca'), findsOneWidget);
       for (final entry in entries) {
-        await tester.tap(find.byKey(ValueKey('leaderboard-podium-${entry.id}')));
+        await tester
+            .tap(find.byKey(ValueKey('leaderboard-podium-${entry.id}')));
         expect(opened, entry.id);
       }
     },
@@ -136,8 +137,10 @@ void main() {
         hasTapAction: true,
       ),
     );
-    const awardsLabel =
-        'Riconoscimenti di Alex: Premio extra di Alex, Riconoscimento lungo di Alex';
+    const awardsLabel = 'Riconoscimenti di Alex: '
+        'Premio extra di Alex. Riconoscimento aggiuntivo; '
+        'Riconoscimento lungo di Alex. '
+        'Riconoscimento aggiuntivo con descrizione';
     final awardsSemantics = tester.getSemantics(
       find.bySemanticsLabel(awardsLabel),
     );
@@ -197,24 +200,24 @@ List<RankingStats> _largeTextEntries() {
 }
 
 List<PlayerBadge> _badges(String owner) => [
-  const PlayerBadge(
-    code: 'leader',
-    label: 'Capoclassifica',
-    description: 'Miglior punteggio',
-  ),
-  const PlayerBadge(
-    code: 'bomber',
-    label: 'Bomber',
-    description: 'Miglior marcatore',
-  ),
-  PlayerBadge(
-    code: 'extra-$owner',
-    label: 'Premio extra di $owner',
-    description: 'Riconoscimento aggiuntivo',
-  ),
-  PlayerBadge(
-    code: 'long-$owner',
-    label: 'Riconoscimento lungo di $owner',
-    description: 'Riconoscimento aggiuntivo con descrizione',
-  ),
-];
+      const PlayerBadge(
+        code: 'leader',
+        label: 'Capoclassifica',
+        description: 'Miglior punteggio',
+      ),
+      const PlayerBadge(
+        code: 'bomber',
+        label: 'Bomber',
+        description: 'Miglior marcatore',
+      ),
+      PlayerBadge(
+        code: 'extra-$owner',
+        label: 'Premio extra di $owner',
+        description: 'Riconoscimento aggiuntivo',
+      ),
+      PlayerBadge(
+        code: 'long-$owner',
+        label: 'Riconoscimento lungo di $owner',
+        description: 'Riconoscimento aggiuntivo con descrizione',
+      ),
+    ];
