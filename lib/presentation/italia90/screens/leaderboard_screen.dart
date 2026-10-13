@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../cubits/leaderboard/leaderboard_cubit.dart';
 import '../../../cubits/leaderboard/leaderboard_state.dart';
 import '../../../models/game_match.dart';
+import '../../../models/ranking_stats.dart';
 import '../../../models/player_stats.dart';
 import '../../../models/team_leaderboard_stats.dart';
 import '../../../services/csv_share_service.dart';
@@ -15,6 +16,7 @@ import '../widgets/design/ranking_podium.dart';
 import '../widgets/italia90_components.dart';
 import '../widgets/italia90_page.dart';
 import '../widgets/italia_graphic_backdrop.dart';
+import '../widgets/ranking_recognitions.dart';
 import 'leaderboard/ranking_row.dart';
 import '../../../navigation/app_navigation.dart';
 
@@ -28,6 +30,11 @@ class LeaderboardScreen extends StatelessWidget {
     builder: (context, state) {
       final rankedByPoints = state.general;
       final rankedByGoals = state.scorers;
+      final Iterable<RankingStats> recognitionRanking =
+          state.selectedMode == MatchMode.twoVsTwo
+          ? state.teamGeneral
+          : rankedByPoints;
+      final recognitions = _collectRecognitions(recognitionRanking);
       final podiumByPoints = state.selectedMode == MatchMode.twoVsTwo
           ? state.teamGeneral
                 .take(3)
@@ -168,6 +175,7 @@ class LeaderboardScreen extends StatelessWidget {
                         _LeaderboardPane(
                           ranked: rankedByPoints,
                           podiumEntries: podiumByPoints,
+                          recognitions: recognitions,
                           teamRanked: state.selectedMode == MatchMode.twoVsTwo
                               ? state.teamGeneral
                               : const [],
@@ -179,6 +187,7 @@ class LeaderboardScreen extends StatelessWidget {
                         _LeaderboardPane(
                           ranked: rankedByGoals,
                           podiumEntries: podiumByGoals,
+                          recognitions: recognitions,
                           teamRanked: state.selectedMode == MatchMode.twoVsTwo
                               ? state.teamScorers
                               : const [],
@@ -208,6 +217,27 @@ String _goalsLabel(PlayerStats stats) => '${stats.goalsScored} gol';
 String _teamPointsLabel(int points) => '$points pt';
 
 String _teamGoalsLabel(int goals) => '$goals gol';
+
+List<RankingRecognition> _collectRecognitions(Iterable<RankingStats> ranking) {
+  final seen = <(String, String)>{};
+  final items = <RankingRecognition>[];
+
+  for (final recipient in ranking) {
+    for (final badge in recipient.badges) {
+      if (!seen.add((recipient.id, badge.code))) continue;
+
+      items.add(
+        RankingRecognition(
+          ownerId: recipient.id,
+          ownerName: recipient.name,
+          badge: badge,
+        ),
+      );
+    }
+  }
+
+  return List.unmodifiable(items);
+}
 
 class _LeaderboardModeSelector extends StatelessWidget {
   const _LeaderboardModeSelector({
@@ -280,6 +310,7 @@ class _LeaderboardPane extends StatelessWidget {
   const _LeaderboardPane({
     required this.ranked,
     required this.podiumEntries,
+    required this.recognitions,
     this.teamRanked = const [],
     required this.sectionLabel,
     required this.emptyTitle,
@@ -288,6 +319,7 @@ class _LeaderboardPane extends StatelessWidget {
   });
   final List<PlayerStats> ranked;
   final List<RankingPodiumEntry> podiumEntries;
+  final List<RankingRecognition> recognitions;
   final List<TeamLeaderboardStats> teamRanked;
   final String sectionLabel;
   final String emptyTitle;
@@ -296,7 +328,7 @@ class _LeaderboardPane extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (ranked.isEmpty && teamRanked.isEmpty) {
+    if (ranked.isEmpty && teamRanked.isEmpty && recognitions.isEmpty) {
       return ItaliaEmptyState(
         title: emptyTitle,
         description: emptyDescription,
@@ -309,23 +341,40 @@ class _LeaderboardPane extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          RankingPodium(
-            entries: podiumEntries,
-            showArtwork: true,
-            onOpen: (id) {
-              if (teamRanked.any((stats) => stats.id == id)) {
-                openPairProfile(context, id);
-              } else {
-                openPlayerProfile(context, id);
-              }
-            },
-          ),
-          const SizedBox(height: 6),
-          _LeaderboardLedger(
-            ranked: ranked,
-            teamRanked: teamRanked,
-            sectionLabel: sectionLabel,
-          ),
+          if (podiumEntries.isNotEmpty) ...[
+            RankingPodium(
+              entries: podiumEntries,
+              showArtwork: true,
+              onOpen: (id) {
+                if (teamRanked.any((stats) => stats.id == id)) {
+                  openPairProfile(context, id);
+                } else {
+                  openPlayerProfile(context, id);
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (recognitions.isNotEmpty)
+            RankingRecognitions(
+              key: const ValueKey('leaderboard-achievements'),
+              keyPrefix: 'leaderboard',
+              items: recognitions,
+            ),
+          if (ranked.isEmpty && teamRanked.isEmpty)
+            ItaliaEmptyState(
+              title: emptyTitle,
+              description: emptyDescription,
+              icon: emptyIcon,
+            )
+          else ...[
+            const SizedBox(height: 6),
+            _LeaderboardLedger(
+              ranked: ranked,
+              teamRanked: teamRanked,
+              sectionLabel: sectionLabel,
+            ),
+          ],
         ],
       ),
     );

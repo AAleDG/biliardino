@@ -31,19 +31,83 @@ void main() {
         await tester.pumpWidget(liveFixture.widget());
         await _pumpScreen(tester);
 
-        _expectRecognitions(
-          tester,
-          liveFixture.cubit.state.teamGeneral.take(3),
+        final completePairs = liveFixture.cubit.state.teamGeneral;
+        expect(completePairs, hasLength(4));
+        expect(
+          completePairs.expand((pair) => pair.badges),
+          hasLength(8),
+          reason: 'The tie fixture must award two badges to each pair.',
         );
+        _expectRecognitions(tester, completePairs);
+        final fourthPair = completePairs[3];
+        expect(fourthPair.badges, isNotEmpty);
+        final fourthRecognition = find.byKey(
+          ValueKey(
+            'leaderboard-achievement-${fourthPair.id}-'
+            '${fourthPair.badges.first.code}',
+          ),
+        );
+        expect(fourthRecognition, findsOneWidget);
+        expect(
+          find.byKey(ValueKey('leaderboard-podium-${fourthPair.id}')),
+          findsNothing,
+          reason: 'The fourth pair must stay out of the three-place podium.',
+        );
+        final leaderboardScroll = find
+            .descendant(
+              of: find.byKey(const ValueKey('leaderboard-scroll')),
+              matching: find.byType(Scrollable),
+            )
+            .first;
+        await tester.scrollUntilVisible(
+          fourthRecognition,
+          500,
+          scrollable: leaderboardScroll,
+        );
+        await tester.pump();
+        final fourthRect = tester.getRect(fourthRecognition);
+        expect(
+          fourthRect.top,
+          lessThan(874),
+          reason:
+              'The fourth recognition must remain reachable after scrolling.',
+        );
+        expect(fourthRect.bottom, greaterThan(0));
+        expect(fourthRecognition.hitTestable(), findsOneWidget);
         expect(
           find.byKey(const ValueKey('leaderboard-achievements')),
           findsOneWidget,
         );
+        expect(
+          find.descendant(
+            of: find.byKey(const ValueKey('leaderboard-podium')),
+            matching: find.byKey(const ValueKey('leaderboard-achievements')),
+          ),
+          findsNothing,
+        );
+        expect(tester.takeException(), isNull);
+
+        await tester.tap(find.text('Marcatori'));
+        await _pumpScreen(tester);
+        _expectRecognitions(tester, completePairs);
+        expect(fourthRecognition, findsOneWidget);
+        final leaderboardScrollAfterTab = find
+            .descendant(
+              of: find.byKey(const ValueKey('leaderboard-scroll')),
+              matching: find.byType(Scrollable),
+            )
+            .first;
+        await tester.scrollUntilVisible(
+          fourthRecognition,
+          500,
+          scrollable: leaderboardScrollAfterTab,
+        );
+        await tester.pump();
         expect(tester.takeException(), isNull);
 
         await tester.tap(find.text('1vs1'));
         await _pumpScreen(tester);
-        _expectRecognitions(tester, liveFixture.cubit.state.general.take(3));
+        _expectRecognitions(tester, liveFixture.cubit.state.general);
         expect(tester.takeException(), isNull);
       },
     );
@@ -191,6 +255,20 @@ final _matches = [
     team2: const ['Elena', 'Fabio'],
     scorer1: 'Giulia',
     scorer2: 'Elena',
+  ),
+  _twoVsTwoMatch(
+    id: 'pairs-andrea',
+    team1: const ['Andrea', 'Luca'],
+    team2: const ['Giulia', 'Sara'],
+    scorer1: 'Andrea',
+    scorer2: 'Giulia',
+  ),
+  _twoVsTwoMatch(
+    id: 'pairs-elena',
+    team1: const ['Elena', 'Fabio'],
+    team2: const ['Marco', 'Paolo'],
+    scorer1: 'Elena',
+    scorer2: 'Marco',
   ),
   _oneVsOneMatch(id: 'singles-marco', winner: 'Marco', loser: 'Paolo'),
   _oneVsOneMatch(id: 'singles-giulia', winner: 'Giulia', loser: 'Sara'),

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 
-import '../../../../models/player_badge.dart';
 import '../../../../models/player_stats.dart';
 import '../../../../models/team_leaderboard_stats.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/italia90_tokens.dart';
 import '../avatar.dart';
-import '../ranking_recognitions.dart';
 import 'ranking_podium_artwork.dart';
 
 /// Data displayed by one place in the reusable Classifica podium.
@@ -17,7 +15,6 @@ class RankingPodiumEntry {
     required this.name,
     required this.avatarNames,
     required this.metric,
-    required this.badges,
     required this.openId,
   });
 
@@ -30,7 +27,6 @@ class RankingPodiumEntry {
       name: stats.player.name,
       avatarNames: [stats.player.name],
       metric: metric,
-      badges: stats.badges,
       openId: stats.player.id,
     );
   }
@@ -44,7 +40,6 @@ class RankingPodiumEntry {
       name: stats.name,
       avatarNames: stats.players.map((player) => player.name).toList(),
       metric: metric,
-      badges: stats.badges,
       openId: stats.id,
     );
   }
@@ -53,7 +48,6 @@ class RankingPodiumEntry {
   final String name;
   final List<String> avatarNames;
   final String metric;
-  final List<PlayerBadge> badges;
   final String openId;
 }
 
@@ -132,7 +126,6 @@ class _RankingPodiumState extends State<RankingPodium>
           width < 350 ||
           MediaQuery.sizeOf(context).height < 450 ||
           MediaQuery.textScalerOf(context).scale(1) > 1.3;
-      final achievements = _collectAchievements(entries);
       return AnimatedBuilder(
         animation: _entry,
         builder: (_, __) => Column(
@@ -196,10 +189,6 @@ class _RankingPodiumState extends State<RankingPodium>
                       ),
                     ),
             ),
-            if (achievements.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              _RankingAchievementStrip(achievements: achievements),
-            ],
           ],
         ),
       );
@@ -478,46 +467,4 @@ class _PodiumPlace extends StatelessWidget {
         ? Italia90.ink
         : Colors.white;
   }
-}
-
-class _RankingAchievement {
-  const _RankingAchievement({required this.entry, required this.badge});
-
-  final RankingPodiumEntry entry;
-  final PlayerBadge badge;
-}
-
-List<_RankingAchievement> _collectAchievements(
-  List<RankingPodiumEntry> entries,
-) {
-  final seen = <(String, String)>{};
-  final achievements = <_RankingAchievement>[];
-  for (final entry in entries) {
-    for (final badge in entry.badges) {
-      if (seen.add((entry.id, badge.code))) {
-        achievements.add(_RankingAchievement(entry: entry, badge: badge));
-      }
-    }
-  }
-  return List.unmodifiable(achievements);
-}
-
-class _RankingAchievementStrip extends StatelessWidget {
-  const _RankingAchievementStrip({required this.achievements});
-
-  final List<_RankingAchievement> achievements;
-
-  @override
-  Widget build(BuildContext context) => RankingRecognitions(
-    key: const ValueKey('leaderboard-achievements'),
-    keyPrefix: 'leaderboard',
-    items: [
-      for (final achievement in achievements)
-        RankingRecognition(
-          ownerId: achievement.entry.id,
-          ownerName: achievement.entry.name,
-          badge: achievement.badge,
-        ),
-    ],
-  );
 }
