@@ -490,11 +490,11 @@ class _RankingAchievement {
 List<_RankingAchievement> _collectAchievements(
   List<RankingPodiumEntry> entries,
 ) {
-  final seen = <String>{};
+  final seen = <(String, String)>{};
   final achievements = <_RankingAchievement>[];
   for (final entry in entries) {
     for (final badge in entry.badges) {
-      if (seen.add(badge.code)) {
+      if (seen.add((entry.id, badge.code))) {
         achievements.add(_RankingAchievement(entry: entry, badge: badge));
       }
     }

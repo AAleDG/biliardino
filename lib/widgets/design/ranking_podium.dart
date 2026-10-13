@@ -102,128 +102,123 @@ class _RankingPodiumState extends State<RankingPodium>
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
-        builder: (context, constraints) {
-          if (!TickerMode.valuesOf(context).enabled && !_played) {
-            return Transform.translate(
-              offset: const Offset(0, 12),
-              child: const SizedBox.shrink(),
-            );
-          }
-          final entries = widget.top.take(3).toList();
-          if (entries.isEmpty) return const SizedBox.shrink();
-          final width = constraints.maxWidth.clamp(0.0, 520.0);
-          final scale = width / 402;
-          final stacked = width < 350 ||
-              MediaQuery.sizeOf(context).height < 450 ||
-              MediaQuery.textScalerOf(context).scale(1) > 1.3 ||
-              entries.asMap().entries.any(
-                    (entry) =>
-                        !_fitsEntry(context, entry.value, entry.key, scale),
-                  );
-          final content = stacked
-              ? Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: AppSpace.page),
-                  child: Column(
-                    children: [
-                      for (var i = 0; i < entries.length; i++)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _place(entries[i], i, stacked: true),
-                        ),
-                    ],
-                  ),
-                )
-              : Center(
-                  child: SizedBox(
-                    width: width,
-                    height: 316 * scale,
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: ExcludeSemantics(
-                            child: CustomPaint(
-                              painter:
-                                  RankingPodiumArtwork(scene: _image?.image),
-                            ),
-                          ),
-                        ),
-                        for (final i in [1, 0, 2])
-                          Positioned(
-                            left: _slots[i].left * scale,
-                            top: _slots[i].top * scale,
-                            width: _slots[i].width * scale,
-                            bottom: 0,
-                            child: i < entries.length
-                                ? _place(entries[i], i, stacked: false)
-                                : const SizedBox.shrink(),
-                          ),
-                        for (final i in [1, 0, 2])
-                          Positioned(
-                            left: _slots[i].left * scale,
-                            top: _slots[i].rankTop * scale,
-                            width: _slots[i].width * scale,
-                            child: IgnorePointer(
-                              child: ExcludeSemantics(
-                                child: Text(
-                                  '${i + 1}',
-                                  key: ValueKey('podium-block-${i + 1}'),
-                                  textAlign: TextAlign.center,
-                                  textScaler: TextScaler.noScaling,
-                                  style: AppType.event.copyWith(
-                                    fontSize: 56 * scale,
-                                    color: i == 0
-                                        ? AppColors.ink
-                                        : AppColors.onPrimary,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        Positioned.fill(
-                          child: IgnorePointer(
-                            child: ExcludeSemantics(
-                              child: CustomPaint(
-                                painter: RankingPodiumArtwork(
-                                  scene: _image?.image,
-                                  foreground: true,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-          return AnimatedBuilder(
-            animation: _entry,
-            builder: (_, child) => Transform.translate(
-              offset: Offset(
-                0,
-                12 * (1 - Curves.easeOutCubic.transform(_entry.value)),
-              ),
-              child: child,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                content,
-                if (!stacked)
-                  for (var i = 0; i < entries.length; i++)
-                    if (entries[i]
-                        .badges
-                        .any((badge) => !_isPodiumBadge(badge)))
-                      SizedBox(
-                        width: width,
-                        child:
-                            _AdditionalAwards(stats: entries[i], rank: i + 1),
-                      ),
-              ],
-            ),
+    builder: (context, constraints) {
+      if (!TickerMode.valuesOf(context).enabled && !_played) {
+        return Transform.translate(
+          offset: const Offset(0, 12),
+          child: const SizedBox.shrink(),
+        );
+      }
+      final entries = widget.top.take(3).toList();
+      if (entries.isEmpty) return const SizedBox.shrink();
+      final width = constraints.maxWidth.clamp(0.0, 520.0);
+      final scale = width / 402;
+      final stacked =
+          width < 350 ||
+          MediaQuery.sizeOf(context).height < 450 ||
+          MediaQuery.textScalerOf(context).scale(1) > 1.3 ||
+          entries.asMap().entries.any(
+            (entry) => !_fitsEntry(context, entry.value, entry.key, scale),
           );
-        },
+      final content = stacked
+          ? Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpace.page),
+              child: Column(
+                children: [
+                  for (var i = 0; i < entries.length; i++)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _place(entries[i], i, stacked: true),
+                    ),
+                ],
+              ),
+            )
+          : Center(
+              child: SizedBox(
+                width: width,
+                height: 316 * scale,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: ExcludeSemantics(
+                        child: CustomPaint(
+                          painter: RankingPodiumArtwork(scene: _image?.image),
+                        ),
+                      ),
+                    ),
+                    for (final i in [1, 0, 2])
+                      Positioned(
+                        left: _slots[i].left * scale,
+                        top: _slots[i].top * scale,
+                        width: _slots[i].width * scale,
+                        bottom: 0,
+                        child: i < entries.length
+                            ? _place(entries[i], i, stacked: false)
+                            : const SizedBox.shrink(),
+                      ),
+                    for (final i in [1, 0, 2])
+                      Positioned(
+                        left: _slots[i].left * scale,
+                        top: _slots[i].rankTop * scale,
+                        width: _slots[i].width * scale,
+                        child: IgnorePointer(
+                          child: ExcludeSemantics(
+                            child: Text(
+                              '${i + 1}',
+                              key: ValueKey('podium-block-${i + 1}'),
+                              textAlign: TextAlign.center,
+                              textScaler: TextScaler.noScaling,
+                              style: AppType.event.copyWith(
+                                fontSize: 56 * scale,
+                                color: i == 0
+                                    ? AppColors.ink
+                                    : AppColors.onPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: ExcludeSemantics(
+                          child: CustomPaint(
+                            painter: RankingPodiumArtwork(
+                              scene: _image?.image,
+                              foreground: true,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+      return AnimatedBuilder(
+        animation: _entry,
+        builder: (_, child) => Transform.translate(
+          offset: Offset(
+            0,
+            12 * (1 - Curves.easeOutCubic.transform(_entry.value)),
+          ),
+          child: child,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            content,
+            if (!stacked)
+              for (final stats in entries)
+                if (stats.badges.any((badge) => !_isPodiumBadge(badge)))
+                  SizedBox(
+                    width: width,
+                    child: _AdditionalAwards(stats: stats),
+                  ),
+          ],
+        ),
       );
+    },
+  );
 
   bool _fitsEntry(
     BuildContext context,
@@ -260,7 +255,8 @@ class _RankingPodiumState extends State<RankingPodium>
     );
     final avatarHeight =
         (index == 0 ? 50.0 : 46.0) * (stats.memberNames.length == 1 ? 1 : .72);
-    final contentHeight = (index == 0 ? 32 : 0) +
+    final contentHeight =
+        (index == 0 ? 32 : 0) +
         avatarHeight +
         6 +
         heightOf(stats.name, style, width) +
@@ -305,7 +301,6 @@ class _PodiumPlace extends StatelessWidget {
       container: true,
       button: true,
       enabled: true,
-      hint: 'Apri il profilo',
       label:
           'Posizione $rank: ${stats.name}. $metric. ${badges.map((b) => b.label).join(', ')}',
       onTap: onTap,
@@ -391,9 +386,8 @@ List<PlayerBadge> _podiumBadges(RankingStats stats) =>
 
 /// Earned ribbons that need more room stay visible below the podium, by entrant.
 class _AdditionalAwards extends StatelessWidget {
-  const _AdditionalAwards({required this.stats, required this.rank});
+  const _AdditionalAwards({required this.stats});
   final RankingStats stats;
-  final int rank;
 
   @override
   Widget build(BuildContext context) {
@@ -402,12 +396,7 @@ class _AdditionalAwards extends StatelessWidget {
         .toList(growable: false);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      child: RankingAwardTicket(
-        stats: stats,
-        badges: badges,
-        // Keep all profile actions together before the supporting award groups.
-        sortKey: OrdinalSortKey(100 + rank.toDouble()),
-      ),
+      child: RankingAwardTicket(stats: stats, badges: badges),
     );
   }
 }
