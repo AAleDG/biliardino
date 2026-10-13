@@ -57,7 +57,7 @@ String matchModeLabel(HistoryMatchModeFilter matchMode) {
     case HistoryMatchModeFilter.oneVsOne:
       return '1v1';
     case HistoryMatchModeFilter.rivalry:
-      return 'Rivalita';
+      return 'Rivalità';
     case HistoryMatchModeFilter.twoVsTwo:
       return '2v2';
   }

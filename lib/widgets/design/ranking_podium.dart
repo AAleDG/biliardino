@@ -6,6 +6,7 @@ import '../../theme/app_theme.dart';
 import 'ranking_identity.dart';
 import 'ranking_podium_artwork.dart';
 import 'ranking_badges.dart';
+import 'ranking_award_ticket.dart';
 
 /// Shared podium for points and scorers; opens profiles through its owner.
 class RankingPodium extends StatefulWidget {
@@ -393,30 +394,9 @@ class _AdditionalAwards extends StatelessWidget {
     final badges = stats.badges
         .where((badge) => !_isPodiumBadge(badge))
         .toList(growable: false);
-    return Semantics(
-      container: true,
-      label:
-          'Riconoscimenti di ${stats.name}: ${badges.map((badge) => badge.label).join(', ')}',
-      child: ExcludeSemantics(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: Material(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadius.panel),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(stats.name, style: AppType.player),
-                  const SizedBox(height: 8),
-                  RankingBadges(badges: badges),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: RankingAwardTicket(stats: stats, badges: badges),
     );
   }
 }

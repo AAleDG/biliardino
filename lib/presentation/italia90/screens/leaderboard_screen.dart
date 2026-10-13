@@ -223,7 +223,7 @@ class _LeaderboardModeSelector extends StatelessWidget {
     constraints: const BoxConstraints(maxWidth: 236),
     child: Semantics(
       container: true,
-      label: 'Modalita classifica',
+      label: 'Modalità classifica',
       child: SegmentedButton<MatchMode>(
         key: const ValueKey('leaderboard-mode-selector'),
         segments: const [
@@ -671,7 +671,6 @@ class _TeamLedgerRow extends StatelessWidget {
       ),
     ),
   );
-
 }
 
 class _TeamRankMarker extends StatelessWidget {

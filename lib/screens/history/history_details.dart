@@ -51,7 +51,7 @@ class _MatchDetailsSheet extends StatelessWidget {
             _MatchDetailRow(label: 'Data e ora', value: '$date · $time'),
             _MatchDetailRow(
               label: 'Formato',
-              value: match.isRivalry ? 'Rivalita · $mode' : mode,
+              value: match.isRivalry ? 'Rivalità · $mode' : mode,
             ),
             _MatchDetailRow(
               label: 'Squadra 1',

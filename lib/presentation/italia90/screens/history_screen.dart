@@ -228,7 +228,7 @@ Future<void> _confirmDeleteMatch(
     context: rootContext,
     builder: (dialogContext) => AlertDialog(
       title: const Text('Eliminare partita?'),
-      content: const Text('La partita verra rimossa dallo storico.'),
+      content: const Text('La partita verrà rimossa dallo storico.'),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -415,7 +415,7 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Rivalita'),
+                title: const Text('Rivalità'),
                 value: _isRivalry,
                 onChanged: (value) => setState(() => _isRivalry = value),
               ),
@@ -511,7 +511,7 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
     }
     final playerIds = [..._normalizedTeam(_team1), ..._normalizedTeam(_team2)];
     if (playerIds.toSet().length != _mode.teamSize * 2) {
-      return 'Ogni giocatore puo stare in una sola squadra.';
+      return 'Ogni giocatore può stare in una sola squadra.';
     }
     if (_team1Scorers.length != score1 || _team2Scorers.length != score2) {
       return 'Il numero di marcatori deve corrispondere allo score.';
@@ -1359,7 +1359,7 @@ class _MatchCard extends StatelessWidget {
     final timeLabel = DateFormat('HH:mm').format(match.playedAt);
     final baseModeLabel = match.mode == MatchMode.oneVsOne ? '1v1' : '2v2';
     final modeLabel = match.isRivalry
-        ? 'Rivalita · $baseModeLabel'
+        ? 'Rivalità · $baseModeLabel'
         : baseModeLabel;
     final t1Names = match.team1
         .map((id) => StatsService.playerName(players, id))
@@ -1675,7 +1675,7 @@ class _MatchDetailsSheet extends StatelessWidget {
             _MatchDetailRow(label: 'Data e ora', value: '$date · $time'),
             _MatchDetailRow(
               label: 'Formato',
-              value: match.isRivalry ? 'Rivalita · $mode' : mode,
+              value: match.isRivalry ? 'Rivalità · $mode' : mode,
             ),
             _MatchDetailRow(
               label: 'Squadra 1',

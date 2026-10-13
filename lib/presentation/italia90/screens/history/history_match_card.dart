@@ -34,7 +34,7 @@ class HistoryMatchCard extends StatelessWidget {
         .map((id) => StatsService.playerName(players, id))
         .toList();
     final baseMode = match.mode == MatchMode.oneVsOne ? '1v1' : '2v2';
-    final mode = match.isRivalry ? 'Rivalita · $baseMode' : baseMode;
+    final mode = match.isRivalry ? 'Rivalità · $baseMode' : baseMode;
     final winnerColor = match.winningTeam == 1
         ? Italia90.teamOne
         : Italia90.teamTwo;

@@ -78,7 +78,7 @@ class HistoryMatchDetailsSheet extends StatelessWidget {
                     icon: Icons.sports_soccer_outlined,
                     accentColor: Italia90.primary,
                     label: 'Formato',
-                    value: match.isRivalry ? 'Rivalita · $mode' : mode,
+                    value: match.isRivalry ? 'Rivalità · $mode' : mode,
                   ),
                   const Divider(height: 1, color: Italia90.subtle),
                   _DetailRow(
