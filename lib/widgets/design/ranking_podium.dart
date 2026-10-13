@@ -207,11 +207,11 @@ class _RankingPodiumState extends State<RankingPodium>
           children: [
             content,
             if (!stacked)
-              for (final stats in entries)
-                if (stats.badges.any((badge) => !_isPodiumBadge(badge)))
+              for (var i = 0; i < entries.length; i++)
+                if (entries[i].badges.any((badge) => !_isPodiumBadge(badge)))
                   SizedBox(
                     width: width,
-                    child: _AdditionalAwards(stats: stats),
+                    child: _AdditionalAwards(stats: entries[i], rank: i + 1),
                   ),
           ],
         ),
@@ -300,6 +300,7 @@ class _PodiumPlace extends StatelessWidget {
       container: true,
       button: true,
       enabled: true,
+      hint: 'Apri il profilo',
       label:
           'Posizione $rank: ${stats.name}. $metric. ${badges.map((b) => b.label).join(', ')}',
       onTap: onTap,
@@ -385,8 +386,9 @@ List<PlayerBadge> _podiumBadges(RankingStats stats) =>
 
 /// Earned ribbons that need more room stay visible below the podium, by entrant.
 class _AdditionalAwards extends StatelessWidget {
-  const _AdditionalAwards({required this.stats});
+  const _AdditionalAwards({required this.stats, required this.rank});
   final RankingStats stats;
+  final int rank;
 
   @override
   Widget build(BuildContext context) {
@@ -395,6 +397,8 @@ class _AdditionalAwards extends StatelessWidget {
         .toList(growable: false);
     return Semantics(
       container: true,
+      // Keep all profile actions together before the supporting award groups.
+      sortKey: OrdinalSortKey(100 + rank.toDouble()),
       label:
           'Riconoscimenti di ${stats.name}: ${badges.map((badge) => badge.label).join(', ')}',
       child: ExcludeSemantics(
