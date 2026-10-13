@@ -227,7 +227,6 @@ class RankingPodiumArtwork extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
     canvas.save();
-    canvas.clipRect(Offset.zero & size);
     canvas.scale(size.width / 402, size.height / 342);
 
     if (foreground) {

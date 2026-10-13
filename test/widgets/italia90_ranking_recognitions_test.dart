@@ -87,7 +87,10 @@ void main() {
         );
         expect(tester.takeException(), isNull);
 
-        await tester.tap(find.text('Marcatori'));
+        final scorersTab = find.text('Marcatori', skipOffstage: false);
+        await tester.ensureVisible(scorersTab);
+        await tester.pump();
+        await tester.tap(scorersTab);
         await _pumpScreen(tester);
         _expectRecognitions(tester, completePairs);
         expect(fourthRecognition, findsOneWidget);
@@ -105,7 +108,10 @@ void main() {
         await tester.pump();
         expect(tester.takeException(), isNull);
 
-        await tester.tap(find.text('1vs1'));
+        final individualMode = find.text('1vs1', skipOffstage: false);
+        await tester.ensureVisible(individualMode);
+        await tester.pump();
+        await tester.tap(individualMode);
         await _pumpScreen(tester);
         _expectRecognitions(tester, liveFixture.cubit.state.general);
         expect(tester.takeException(), isNull);

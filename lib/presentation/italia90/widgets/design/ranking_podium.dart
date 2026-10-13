@@ -5,7 +5,7 @@ import '../../../../models/player_stats.dart';
 import '../../../../models/team_leaderboard_stats.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/italia90_tokens.dart';
-import '../avatar.dart';
+import 'ranking_avatar.dart';
 import 'ranking_podium_artwork.dart';
 
 /// Data displayed by one place in the reusable Classifica podium.
@@ -63,7 +63,7 @@ class RankingPodium extends StatefulWidget {
   final List<RankingPodiumEntry> entries;
   final ValueChanged<String> onOpen;
 
-  /// Whether to render the approved illustrated podium treatment.
+  /// Whether to render the optional illustrated podium treatment.
   final bool showArtwork;
 
   @override
@@ -126,21 +126,17 @@ class _RankingPodiumState extends State<RankingPodium>
           width < 350 ||
           MediaQuery.sizeOf(context).height < 450 ||
           MediaQuery.textScalerOf(context).scale(1) > 1.3;
+      final sceneHeight = (widget.showArtwork ? 316 : 260) * scale;
       return AnimatedBuilder(
         animation: _entry,
         builder: (_, __) => Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Material(
+            KeyedSubtree(
               key: const ValueKey('leaderboard-podium'),
-              color: Italia90.panel,
-              clipBehavior: Clip.antiAlias,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(Italia90.panelRadius),
-              ),
               child: stacked
                   ? Padding(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Column(
                         children: [
                           for (var i = 0; i < entries.length; i++)
@@ -159,8 +155,9 @@ class _RankingPodiumState extends State<RankingPodium>
                       ),
                     )
                   : SizedBox(
-                      height: 316 * scale,
+                      height: sceneHeight,
                       child: Stack(
+                        clipBehavior: Clip.none,
                         children: [
                           if (widget.showArtwork)
                             const Positioned.fill(
@@ -202,9 +199,9 @@ class _RankingPodiumState extends State<RankingPodium>
   ) {
     if (index >= entries.length) return const SizedBox.shrink();
     final slot = switch (index) {
-      0 => (left: 129.0, top: 64.0, width: 144.0, angle: 0.0),
-      1 => (left: 12.0, top: 132.0, width: 126.0, angle: -0.045),
-      _ => (left: 264.0, top: 132.0, width: 126.0, angle: 0.045),
+      0 => (left: 129.0, top: 34.0, width: 144.0, angle: 0.0),
+      1 => (left: 12.0, top: 96.0, width: 126.0, angle: -0.035),
+      _ => (left: 264.0, top: 96.0, width: 126.0, angle: 0.035),
     };
     return Positioned(
       left: slot.left * scale,
@@ -286,6 +283,7 @@ class _PodiumPlace extends StatelessWidget {
         container: true,
         button: true,
         enabled: true,
+        hint: 'Apri il profilo',
         label: 'Posizione $rank: ${entry.name}. ${entry.metric}.',
         onTap: onTap,
         child: ExcludeSemantics(
@@ -346,7 +344,13 @@ class _PodiumPlace extends StatelessWidget {
     padding: const EdgeInsets.all(16),
     child: Row(
       children: [
-        SizedBox(width: 36, child: Text('$rank', style: Italia90.heading)),
+        SizedBox(
+          width: 36,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text('$rank', style: Italia90.heading),
+          ),
+        ),
         const SizedBox(width: 12),
         _avatars(40),
         const SizedBox(width: 12),
@@ -368,10 +372,11 @@ class _PodiumPlace extends StatelessWidget {
 
   Widget _cardContent(Color cardColor, Color onCard) {
     final avatarSize = (rank == 1 ? 43 : 38) * scale;
+    final topPadding = showArtwork ? (rank == 1 ? 80 : 43) : 18;
     return Padding(
       padding: EdgeInsets.fromLTRB(
         6 * scale,
-        (rank == 1 ? 80 : 43) * scale,
+        topPadding * scale,
         6 * scale,
         8 * scale,
       ),
@@ -433,12 +438,7 @@ class _PodiumPlace extends StatelessWidget {
         for (var i = 0; i < names.length; i++)
           Transform.translate(
             offset: Offset(i == 0 ? 0 : -size * .14, 0),
-            child: PlayerAvatar(
-              name: names[i],
-              size: size,
-              color: _avatarColor(rank, i),
-              foregroundColor: _avatarForeground(rank, i),
-            ),
+            child: RankingAvatar(name: names[i], size: size),
           ),
       ],
     );
@@ -450,21 +450,4 @@ class _PodiumPlace extends StatelessWidget {
     3 => Italia90.red,
     _ => Italia90.primary,
   };
-
-  static Color _avatarColor(int rank, int index) => switch ((rank, index)) {
-    (1, 0) => Italia90.teamOne,
-    (1, 1) => Italia90.teamOne,
-    (2, 0) => Colors.white,
-    (2, 1) => Italia90.red,
-    (3, 0) => Italia90.green,
-    (3, 1) => Italia90.teamOne,
-    _ => Italia90.primary,
-  };
-
-  static Color _avatarForeground(int rank, int index) {
-    final color = _avatarColor(rank, index);
-    return color == Colors.white || color == Italia90.teamTwo
-        ? Italia90.ink
-        : Colors.white;
-  }
 }
