@@ -173,30 +173,32 @@ class _HistorySegmentedFilter<T> extends StatelessWidget {
   final bool enabled;
 
   @override
-  Widget build(BuildContext context) => Wrap(
-    spacing: 8,
-    runSpacing: 8,
-    children: [
-      for (final value in values)
-        ChoiceChip(
-          key: ValueKey('history-filter-${value.toString().split('.').last}'),
-          label: Text(labelForValue(value)),
-          selected: value == selectedValue,
-          onSelected: enabled ? (_) => onSelected(value) : null,
-          selectedColor: Italia90.primary,
-          backgroundColor: Italia90.subtle,
-          disabledColor: Italia90.subtle.withValues(alpha: 0.45),
-          labelStyle: TextStyle(
-            color: value == selectedValue && enabled
-                ? Colors.white
-                : Italia90.ink,
-            fontWeight: FontWeight.w700,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(Italia90.controlRadius),
-          ),
-        ),
-    ],
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final columns = _segmentedFilterColumns(
+        values.length,
+        constraints.maxWidth,
+        MediaQuery.textScalerOf(context).scale(1),
+      );
+      final width = _filterChipWidth(constraints.maxWidth, columns);
+      return Wrap(
+        spacing: Italia90.sm,
+        runSpacing: Italia90.sm,
+        children: [
+          for (final value in values)
+            _HistoryFilterChip(
+              chipKey: ValueKey(
+                'history-filter-${value.toString().split('.').last}',
+              ),
+              label: labelForValue(value),
+              width: width,
+              selected: value == selectedValue,
+              enabled: enabled,
+              onSelected: () => onSelected(value),
+            ),
+        ],
+      );
+    },
   );
 }
 
@@ -212,49 +214,147 @@ class _HistoryPlayerSelector extends StatelessWidget {
   final ValueChanged<String?> onSelected;
 
   @override
-  Widget build(BuildContext context) => ConstrainedBox(
-    constraints: const BoxConstraints(maxHeight: 112),
-    child: SingleChildScrollView(
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          _chip(
-            key: const ValueKey('history-player-all'),
-            label: 'Tutti',
-            selected: selectedPlayerId == null,
-            onSelected: () => onSelected(null),
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final textScale = MediaQuery.textScalerOf(context).scale(1);
+      final columns = textScale > 1.3
+          ? 1
+          : constraints.maxWidth >= 340
+          ? 3
+          : 2;
+      final width = _filterChipWidth(constraints.maxWidth, columns);
+      return ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 112),
+        child: SingleChildScrollView(
+          child: Wrap(
+            spacing: Italia90.sm,
+            runSpacing: Italia90.sm,
+            children: [
+              _HistoryFilterChip(
+                chipKey: const ValueKey('history-player-all'),
+                label: 'Tutti',
+                width: width,
+                selected: selectedPlayerId == null,
+                onSelected: () => onSelected(null),
+              ),
+              for (final player in players)
+                _HistoryFilterChip(
+                  chipKey: ValueKey('history-player-${player.id}'),
+                  label: player.name,
+                  width: width,
+                  selected: selectedPlayerId == player.id,
+                  onSelected: () => onSelected(player.id),
+                ),
+            ],
           ),
-          for (final player in players)
-            _chip(
-              key: ValueKey('history-player-${player.id}'),
-              label: player.name,
-              selected: selectedPlayerId == player.id,
-              onSelected: () => onSelected(player.id),
-            ),
-        ],
-      ),
-    ),
+        ),
+      );
+    },
   );
+}
 
-  Widget _chip({
-    required Key key,
-    required String label,
-    required bool selected,
-    required VoidCallback onSelected,
-  }) => ChoiceChip(
-    key: key,
-    label: Text(label),
-    selected: selected,
-    onSelected: (_) => onSelected(),
-    selectedColor: Italia90.primary,
-    backgroundColor: Italia90.subtle,
-    labelStyle: TextStyle(
-      color: selected ? Colors.white : Italia90.ink,
-      fontWeight: FontWeight.w700,
-    ),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(Italia90.controlRadius),
-    ),
-  );
+int _segmentedFilterColumns(
+  int itemCount,
+  double availableWidth,
+  double textScale,
+) {
+  if (textScale > 1.3) {
+    return 1;
+  }
+  if (itemCount == 3 && availableWidth >= 340) {
+    return 3;
+  }
+  return 2;
+}
+
+double _filterChipWidth(double availableWidth, int columns) {
+  final gaps = Italia90.sm * (columns - 1);
+  return (availableWidth - gaps) / columns;
+}
+
+double _historyFilterChipHeight(BuildContext context) {
+  final textScaler = MediaQuery.textScalerOf(context);
+  final fontSize = Italia90.body.fontSize ?? 16;
+  final lineHeight = textScaler.scale(fontSize) * (Italia90.body.height ?? 1);
+  final textScale = textScaler.scale(1);
+  final accessibilityPadding = textScale > 1.3 ? Italia90.sm : 0;
+  final preferredHeight = lineHeight + accessibilityPadding;
+  return preferredHeight > Italia90.touch ? preferredHeight : Italia90.touch;
+}
+
+class _HistoryFilterChip extends StatelessWidget {
+  const _HistoryFilterChip({
+    required this.chipKey,
+    required this.label,
+    required this.width,
+    required this.selected,
+    required this.onSelected,
+    this.enabled = true,
+  });
+
+  final Key chipKey;
+  final String label;
+  final double width;
+  final bool selected;
+  final VoidCallback onSelected;
+  final bool enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedAndEnabled = selected && enabled;
+    final height = _historyFilterChipHeight(context);
+    final backgroundColor = selectedAndEnabled
+        ? Italia90.primary
+        : enabled
+        ? Italia90.subtle
+        : Italia90.subtle.withValues(alpha: 0.45);
+    final foregroundColor = selectedAndEnabled
+        ? Colors.white
+        : enabled
+        ? Italia90.ink
+        : Italia90.muted;
+
+    return SizedBox(
+      key: chipKey,
+      width: width,
+      height: height,
+      child: Semantics(
+        button: true,
+        enabled: enabled,
+        selected: selected,
+        label: label,
+        excludeSemantics: true,
+        onTap: enabled ? onSelected : null,
+        child: Material(
+          color: backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(Italia90.controlRadius),
+            side: const BorderSide(color: Italia90.outline),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: enabled ? onSelected : null,
+            child: SizedBox.expand(
+              child: Center(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: Italia90.body.copyWith(
+                      color: foregroundColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
