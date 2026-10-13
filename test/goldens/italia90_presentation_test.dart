@@ -36,13 +36,11 @@ void main() {
       await loader.load();
     }
   });
-  final references =
-      jsonDecode(
-            File(
-              'test/goldens/italia90-reference/provenance.json',
-            ).readAsStringSync(),
-          )
-          as Map<String, dynamic>;
+  final references = jsonDecode(
+    File(
+      'test/goldens/italia90-reference/provenance.json',
+    ).readAsStringSync(),
+  ) as Map<String, dynamic>;
   for (final reference in references['references'] as List) {
     final name = reference['name'] as String;
     // Issue 17 intentionally replaces the live composition; donor PNGs stay frozen.
@@ -54,16 +52,14 @@ void main() {
     final testTitle = isLiveScoreAcceptance
         ? 'Italia live-score acceptance'
         : isTeamAssignmentAcceptance
-        ? 'Italia team-assignment acceptance'
-        : 'Italia donor parity';
+            ? 'Italia team-assignment acceptance'
+            : 'Italia donor parity';
     testWidgets('$testTitle: $name', (tester) async {
-      final metadata =
-          jsonDecode(
-                File(
-                  'test/goldens/italia90-reference/$name.json',
-                ).readAsStringSync(),
-              )
-              as Map<String, dynamic>;
+      final metadata = jsonDecode(
+        File(
+          'test/goldens/italia90-reference/$name.json',
+        ).readAsStringSync(),
+      ) as Map<String, dynamic>;
       final viewport = metadata['viewport'] as Map;
       final safe = metadata['safe_area'] as Map;
       final capturedAt = DateTime.parse(metadata['captured_at'] as String);
@@ -78,8 +74,8 @@ void main() {
       );
       tester.platformDispatcher.textScaleFactorTestValue =
           name == 'flows-setup-large'
-          ? 1
-          : (metadata['text_scale'] as num).toDouble();
+              ? 1
+              : (metadata['text_scale'] as num).toDouble();
       addTearDown(tester.view.reset);
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       final shadows = debugDisableShadows;
@@ -231,10 +227,10 @@ void main() {
             name.startsWith('supplement-more-')
                 ? 'appearance-altro-$name.png'
                 : isLiveScoreAcceptance
-                ? 'italia90-issue-17-reference/$name.png'
-                : isTeamAssignmentAcceptance
-                ? 'italia90-issue-15-reference/$name.png'
-                : expectedGolden,
+                    ? 'italia90-issue-17-reference/$name.png'
+                    : isTeamAssignmentAcceptance
+                        ? 'italia90-issue-15-reference/$name.png'
+                        : expectedGolden,
           ),
         );
       } finally {

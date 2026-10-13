@@ -31,33 +31,33 @@ class MatchTeamStage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    key: const ValueKey('setup-team-stage'),
-    container: true,
-    label: 'Assegnazione squadre',
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(16, 18, 16, 34),
-      child: AdaptivePair(
-        first: _TeamCard(
-          team: 1,
-          players: players,
-          playerIds: team1,
-          capacity: capacity,
-          enabled: enabled,
-          onAdd: () => onAdd(1),
-          onEdit: (id) => onEdit(1, id),
+        key: const ValueKey('setup-team-stage'),
+        container: true,
+        label: 'Assegnazione squadre',
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 34),
+          child: AdaptivePair(
+            first: _TeamCard(
+              team: 1,
+              players: players,
+              playerIds: team1,
+              capacity: capacity,
+              enabled: enabled,
+              onAdd: () => onAdd(1),
+              onEdit: (id) => onEdit(1, id),
+            ),
+            second: _TeamCard(
+              team: 2,
+              players: players,
+              playerIds: team2,
+              capacity: capacity,
+              enabled: enabled,
+              onAdd: () => onAdd(2),
+              onEdit: (id) => onEdit(2, id),
+            ),
+          ),
         ),
-        second: _TeamCard(
-          team: 2,
-          players: players,
-          playerIds: team2,
-          capacity: capacity,
-          enabled: enabled,
-          onAdd: () => onAdd(2),
-          onEdit: (id) => onEdit(2, id),
-        ),
-      ),
-    ),
-  );
+      );
 }
 
 class _TeamCard extends StatelessWidget {
@@ -186,42 +186,43 @@ class _TeamHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ColoredBox(
-    color: color,
-    child: Padding(
-      padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              'SQUADRA $team',
-              style: Italia90.heading.copyWith(
-                color: onColor,
-                fontSize: 20,
-                height: 1,
-              ),
-            ),
-          ),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: onColor.withValues(alpha: .92),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-              child: Text(
-                '$count/$capacity',
-                style: AppType.utility.copyWith(
-                  color: color,
-                  height: 1,
-                  fontWeight: FontWeight.w700,
+        color: color,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'SQUADRA $team',
+                  style: Italia90.heading.copyWith(
+                    color: onColor,
+                    fontSize: 20,
+                    height: 1,
+                  ),
                 ),
               ),
-            ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: onColor.withValues(alpha: .92),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                  child: Text(
+                    '$count/$capacity',
+                    style: AppType.utility.copyWith(
+                      color: color,
+                      height: 1,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    ),
-  );
+        ),
+      );
 }
 
 class _TeamPlayerSlot extends StatelessWidget {
@@ -244,49 +245,50 @@ class _TeamPlayerSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    button: true,
-    enabled: enabled,
-    label: '$name, modifica Squadra $team',
-    onTap: enabled ? onTap : null,
-    child: ExcludeSemantics(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: enabled ? onTap : null,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 56),
-            decoration: BoxDecoration(
-              border: isLast
-                  ? null
-                  : const Border(bottom: BorderSide(color: Italia90.subtle)),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 7),
-            child: Row(
-              children: [
-                _TeamAvatar(color: color, enabled: enabled),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    name,
-                    style: Italia90.body.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: enabled ? Italia90.ink : Italia90.muted,
+        button: true,
+        enabled: enabled,
+        label: '$name, modifica Squadra $team',
+        onTap: enabled ? onTap : null,
+        child: ExcludeSemantics(
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: enabled ? onTap : null,
+              child: Container(
+                constraints: const BoxConstraints(minHeight: 56),
+                decoration: BoxDecoration(
+                  border: isLast
+                      ? null
+                      : const Border(
+                          bottom: BorderSide(color: Italia90.subtle)),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 7),
+                child: Row(
+                  children: [
+                    _TeamAvatar(color: color, enabled: enabled),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        name,
+                        style: Italia90.body.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: enabled ? Italia90.ink : Italia90.muted,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.edit_outlined,
+                      size: 20,
+                      color: enabled ? color : Italia90.muted,
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 4),
-                Icon(
-                  Icons.edit_outlined,
-                  size: 20,
-                  color: enabled ? color : Italia90.muted,
-                ),
-              ],
+              ),
             ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 }
 
 class _EmptyTeamSlot extends StatelessWidget {
@@ -306,13 +308,12 @@ class _EmptyTeamSlot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = enabled ? 'POSTO DISPONIBILE' : 'IN ATTESA DI GIOCATORI';
-    final icon = enabled
-        ? Icons.person_outline_rounded
-        : Icons.lock_outline_rounded;
+    final icon =
+        enabled ? Icons.person_outline_rounded : Icons.lock_outline_rounded;
     final foreground = enabled
         ? team == 2
-              ? Italia90.ink
-              : color
+            ? Italia90.ink
+            : color
         : Italia90.muted;
     return Semantics(
       container: true,
@@ -363,32 +364,32 @@ class _AddPlayerButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    container: true,
-    button: true,
-    enabled: enabled,
-    label: 'Aggiungi giocatore alla Squadra $team',
-    onTap: enabled ? onPressed : null,
-    child: ExcludeSemantics(
-      child: OutlinedButton.icon(
-        onPressed: enabled ? onPressed : null,
-        icon: const Icon(Icons.person_add_alt_1_rounded, size: 20),
-        label: const Text('AGGIUNGI GIOCATORE'),
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size(0, 48),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-          foregroundColor: color == Italia90.teamTwo ? Italia90.ink : color,
-          disabledForegroundColor: Italia90.muted,
-          backgroundColor: Colors.transparent,
-          disabledBackgroundColor: Italia90.subtle.withValues(alpha: .55),
-          side: BorderSide(color: color.withValues(alpha: .72)),
-          textStyle: AppType.utility,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(Italia90.controlRadius),
+        container: true,
+        button: true,
+        enabled: enabled,
+        label: 'Aggiungi giocatore alla Squadra $team',
+        onTap: enabled ? onPressed : null,
+        child: ExcludeSemantics(
+          child: OutlinedButton.icon(
+            onPressed: enabled ? onPressed : null,
+            icon: const Icon(Icons.person_add_alt_1_rounded, size: 20),
+            label: const Text('AGGIUNGI GIOCATORE'),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(0, 48),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              foregroundColor: color == Italia90.teamTwo ? Italia90.ink : color,
+              disabledForegroundColor: Italia90.muted,
+              backgroundColor: Colors.transparent,
+              disabledBackgroundColor: Italia90.subtle.withValues(alpha: .55),
+              side: BorderSide(color: color.withValues(alpha: .72)),
+              textStyle: AppType.utility,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(Italia90.controlRadius),
+              ),
+            ),
           ),
         ),
-      ),
-    ),
-  );
+      );
 }
 
 class _TeamStatus extends StatelessWidget {
@@ -405,28 +406,28 @@ class _TeamStatus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Semantics(
-    container: true,
-    label: label,
-    child: ExcludeSemantics(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 18),
-            const SizedBox(width: 6),
-            Flexible(
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                style: AppType.utility.copyWith(color: color),
-              ),
+        container: true,
+        label: label,
+        child: ExcludeSemantics(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: color, size: 18),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: AppType.utility.copyWith(color: color),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
-    ),
-  );
+      );
 }
 
 class _TeamAvatar extends StatelessWidget {
@@ -437,16 +438,16 @@ class _TeamAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    width: 36,
-    height: 36,
-    decoration: BoxDecoration(
-      color: enabled ? color.withValues(alpha: .14) : Italia90.subtle,
-      shape: BoxShape.circle,
-    ),
-    child: Icon(
-      Icons.person,
-      size: 22,
-      color: enabled ? color : Italia90.muted,
-    ),
-  );
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: enabled ? color.withValues(alpha: .14) : Italia90.subtle,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          Icons.person,
+          size: 22,
+          color: enabled ? color : Italia90.muted,
+        ),
+      );
 }
