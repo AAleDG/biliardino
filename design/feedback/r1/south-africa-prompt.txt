@@ -1,0 +1,18 @@
+Use case: ui-mockup
+Asset type: a review-only proposal for a new Biliardino in-app feedback screen. Not a production asset or implementation specification.
+Primary request: create ONE polished full-screen flat mobile UI screenshot for a feedback form. Use the reference screenshot strictly for the existing style frame, type proportions and decorations; replace the appearance selector content entirely with this form. No device frame, no perspective, no desk, no second screen, no presentation captions.
+Composition: portrait, equivalent to a 402 x 874 logical-pixel mobile screen. Warm light canvas. Back arrow at top returns to Altro. A clear title FEEDBACK. No bottom navigation on this pushed form route. An uncluttered central readable surface with generous gutters and no graphics behind text. Existing artwork remains peripheral; do not introduce a mascot hero on this utility screen. Keep all controls visible and comfortably sized. The form fills the useful central space without looking like a generic web page.
+Content order and text, verbatim Italian:
+1. Heading: "FEEDBACK"
+2. Intro: "Hai un’idea o qualcosa non funziona?"
+3. Supporting sentence: "Raccontacelo qui."
+4. Field label: "Messaggio"
+5. Large empty multiline field, placeholder: "Scrivi il tuo messaggio…"
+6. Field label: "Email (facoltativa)"
+7. Email field placeholder: "Per ricevere una risposta"
+8. Small clear privacy/context text on the warm plain surface: "Invieremo anche versione dell’app, sistema operativo e stile scelto."
+9. Strong full-width primary action: "INVIA FEEDBACK"
+10. Secondary quiet reassurance below: "La bozza resta salvata su questo dispositivo."
+Constraints: Exactly one required message field and one optional email field. No category, name, rating, screenshot upload, sign-in, checkbox, phone number, Formspree branding, promotional copy, or extra fields. No sample personal data. Functional back icon and field outlines clear. Readable body typography and neutral dark secondary copy. Button white text with good contrast. No keyboard. Preserve current branch's visual identity, clean control geometry and Italian punctuation. Decoration never touches fields, copy or action. No content clipping.
+Input image: Image 1 is the CURRENT running South Africa 2010 Aspetto screen. It is the authority for the accepted utility-screen frame, blue actions, typography, and Pass ribbon header/footer. Existing selector cards/content are not part of this proposal.
+Style: current South Africa 2010 Biliardino. Heavy Barlow Condensed-like black title, Barlow utility copy. Warm ivory #F8F5EB, white fields, dark ink #111111. Strong blue #0057B8 action. Reuse the distinctive smooth green/yellow sweeping upper-left ribbons and blue/red upper-right sweeps; retain blue/yellow/green/red/black football ribbon footer in a restrained cropped edge strip. The header and footer are a frame around a calm form. No Ciao, Italian tricolour pitch or new foosball hero. Rounded 12px controls. Flat readable fields, no ticket-shaped inputs and no invented decorative art.

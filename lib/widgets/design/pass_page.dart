@@ -88,12 +88,14 @@ class PassPageHeader extends StatelessWidget {
     this.onBack,
     this.showArtwork = true,
     this.fitTitle = false,
+    this.layoutHeight,
   });
 
   final String title;
   final bool compact;
   final VoidCallback? onBack;
   final bool showArtwork, fitTitle;
+  final double? layoutHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +107,7 @@ class PassPageHeader extends StatelessWidget {
       ),
     );
     return SizedBox(
-      height: compact ? 92 : 144,
+      height: layoutHeight ?? (compact ? 92 : 144),
       child: Stack(
         children: [
           if (showArtwork && !compact)

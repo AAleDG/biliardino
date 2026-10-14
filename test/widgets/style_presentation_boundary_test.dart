@@ -15,6 +15,8 @@ import 'package:biliardino/presentation/app_presentation.dart';
 import 'package:biliardino/presentation/presentation_registry.dart';
 import 'package:biliardino/presentation/south_africa/south_africa_presentation.dart';
 import 'package:biliardino/repositories/player_repository.dart';
+import 'package:biliardino/repositories/feedback_repository.dart';
+import 'package:biliardino/screens/feedback/feedback_screen.dart';
 import 'package:biliardino/screens/home_screen.dart';
 import 'package:biliardino/screens/history_screen.dart';
 import 'package:biliardino/screens/match_editor/match_editor_screen.dart';
@@ -27,6 +29,69 @@ import '../support/design_fixture.dart';
 import '../support/match_editor_fixture.dart' show editorTap;
 
 void main() {
+  testWidgets(
+    'both Altro actions keep one feedback route and draft across style changes and visits',
+    (tester) async {
+      tester.view.physicalSize = const Size(402, 874);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final fixture = DesignFixture();
+      fixture.feedbackRepository = FeedbackRepository(fixture.database);
+      await fixture.load();
+      addTearDown(() async {
+        await tester.pumpWidget(const SizedBox.shrink());
+        await fixture.dispose();
+      });
+      await tester.pumpWidget(fixture.app);
+      await tester.pumpAndSettle();
+      final context = tester.element(find.byType(HomeScreen));
+      final home = context.read<HomeCubit>();
+      final style = context.read<AppStyleCubit>();
+      final navigator = Navigator.of(context);
+      home.select(HomeDestination.more);
+      await tester.pumpAndSettle();
+      for (final selected in AppStyle.values) {
+        await style.select(selected);
+        await tester.pumpAndSettle();
+        final action = find.byKey(const ValueKey('more-feedback'));
+        await tester.ensureVisible(action);
+        await tester.pumpAndSettle();
+        await tester.tap(action);
+        await tester.pumpAndSettle();
+        expect(find.byType(FeedbackScreen), findsOneWidget);
+        expect(find.byType(BottomNavigationBar), findsNothing);
+        final route = ModalRoute.of(
+          tester.element(find.byType(FeedbackScreen)),
+        );
+        final state = tester.state(find.byType(FeedbackScreen));
+        final message = find.byKey(const ValueKey('feedback-message'));
+        if (selected == AppStyle.southAfrica2010) {
+          await tester.enterText(message, 'Bozza tra stili');
+          await tester.pumpAndSettle();
+          await style.select(AppStyle.italia90);
+          await tester.pumpAndSettle();
+          expect(
+            ModalRoute.of(tester.element(find.byType(FeedbackScreen))),
+            same(route),
+          );
+          expect(tester.state(find.byType(FeedbackScreen)), same(state));
+        }
+        expect(
+          tester.widget<TextFormField>(message).controller!.text,
+          'Bozza tra stili',
+        );
+        expect(
+          Navigator.of(tester.element(find.byType(FeedbackScreen))),
+          same(navigator),
+        );
+        await navigator.maybePop();
+        await tester.pumpAndSettle();
+        expect(find.byType(FeedbackScreen), findsNothing);
+        expect(home.state, HomeDestination.more);
+      }
+    },
+  );
+
   testWidgets(
     'two real styles retain setup, filters, ranking mode/tab and the Navigator',
     (tester) async {

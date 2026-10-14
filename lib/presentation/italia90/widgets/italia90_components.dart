@@ -90,6 +90,12 @@ class ItaliaHomeMasthead extends StatelessWidget {
     super.key,
     this.showSubtitle = true,
     this.compact = false,
+    this.wordmarkSize,
+    this.markSize,
+    this.ruleWidth,
+    this.ruleInset = 0,
+    this.ruleOffsetY = 0,
+    this.markOffsetY = 0,
     this.leading,
     this.actions = const [],
     this.semanticsKey,
@@ -98,6 +104,9 @@ class ItaliaHomeMasthead extends StatelessWidget {
 
   final bool showSubtitle;
   final bool compact;
+  final double? wordmarkSize, markSize, ruleWidth;
+  final double ruleInset;
+  final double ruleOffsetY, markOffsetY;
   final Widget? leading;
   final List<Widget> actions;
   final Key? semanticsKey;
@@ -122,7 +131,7 @@ class ItaliaHomeMasthead extends StatelessWidget {
                 child: Text(
                   'BILIARDINO',
                   style: Italia90.display.copyWith(
-                    fontSize: compact ? 42 : 60,
+                    fontSize: wordmarkSize ?? (compact ? 42 : 60),
                     height: 0.92,
                   ),
                 ),
@@ -130,13 +139,27 @@ class ItaliaHomeMasthead extends StatelessWidget {
             ),
             if (actions.isNotEmpty) ...[const SizedBox(width: 4), ...actions],
             const SizedBox(width: 12),
-            _ItaliaHomeLogo(footballKey: footballKey, size: compact ? 56 : 80),
+            Transform.translate(
+              offset: Offset(0, markOffsetY),
+              child: _ItaliaHomeLogo(
+                footballKey: footballKey,
+                size: markSize ?? (compact ? 56 : 80),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 4),
         Align(
           alignment: Alignment.centerLeft,
-          child: _ItaliaTricolourBar(width: compact ? 64 : 84),
+          child: Padding(
+            padding: EdgeInsets.only(left: ruleInset),
+            child: Transform.translate(
+              offset: Offset(0, ruleOffsetY),
+              child: _ItaliaTricolourBar(
+                width: ruleWidth ?? (compact ? 64 : 84),
+              ),
+            ),
+          ),
         ),
         if (showSubtitle) ...[
           const SizedBox(height: 7),
@@ -492,11 +515,7 @@ class ItaliaAction extends StatelessWidget {
         style: result
             ? FilledButton.styleFrom(backgroundColor: Italia90.red)
             : null,
-        child: _ItaliaActionContent(
-          label: label,
-          busy: busy,
-          icon: icon,
-        ),
+        child: _ItaliaActionContent(label: label, busy: busy, icon: icon),
       ),
     ),
   );
@@ -527,8 +546,8 @@ class _ItaliaActionContent extends StatelessWidget {
             ),
           )
         : icon == null
-            ? null
-            : Icon(icon, size: 22);
+        ? null
+        : Icon(icon, size: 22);
 
     if (leading == null) {
       return Center(child: Text(label, textAlign: TextAlign.center));

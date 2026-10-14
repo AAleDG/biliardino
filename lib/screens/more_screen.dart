@@ -42,6 +42,15 @@ class MoreScreen extends StatelessWidget {
         onTap: () => openAppearance(context),
       ),
       const SizedBox(height: 14),
+      PassTicket(
+        key: const ValueKey('more-feedback'),
+        icon: Icons.chat_bubble_outline,
+        title: 'INVIA FEEDBACK',
+        subtitle: 'Hai un’idea o qualcosa non funziona?',
+        trailing: Icons.chevron_right,
+        onTap: () => openFeedback(context),
+      ),
+      const SizedBox(height: 14),
     ],
   );
 }

@@ -1,0 +1,415 @@
+{
+  "date": "2026-10-13",
+  "plan_revision": "R4",
+  "status": "R6 field labels/README:allcurrentchecks passed;readyforMRupdate;awaitingmerge",
+  "source": {
+    "base": "0d6108ff09a779b8b17269370e0e061f0dc38f67",
+    "branch": "codex/feedback-form-discovery",
+    "uncommitted": true,
+    "sha256": {
+      "android/app/src/main/AndroidManifest.xml": "9586823c238ad99e99d1636d95d7a9f19479c798f1bb4f5f2205bbd1de53f495",
+      "assets/feedback/italia90-backdrop-r2.png": "8ad6941ff4b150e0bf1ac768c563e7804202122d6350ca94d8787a9559b3a294",
+      "assets/feedback/south-africa-backdrop-r2.png": "28f3bcfcf1f76eef384a2fbe10bba2af9829b6c937514c4bf676bdd1ab465b44",
+      "ios/Podfile.lock": "9fb4d31a23af950a010d8c7441773bd0427ef102d5042ecdec553f9d8c7cf6a1",
+      "lib/cubits/feedback/feedback_cubit.dart": "6a4e4f6833c22502b279d2858c8b61e0ffaacf36ab597a01953986380562729f",
+      "lib/main.dart": "268b3d5d04c56ba124c28ce2903e48267ba239cd07b54dc1f34b788fb2d819f5",
+      "lib/models/feedback_draft.dart": "5067fc19cfb4bf426e8827e4ebd36f42fdcca094115e5726ad3b085d08477e3d",
+      "lib/navigation/app_navigation.dart": "f933978f8170029bd66249c645cfb2b9b1356fc77cefdad6e66443262ede493c",
+      "lib/presentation/italia90/screens/more_screen.dart": "cd763ade8618f03532b4fd253345c9653831424b4467ed3ed4fd5c890dac92f6",
+      "lib/presentation/italia90/widgets/italia90_components.dart": "35dc8023c03eaf42c2447a4329740fdd5070c9b764f89ada7d4b1281e6eeeb8c",
+      "lib/repositories/feedback_repository.dart": "445b5f4d4e2c5084eee8498d76b45bab3f76a463f30f30a24147c5e44ecf9d61",
+      "lib/screens/feedback/feedback_confirmation_view.dart": "85bef6b9ec33e4c5d05c4fd17cf158df1d2cda28f3fe8237632193b79a72cff9",
+      "lib/screens/feedback/feedback_form_view.dart": "f7708117169d23594664e51c9a8985a775d7c695dac4b0221a98c24b17a51a27",
+      "lib/screens/feedback/feedback_screen.dart": "230f43a4237d976d73cdc15fcda40b0d0e54232505ac10679eb028b5a7de00e9",
+      "lib/screens/more_screen.dart": "3c036dbcb45dd2290ad4b9f7e27487264c7d939b9a9ce203389296ffd66ad2e1",
+      "lib/services/formspree_feedback.dart": "c5ca7a26f17b936f07540ca62eff1fb0a9a96e32af20b3f2642b2ef5438f49b4",
+      "lib/widgets/design/pass_page.dart": "9c05b2c33ebf0eac009b18a4719c6cee63fd58373084c56097507420a7f30fb4",
+      "lib/widgets/feedback/feedback_page_frame.dart": "ffb56d208febbbccea3bab8e81b11c6298984ed88ee0c6669c4e778431ab16e2",
+      "macos/Flutter/GeneratedPluginRegistrant.swift": "1400f3ddaf94e5a2cbe1e9aff1c5782fd9b6a46ff6e00315715cc0f14696bce8",
+      "pubspec.lock": "7d90a941d83034c6e0e2ff5663e7d4ac077dccc1a33d3a3cac1b065fe474aa3e",
+      "pubspec.yaml": "27c26f61e9d2f2fe20df6c4ef9765659457187e2652a7f2c77d8e1e28f98fc0b"
+    },
+    "state_at_verification": "uncommitted verified working tree before publication"
+  },
+  "checks": {
+    "focused": {
+      "passed": 54,
+      "failed": 0
+    },
+    "full": {
+      "passed": 449,
+      "failed": 0,
+      "gate": "passed",
+      "command": "/opt/homebrew/bin/flutter test --no-pub --reporter expanded"
+    },
+    "analysis": "No issues found (final R4 worktree)",
+    "format": "23 changed Dart files checked, zero changes",
+    "design_lint": {
+      "errors": 0,
+      "warnings": 0,
+      "version": "0.4.0"
+    },
+    "ios_simulator_build": "passed; final production source unchanged since build",
+    "review": "root correctness and companion reuse/quality completed; no material findings"
+  },
+  "protected_integrity": {
+    "production_source_identity_unchanged_since_build_native_reviews": true,
+    "production_files_checked": 21,
+    "protected_files_checked": 396,
+    "approved_existing_changes": [
+      "test/goldens/appearance-altro-supplement-more-normal.png",
+      "test/goldens/italia90_presentation_test.dart",
+      "test/goldens/south_africa_remaining_flows_test.dart"
+    ],
+    "approved_additive_reference_count": 18,
+    "all_original_reference_images_unchanged_except_approved_altro": true,
+    "all18_hashes_match_user_approved_candidates": true,
+    "unapproved_changes": []
+  },
+  "native": {
+    "device": "iPhone 17 Pro Max, iOS 26.5",
+    "udid": "9BD8A107-8FB1-4B79-83FC-9400DE997961",
+    "bundle": "com.biliardino.feedback.qa",
+    "equivalence_identical_files": 92,
+    "equivalence_exceptions": [
+      "root Runner bundle identity",
+      "root Info.plist",
+      "root signature"
+    ],
+    "both_styles_navigation_and_normal_form": true,
+    "large_text_reachable_both_styles": true,
+    "south_africa_largest_text_keyboard_send_rect": [
+      18,
+      447.0216064453125,
+      404,
+      156
+    ],
+    "south_africa_keyboard_top": 611,
+    "italia_largest_text_send_rect": [
+      31,
+      741.1259765625,
+      378,
+      160
+    ],
+    "cross_style_local_draft": "Local draft QA restored from South Africa in Italia; cleared through native UI; empty reopen verified",
+    "draft_restart": "verified before authorized submission",
+    "reduce_motion": "enabled through actual native Settings; opened both forms and returned to Altro; restored original off",
+    "native_semantics": "actual headings, fields, errors and actions inspected; decorative backgrounds excluded",
+    "voiceover": "removed by explicit user request; unrun",
+    "restored_text_size": "large",
+    "restored_keyboard": "hidden",
+    "restored_qa_style": "Italia 90",
+    "other_app_data": "not operated"
+  },
+  "delivery": {
+    "authorized_message": "Biliardino feedback verification \u2014 13 October 2026. One test submission.",
+    "email": "",
+    "endpoint": "https://formspree.io/f/meaerkro",
+    "native_bundle": "com.biliardino.feedback.qa",
+    "attempt_count": 1,
+    "started_at": "2026-10-13T17:41:34.881165+00:00",
+    "status": "acknowledged-success shown by production native form",
+    "matching_inbox_verified": false,
+    "observed_at": "2026-10-13T17:43:15.492025+00:00",
+    "confirmation": "Grazie! Feedback inviato.",
+    "draft_cleared_verified_in_native_sqlite": true,
+    "result_capture": "single-send-result.png",
+    "owner_email_receipt_verified": true,
+    "owner_confirmation": "I received the email",
+    "owner_confirmation_date": "2026-10-13",
+    "inbox_record_status": "Dashboard row uninspected; owner email receipt and native acknowledgement/clear/return/empty-reopen accepted explicitly under R4",
+    "accepted_evidence": true,
+    "acceptance": "Accept the verified email receipt",
+    "acceptance_date": "2026-10-13",
+    "dashboard_inspection_required": false
+  },
+  "open_decisions": [],
+  "platform_limits": [
+    "Android native runtime unverified",
+    "macOS delivery unsupported/unverified"
+  ],
+  "landing": "Commit/push/MR publication authorized after verification; identity tracked by Git/MR. No merge or release authorized.",
+  "full_suite_waiver": "none; strict full-suite passing gate satisfied",
+  "historical_inherited_golden_failures": {
+    "base": "0d6108ff09a779b8b17269370e0e061f0dc38f67",
+    "identical_failure_images": [
+      {
+        "path": "test/goldens/failures/south-africa-filters_testImage.png",
+        "sha256": "1c6b9200801d20221ef18f0bf1d9ba85ac6c75a06e732f3e367df329ab1fd39b",
+        "same_as_base": true,
+        "mr_final_sha256": "1c6b9200801d20221ef18f0bf1d9ba85ac6c75a06e732f3e367df329ab1fd39b",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/supplement-players-long-name-normal_testImage.png",
+        "sha256": "b838f8c8af9da277f8e8f23cda57cde9fbecea33c0311557c18614e1fb546a66",
+        "same_as_base": true,
+        "mr_final_sha256": "b838f8c8af9da277f8e8f23cda57cde9fbecea33c0311557c18614e1fb546a66",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/flows-standings-intesa_testImage.png",
+        "sha256": "a9ec9aedb897a7f5630beef2af489cf351f55c913b7130f2d7c6c57bbe7d1cb8",
+        "same_as_base": true,
+        "mr_final_sha256": "a9ec9aedb897a7f5630beef2af489cf351f55c913b7130f2d7c6c57bbe7d1cb8",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/flows-history_testImage.png",
+        "sha256": "4a143385612bb2c8dd54bf9c01bba41f1ec26e57d50341d0eccaa9756df00b60",
+        "same_as_base": true,
+        "mr_final_sha256": "4a143385612bb2c8dd54bf9c01bba41f1ec26e57d50341d0eccaa9756df00b60",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/supplement-players-long-name-compact-large_testImage.png",
+        "sha256": "2b45c53c68a722baba0f62989dac34dcf9802b850e43a86ba57ede3627fba734",
+        "same_as_base": true,
+        "mr_final_sha256": "2b45c53c68a722baba0f62989dac34dcf9802b850e43a86ba57ede3627fba734",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/flows-history-detail_testImage.png",
+        "sha256": "f49e3cec9a490ad33c986c2fdc533d2dfdcb3bcd5c33a283e8459189f3e29996",
+        "same_as_base": true,
+        "mr_final_sha256": "f49e3cec9a490ad33c986c2fdc533d2dfdcb3bcd5c33a283e8459189f3e29996",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/flows-scorers_testImage.png",
+        "sha256": "5a46be7a2bb8ffc36892bbad336e95bf03f58f8cfa1366e0f3400c59433c8441",
+        "same_as_base": true,
+        "mr_final_sha256": "5a46be7a2bb8ffc36892bbad336e95bf03f58f8cfa1366e0f3400c59433c8441",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/south-africa-filters-compact_testImage.png",
+        "sha256": "4ea07134b33ecf222f1f4d8529cce557d35cd425293feb25bebde101937a6bce",
+        "same_as_base": true,
+        "mr_final_sha256": "4ea07134b33ecf222f1f4d8529cce557d35cd425293feb25bebde101937a6bce",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/flows-history-edit_testImage.png",
+        "sha256": "2056a01a562466820fcdc6f7f2e769392965f153e7d3d31c595ba2c0ffb317f4",
+        "same_as_base": true,
+        "mr_final_sha256": "2056a01a562466820fcdc6f7f2e769392965f153e7d3d31c595ba2c0ffb317f4",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/flows-history-large_testImage.png",
+        "sha256": "5f070e1949338da79a5193cd57786db7d0ec66c1998ab167884158368e299c0f",
+        "same_as_base": true,
+        "mr_final_sha256": "5f070e1949338da79a5193cd57786db7d0ec66c1998ab167884158368e299c0f",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/flows-standings-1_testImage.png",
+        "sha256": "bf713036b8ac6a4f147ccafd17ca2ac8488324ecb2df29228bd3a7ddc1df3761",
+        "same_as_base": true,
+        "mr_final_sha256": "bf713036b8ac6a4f147ccafd17ca2ac8488324ecb2df29228bd3a7ddc1df3761",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/flows-history-empty_testImage.png",
+        "sha256": "0797d617bbcd025e34384e84b5743c7f204b11097de751043538585997c9fa9e",
+        "same_as_base": true,
+        "mr_final_sha256": "0797d617bbcd025e34384e84b5743c7f204b11097de751043538585997c9fa9e",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/supplement-players-compact-large_testImage.png",
+        "sha256": "2b45c53c68a722baba0f62989dac34dcf9802b850e43a86ba57ede3627fba734",
+        "same_as_base": true,
+        "mr_final_sha256": "2b45c53c68a722baba0f62989dac34dcf9802b850e43a86ba57ede3627fba734",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/flows-history-filters_testImage.png",
+        "sha256": "5f21c34704144f259b83549413890b4ba496a7b1015ba7aa56d36c059e42d761",
+        "same_as_base": true,
+        "mr_final_sha256": "5f21c34704144f259b83549413890b4ba496a7b1015ba7aa56d36c059e42d761",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/supplement-players-normal-corrected_testImage.png",
+        "sha256": "6983629c8cf43d5dacc51562caaec3fcb718a26e81d33cba46c5b8b548683ed4",
+        "same_as_base": true,
+        "mr_final_sha256": "6983629c8cf43d5dacc51562caaec3fcb718a26e81d33cba46c5b8b548683ed4",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/flows-standings-2_testImage.png",
+        "sha256": "e11e3ff2adcb0592249836da002c9332a9894986f176485aaeebb3e0f9639ec5",
+        "same_as_base": true,
+        "mr_final_sha256": "e11e3ff2adcb0592249836da002c9332a9894986f176485aaeebb3e0f9639ec5",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/goldens/failures/flows-standings_testImage.png",
+        "sha256": "a80330999e26c7384dcdc6e8d47eab7d67b4f8a600f7cead3ba9d9ef5509e9a8",
+        "same_as_base": true,
+        "mr_final_sha256": "a80330999e26c7384dcdc6e8d47eab7d67b4f8a600f7cead3ba9d9ef5509e9a8",
+        "mr_final_same_as_base": true
+      },
+      {
+        "path": "test/widgets/failures/italia90-history-compact_testImage.png",
+        "sha256": "d5970aff6cd7e53898da49a61550e17554f8024d3a9ebf0ebfa81e8da9d47be2",
+        "same_as_base": true,
+        "mr_final_sha256": "d5970aff6cd7e53898da49a61550e17554f8024d3a9ebf0ebfa81e8da9d47be2",
+        "mr_final_same_as_base": true
+      }
+    ],
+    "status": "resolved with exact18 user-approved additive references; original images preserved"
+  },
+  "accepted_reference_corrections": {
+    "status": "approved and applied; final actual-worktree full suite449 passed",
+    "count": 18,
+    "full_suite_in_isolated_copy": "449 passed",
+    "analysis_in_isolated_copy": "no issues",
+    "sdk": "installed Flutter3.44.9/Dart3.12.2",
+    "original_references_preserved": true,
+    "pixel_tolerances_changed": false,
+    "scope": "earlier issue18 avatars/player layouts; Rivalit\u00e0 accent; reviewed stable history edge shades",
+    "historical_cause_of_history_edge_shades": "unproven",
+    "candidate_patch_sha256": "614be7c0357d622ea0b5384da21ff3825e392ca548764e9bfd85dd3941e9a54a",
+    "approval": "Approve the18 reference corrections",
+    "approval_date": "2026-10-13",
+    "provenance": "test/goldens/reference-corrections/provenance.json"
+  },
+  "mr_target": {
+    "suggested": "codex/runtime-style-selection",
+    "base": "0d6108ff09a779b8b17269370e0e061f0dc38f67",
+    "reason": "Runtime-style base is not present in current local master; use dependent MR or verify parent landing before retargeting."
+  },
+  "test_and_reference_sha256": {
+    "test/goldens/appearance-altro-supplement-more-normal.png": "f3b2139e0136d42789bcf4834764696c0f472eb875c8d9695587046ff7f66fd3",
+    "test/goldens/feedback-italia-90-compact-scrolled.png": "b3baa02ead74ec6428b4b92a4125cef41d0386514ee872dedfbc21a5460c685b",
+    "test/goldens/feedback-italia-90-compact.png": "26e3dca61df9152593917665e297777b17b774fb42488ae0f937bbb93c833a5a",
+    "test/goldens/feedback-italia-90-keyboard-scrolled.png": "300736423bbbff61d071d457beebe93ec79e12071450314eb43466ff70e0c10f",
+    "test/goldens/feedback-italia-90-keyboard.png": "f67736ce7d3c81f2c89d7ee04ee69e62491239d508e9185cea0580714e2c9b9d",
+    "test/goldens/feedback-italia-90-reference.png": "2e31fbbc9d29c67a70d6dc4b2849dd6734712cd936fed7627598b36b22ecef07",
+    "test/goldens/feedback-south-africa-2010-compact-scrolled.png": "ba7997deeffe8ffbf26016e1f869008064ba5197ed1ba7d5bb7df5bcff65e31e",
+    "test/goldens/feedback-south-africa-2010-compact.png": "83f59b61ca5dba658d44e9fd51c472291d854798918658ed8d0a4f83f05dd74a",
+    "test/goldens/feedback-south-africa-2010-keyboard-scrolled.png": "c79dd8acbacb52b554bea9794c48c2bf02005a178901d2ed4abd5c185ed83bb1",
+    "test/goldens/feedback-south-africa-2010-keyboard.png": "4b66991e861b874ef685840c8737bca1dcae3bbf877082a5420d5c97b0cd411d",
+    "test/goldens/feedback-south-africa-2010-reference.png": "e9ebd578d5e222e3cbdca0c99c7ac8eab93ce615a148f3c14d071e073fdeeafd",
+    "test/goldens/feedback_screen_test.dart": "b864f0202308b888dcc368e834b77dbd156a3b18192c66c7517395e63a297204",
+    "test/goldens/italia90_presentation_test.dart": "326d2e768a671d8d38024a24bd4a27ab3cbdc056317c0737ce0042183d55cf04",
+    "test/goldens/reference-corrections/README.md": "da10a555b1fa1ef4bf76b76c75d1a97826786fdfdc9c6ac2babead105a590d41",
+    "test/goldens/reference-corrections/flows-history-detail.png": "f49e3cec9a490ad33c986c2fdc533d2dfdcb3bcd5c33a283e8459189f3e29996",
+    "test/goldens/reference-corrections/flows-history-edit.png": "2056a01a562466820fcdc6f7f2e769392965f153e7d3d31c595ba2c0ffb317f4",
+    "test/goldens/reference-corrections/flows-history-empty.png": "0797d617bbcd025e34384e84b5743c7f204b11097de751043538585997c9fa9e",
+    "test/goldens/reference-corrections/flows-history-filters.png": "5f21c34704144f259b83549413890b4ba496a7b1015ba7aa56d36c059e42d761",
+    "test/goldens/reference-corrections/flows-history-large.png": "5f070e1949338da79a5193cd57786db7d0ec66c1998ab167884158368e299c0f",
+    "test/goldens/reference-corrections/flows-history.png": "4a143385612bb2c8dd54bf9c01bba41f1ec26e57d50341d0eccaa9756df00b60",
+    "test/goldens/reference-corrections/flows-scorers.png": "5a46be7a2bb8ffc36892bbad336e95bf03f58f8cfa1366e0f3400c59433c8441",
+    "test/goldens/reference-corrections/flows-standings-1.png": "bf713036b8ac6a4f147ccafd17ca2ac8488324ecb2df29228bd3a7ddc1df3761",
+    "test/goldens/reference-corrections/flows-standings-2.png": "e11e3ff2adcb0592249836da002c9332a9894986f176485aaeebb3e0f9639ec5",
+    "test/goldens/reference-corrections/flows-standings-intesa.png": "a9ec9aedb897a7f5630beef2af489cf351f55c913b7130f2d7c6c57bbe7d1cb8",
+    "test/goldens/reference-corrections/flows-standings.png": "a80330999e26c7384dcdc6e8d47eab7d67b4f8a600f7cead3ba9d9ef5509e9a8",
+    "test/goldens/reference-corrections/italia90-history-compact.png": "d5970aff6cd7e53898da49a61550e17554f8024d3a9ebf0ebfa81e8da9d47be2",
+    "test/goldens/reference-corrections/provenance.json": "ad564ea9dbc867cd3cb8168000bb3e907ff6b9c933699ff65861c1efdbd0b36a",
+    "test/goldens/reference-corrections/south-africa-filters-compact.png": "4ea07134b33ecf222f1f4d8529cce557d35cd425293feb25bebde101937a6bce",
+    "test/goldens/reference-corrections/south-africa-filters.png": "1c6b9200801d20221ef18f0bf1d9ba85ac6c75a06e732f3e367df329ab1fd39b",
+    "test/goldens/reference-corrections/supplement-players-compact-large.png": "2b45c53c68a722baba0f62989dac34dcf9802b850e43a86ba57ede3627fba734",
+    "test/goldens/reference-corrections/supplement-players-long-name-compact-large.png": "2b45c53c68a722baba0f62989dac34dcf9802b850e43a86ba57ede3627fba734",
+    "test/goldens/reference-corrections/supplement-players-long-name-normal.png": "b838f8c8af9da277f8e8f23cda57cde9fbecea33c0311557c18614e1fb546a66",
+    "test/goldens/reference-corrections/supplement-players-normal-corrected.png": "6983629c8cf43d5dacc51562caaec3fcb718a26e81d33cba46c5b8b548683ed4",
+    "test/goldens/south_africa_remaining_flows_test.dart": "1241eb89e60dc5dac9f147c22647a3bd510f967b42e239fcd3b7aa0b04165195",
+    "test/repositories/feedback_repository_test.dart": "1fead279644c5453f1893653a94ad6e8871d764a0ecf587cf5e54c4c7cb242d1",
+    "test/services/formspree_feedback_test.dart": "299369a8273ee9813a54921e71b89ffab3d525c1abede050fecd134cab2f7605",
+    "test/support/design_fixture.dart": "4cb3d76082ca1fe4e55f85ba19959d7c2f21d1eb95ebd75a941287e4763c2837",
+    "test/widgets/feedback_screen_test.dart": "85daada9570b944c269cfc648d366068526a696003639693e93e252655f67a13",
+    "test/widgets/italia90_history_responsive_test.dart": "a886da5b08abddb6bf7029d918a53690736fb0073e34010cceab9fb4f82a5b93",
+    "test/widgets/style_presentation_boundary_test.dart": "79c3bd6b1c8ab654ca9f1ef858ce26dfa80e732a8ec816ba57f76842a1972111"
+  },
+  "post_verification_target_merge": {
+    "date": "2026-10-14",
+    "target_commit": "f2922dfb0864d3ae57ad24c8342ba42ac5bab825",
+    "mr": 24,
+    "resolved_file": "test/goldens/italia90_presentation_test.dart",
+    "resolution": "Keep target live-score/team-assignment/award acceptance paths; retain approved corrections for remaining captures. Newer issue-specific references take precedence.",
+    "tests_and_reviews": "Not rerun, per explicit user instruction",
+    "earlier_checks_apply_to": "Verified feedback state before target synchronization"
+  },
+  "recovery_verification": {
+    "date": "2026-10-14",
+    "revision": "R5",
+    "base": "686c2b6502ddcd7e181a7605027ca52e8ddbb67f",
+    "sdk": "Flutter3.44.9 / Dart3.12.2",
+    "source_sha256": {
+      "lib/cubits/feedback/feedback_cubit.dart": "da66ebf13b227dd45962e5112fa287bf0cddd2cf6d10ce687a0470c9922dfafd",
+      "lib/repositories/feedback_repository.dart": "7a51c15caef371b15f4287351f5ead8dba6d8ae9dc74362dc92f99fcd50b0340",
+      "lib/screens/feedback/feedback_confirmation_view.dart": "85bef6b9ec33e4c5d05c4fd17cf158df1d2cda28f3fe8237632193b79a72cff9",
+      "lib/screens/feedback/feedback_form_view.dart": "f7708117169d23594664e51c9a8985a775d7c695dac4b0221a98c24b17a51a27",
+      "lib/screens/feedback/feedback_recovery_view.dart": "5d0366cf01e7c2c7037f5198d7c5832e430e8e5d8052d12f85d084932ad6b0cb",
+      "lib/screens/feedback/feedback_screen.dart": "997cf3f105b699b1e7054df8b2836ba76e50254754ecba3cf150b4f98bd5f978",
+      "lib/widgets/feedback/feedback_page_frame.dart": "ffb56d208febbbccea3bab8e81b11c6298984ed88ee0c6669c4e778431ab16e2"
+    },
+    "baseline": {
+      "passed": 468,
+      "failed_goldens": 28,
+      "deliberate_recovery_regression_failed": true
+    },
+    "focused": {
+      "passed": 16,
+      "failed": 0
+    },
+    "full": {
+      "passed": 499,
+      "failed": 0,
+      "command": "/opt/homebrew/bin/flutter test --no-pub --reporter expanded"
+    },
+    "analysis": "No issues found",
+    "format": "9 changed Dart files / 0 changes",
+    "build": {
+      "automatic_spm_build": "passed; generated migration discarded",
+      "existing_cocoapods_build": "passed; final production source, unchanged tracked iOS configuration",
+      "override": "FLUTTER_SWIFT_PACKAGE_MANAGER=false (per command; no global config change)"
+    },
+    "reference_corrections": {
+      "count": 28,
+      "approval": "Approve these 28 corrections",
+      "provenance": "test/goldens/integrated-reference-corrections/provenance.json",
+      "comparison": "exact; unchanged tolerance",
+      "originals": "304 existing protected assets/fonts/references/AGENTS/lockfile byte-identical to686c2b6"
+    },
+    "native": "Not rerun: agent device access disabled. Prior R4 native evidence is historical after recovery source changes.",
+    "delivery": "Prior one authorized native message/email receipt accepted; no further external POST",
+    "voiceover": "excluded by user; not run",
+    "review": "Bounded local correctness inspection only; no additional external or companion review",
+    "worktree_recovery": "Temporary worktree disappeared; recreated from686c2b6. Baseline/focused/full checks rerun."
+  },
+  "labels_readme_verification": {
+    "date": "2026-10-14",
+    "revision": "R6",
+    "base": "bbe6da8d1a8a499221952bdecb403f44bc9db558",
+    "sdk": "Flutter3.44.9 / Dart3.12.2",
+    "source_sha256": {
+      "README.md": "209407ee018b5ed71105729ae63004d001cd0119648647d35d98cf648da72bf0",
+      "lib/screens/feedback/feedback_form_view.dart": "b13fa89d99142d60e36afbc9cc0cecc246315a39776002c044ecd337b84096de",
+      "test/widgets/feedback_screen_test.dart": "38f169686ac25f0e26e31b27ecd1b3adf3ab1c9c64e160542f816245f82a3ad1"
+    },
+    "behavior": "Associated Messaggio(obbligatorio)/Email(facoltativa) labels on empty/populated/invalid native editable nodes; values and validation error hints retained; duplicate visible label announcements excluded.",
+    "regression": "Both-style route semantics failed on original placeholder-only field name before production fix, then passed.",
+    "focused": {
+      "command": "flutter test --no-pub --reporter expanded test/widgets/feedback_screen_test.dart test/goldens/feedback_screen_test.dart",
+      "passed": 16,
+      "failed": 0
+    },
+    "full": {
+      "command": "flutter test --no-pub --reporter expanded",
+      "passed": 501,
+      "failed": 0
+    },
+    "analysis": "No issues found",
+    "format": "2Dart files/0changes",
+    "integrity": "278existingartwork/font/goldenfiles byte-identical tobbe6da8;6existingfeedbackgoldens pass exact without updates",
+    "build": "passed;finalproduction source;per-command FLUTTER_SWIFT_PACKAGE_MANAGER=false;unchangedtrackedCocoaPodsproject",
+    "native": "No new native check;device access unavailable. Automated semantics is not a VoiceOver run;user excludes VoiceOver.",
+    "delivery": "No further external submission;prior authorized emailreceipt retained as historical.",
+    "sdk_changes": "none;READMEportablePATHcommands now document installed3.44.9",
+    "scope": "Only user-authorized labels andREADME fixes;noFormspreeprotocol/device/Android change."
+  }
+}

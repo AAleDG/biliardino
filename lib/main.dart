@@ -2,6 +2,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'presentation/italia90/theme/italia90_motion.dart';
 import 'cubits/app_style/app_style_cubit.dart';
 import 'repositories/app_style_repository.dart';
+import 'repositories/feedback_repository.dart';
 import 'repositories/data_management_repository.dart';
 import 'services/data_management_coordinator.dart';
 import 'services/data_file_share_service.dart';
@@ -158,6 +159,7 @@ class BiliardinoApp extends StatelessWidget {
     required this.matchRulesRepository,
     required this.dataManagementRepository,
     required this.appStyleRepository,
+    this.feedbackRepository,
   });
 
   final PlayerRepository playerRepository;
@@ -165,11 +167,16 @@ class BiliardinoApp extends StatelessWidget {
   final MatchRulesRepository matchRulesRepository;
   final DataManagementRepository dataManagementRepository;
   final AppStyleRepository appStyleRepository;
+  final FeedbackRepository? feedbackRepository;
 
   @override
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider<FeedbackRepository>(
+          create: (_) =>
+              feedbackRepository ?? FeedbackRepository(DatabaseHelper.instance),
+        ),
         RepositoryProvider<AppStyleRepository>.value(value: appStyleRepository),
         RepositoryProvider<DataManagementRepository>.value(
           value: dataManagementRepository,

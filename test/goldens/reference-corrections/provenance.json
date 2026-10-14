@@ -1,0 +1,298 @@
+{
+  "approval_date": "2026-10-13",
+  "approval": "Approve the18 reference corrections",
+  "base": "0d6108ff09a779b8b17269370e0e061f0dc38f67",
+  "sdk": "Flutter3.44.9/Dart3.12.2 (existing installed SDK)",
+  "source": "Production-widget captures independently compared with retained originals and reviewed by the user. No original reference image replaced.",
+  "pixel_tolerance": "unchanged exact comparison",
+  "references": [
+    {
+      "name": "flows-history-detail",
+      "target": "test/goldens/italia90-history-reference/flows-history-detail.png",
+      "group": "history",
+      "old_sha256": "ebd46c369a14be298d223f59b2426dc1cb54a8ce78a9f0d4e85ac0da3638c2b5",
+      "candidate_sha256": "f49e3cec9a490ad33c986c2fdc533d2dfdcb3bcd5c33a283e8459189f3e29996",
+      "changed_pixels": 55,
+      "total_pixels": 1405392,
+      "max_channel_delta": 9,
+      "bbox": [
+        59,
+        162,
+        727,
+        1453
+      ]
+    },
+    {
+      "name": "flows-history-edit",
+      "target": "test/goldens/italia90-history-reference/flows-history-edit.png",
+      "group": "history",
+      "old_sha256": "3246bc6074b0b91a3bf8de28f1857b8648a690eec57a5d0430c57bc36d850a0b",
+      "candidate_sha256": "2056a01a562466820fcdc6f7f2e769392965f153e7d3d31c595ba2c0ffb317f4",
+      "changed_pixels": 52,
+      "total_pixels": 1405392,
+      "max_channel_delta": 6,
+      "bbox": [
+        43,
+        164,
+        769,
+        1608
+      ]
+    },
+    {
+      "name": "flows-history-empty",
+      "target": "test/goldens/italia90-history-reference/flows-history-empty.png",
+      "group": "history",
+      "old_sha256": "6c8089dfe7debece7df7e94a3193e4cde1878ccb1d598723f7a7c5f3aecb654e",
+      "candidate_sha256": "0797d617bbcd025e34384e84b5743c7f204b11097de751043538585997c9fa9e",
+      "changed_pixels": 28,
+      "total_pixels": 1405392,
+      "max_channel_delta": 2,
+      "bbox": [
+        59,
+        162,
+        744,
+        1651
+      ]
+    },
+    {
+      "name": "flows-history-filters",
+      "target": "test/goldens/italia90-history-reference/flows-history-filters.png",
+      "group": "history",
+      "old_sha256": "dde7d5a32e4339d6c2b6a44e25a6a71bf6c8d41ba946baa734469e43385cffab",
+      "candidate_sha256": "5f21c34704144f259b83549413890b4ba496a7b1015ba7aa56d36c059e42d761",
+      "changed_pixels": 64,
+      "total_pixels": 1405392,
+      "max_channel_delta": 238,
+      "bbox": [
+        59,
+        162,
+        665,
+        1674
+      ]
+    },
+    {
+      "name": "flows-history-large",
+      "target": "test/goldens/italia90-history-reference/flows-history-large.png",
+      "group": "history",
+      "old_sha256": "84bceb1006653e0684bf288dcb846ba98a4f7cd59177d76a1dde3ad7086d1440",
+      "candidate_sha256": "5f070e1949338da79a5193cd57786db7d0ec66c1998ab167884158368e299c0f",
+      "changed_pixels": 74,
+      "total_pixels": 1405392,
+      "max_channel_delta": 13,
+      "bbox": [
+        60,
+        173,
+        738,
+        1655
+      ]
+    },
+    {
+      "name": "flows-history",
+      "target": "test/goldens/italia90-history-reference/flows-history.png",
+      "group": "history",
+      "old_sha256": "7ecb895c2f20cbebb5511babb0ac5f9fad04a295b401e57bcd7fe2cc333cd109",
+      "candidate_sha256": "4a143385612bb2c8dd54bf9c01bba41f1ec26e57d50341d0eccaa9756df00b60",
+      "changed_pixels": 44,
+      "total_pixels": 1405392,
+      "max_channel_delta": 2,
+      "bbox": [
+        59,
+        162,
+        744,
+        1651
+      ]
+    },
+    {
+      "name": "flows-scorers",
+      "target": "test/goldens/italia90-reference/flows-scorers.png",
+      "group": "ranking",
+      "old_sha256": "dfd05ffcb17acbfc9bdfde599ad3fabb1dc492a641e081612e2b9284252a604e",
+      "candidate_sha256": "5a46be7a2bb8ffc36892bbad336e95bf03f58f8cfa1366e0f3400c59433c8441",
+      "changed_pixels": 952,
+      "total_pixels": 1405392,
+      "max_channel_delta": 59,
+      "bbox": [
+        146,
+        1511,
+        214,
+        1530
+      ]
+    },
+    {
+      "name": "flows-standings-1",
+      "target": "test/goldens/italia90-reference/flows-standings-1.png",
+      "group": "ranking",
+      "old_sha256": "bd60b760bf224caf81284262c956c2295303bf8db961b695bb2ca5a50b0e1289",
+      "candidate_sha256": "bf713036b8ac6a4f147ccafd17ca2ac8488324ecb2df29228bd3a7ddc1df3761",
+      "changed_pixels": 952,
+      "total_pixels": 1405392,
+      "max_channel_delta": 59,
+      "bbox": [
+        146,
+        1511,
+        214,
+        1530
+      ]
+    },
+    {
+      "name": "flows-standings-2",
+      "target": "test/goldens/italia90-reference/flows-standings-2.png",
+      "group": "ranking",
+      "old_sha256": "f693b7d808dbbdf34e181e47a41aaacfbc89b3df39b5e9593ebac946f2e8e9aa",
+      "candidate_sha256": "e11e3ff2adcb0592249836da002c9332a9894986f176485aaeebb3e0f9639ec5",
+      "changed_pixels": 952,
+      "total_pixels": 1405392,
+      "max_channel_delta": 59,
+      "bbox": [
+        146,
+        1511,
+        214,
+        1530
+      ]
+    },
+    {
+      "name": "flows-standings-intesa",
+      "target": "test/goldens/italia90-reference/flows-standings-intesa.png",
+      "group": "ranking",
+      "old_sha256": "4509cb10a0da00029c02b268c0d1a0835fcf7709d89757b21ad303abfdf147bd",
+      "candidate_sha256": "a9ec9aedb897a7f5630beef2af489cf351f55c913b7130f2d7c6c57bbe7d1cb8",
+      "changed_pixels": 1388,
+      "total_pixels": 1405392,
+      "max_channel_delta": 59,
+      "bbox": [
+        144,
+        1499,
+        200,
+        1530
+      ]
+    },
+    {
+      "name": "flows-standings",
+      "target": "test/goldens/italia90-reference/flows-standings.png",
+      "group": "ranking",
+      "old_sha256": "d8f8e341c12420ab3576da119f820afc9b4f92836b233a0c881c9e15df82ef7d",
+      "candidate_sha256": "a80330999e26c7384dcdc6e8d47eab7d67b4f8a600f7cead3ba9d9ef5509e9a8",
+      "changed_pixels": 952,
+      "total_pixels": 1405392,
+      "max_channel_delta": 59,
+      "bbox": [
+        146,
+        1511,
+        214,
+        1530
+      ]
+    },
+    {
+      "name": "south-africa-filters-compact",
+      "target": "test/goldens/south-africa-filters-compact.png",
+      "group": "accent",
+      "old_sha256": "6ee5b6b28141712cc8c9b117273d2fef46dd66484f3b9a0ff6661fd115aa14d2",
+      "candidate_sha256": "4ea07134b33ecf222f1f4d8529cce557d35cd425293feb25bebde101937a6bce",
+      "changed_pixels": 18,
+      "total_pixels": 181760,
+      "max_channel_delta": 238,
+      "bbox": [
+        177,
+        328,
+        183,
+        332
+      ]
+    },
+    {
+      "name": "south-africa-filters",
+      "target": "test/goldens/south-africa-filters.png",
+      "group": "accent",
+      "old_sha256": "aaa79502eb6a2109087b2ee572ddb0d8aedbd7e0226eaa118976d9dbcaebf3ce",
+      "candidate_sha256": "1c6b9200801d20221ef18f0bf1d9ba85ac6c75a06e732f3e367df329ab1fd39b",
+      "changed_pixels": 6,
+      "total_pixels": 351348,
+      "max_channel_delta": 199,
+      "bbox": [
+        267,
+        341,
+        271,
+        343
+      ]
+    },
+    {
+      "name": "supplement-players-compact-large",
+      "target": "test/goldens/italia90-reference/supplement-players-compact-large.png",
+      "group": "players",
+      "old_sha256": "4d2a0ced6320b2d19095c05f10043e1928c7cfe0de5954d2b7a4281dc12c35fc",
+      "candidate_sha256": "2b45c53c68a722baba0f62989dac34dcf9802b850e43a86ba57ede3627fba734",
+      "changed_pixels": 28887,
+      "total_pixels": 727040,
+      "max_channel_delta": 255,
+      "bbox": [
+        73,
+        446,
+        560,
+        855
+      ]
+    },
+    {
+      "name": "supplement-players-long-name-compact-large",
+      "target": "test/goldens/italia90-reference/supplement-players-long-name-compact-large.png",
+      "group": "players",
+      "old_sha256": "4d2a0ced6320b2d19095c05f10043e1928c7cfe0de5954d2b7a4281dc12c35fc",
+      "candidate_sha256": "2b45c53c68a722baba0f62989dac34dcf9802b850e43a86ba57ede3627fba734",
+      "changed_pixels": 28887,
+      "total_pixels": 727040,
+      "max_channel_delta": 255,
+      "bbox": [
+        73,
+        446,
+        560,
+        855
+      ]
+    },
+    {
+      "name": "supplement-players-long-name-normal",
+      "target": "test/goldens/italia90-reference/supplement-players-long-name-normal.png",
+      "group": "players",
+      "old_sha256": "7c8ecbcc728f078685e88cded2b8bf4d30f40cb3c7b2125cf222241c652b369a",
+      "candidate_sha256": "b838f8c8af9da277f8e8f23cda57cde9fbecea33c0311557c18614e1fb546a66",
+      "changed_pixels": 433234,
+      "total_pixels": 1405392,
+      "max_channel_delta": 255,
+      "bbox": [
+        0,
+        0,
+        804,
+        1476
+      ]
+    },
+    {
+      "name": "supplement-players-normal-corrected",
+      "target": "test/goldens/italia90-reference/supplement-players-normal-corrected.png",
+      "group": "players",
+      "old_sha256": "fdfc96b686d9326346b3e8310924d595d04d333c17130f1584ab81e86e6217ee",
+      "candidate_sha256": "6983629c8cf43d5dacc51562caaec3fcb718a26e81d33cba46c5b8b548683ed4",
+      "changed_pixels": 433699,
+      "total_pixels": 1405392,
+      "max_channel_delta": 255,
+      "bbox": [
+        0,
+        0,
+        804,
+        1476
+      ]
+    },
+    {
+      "name": "italia90-history-compact",
+      "target": "test/goldens/italia90-history-compact.png",
+      "group": "history",
+      "old_sha256": "da7d1804bc1728888678edaf7c80b8dc0b054f4480ca6ef58204ac1424692f76",
+      "candidate_sha256": "d5970aff6cd7e53898da49a61550e17554f8024d3a9ebf0ebfa81e8da9d47be2",
+      "changed_pixels": 9,
+      "total_pixels": 181760,
+      "max_channel_delta": 3,
+      "bbox": [
+        63,
+        80,
+        289,
+        517
+      ]
+    }
+  ]
+}

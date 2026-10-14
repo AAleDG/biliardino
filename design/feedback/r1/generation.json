@@ -1,0 +1,52 @@
+{
+  "status": "User-approved screen concepts; no production artwork or application implementation acceptance",
+  "route": "CLIProxyAPI via image-gen-proxy",
+  "model": "gpt-image-2",
+  "quality": "high",
+  "branch": "codex/feedback-form-discovery",
+  "baseBranch": "codex/runtime-style-selection",
+  "baseCommit": "0d6108ff09a779b8b17269370e0e061f0dc38f67",
+  "date": "2026-10-13",
+  "artifacts": [
+    {
+      "image": "italia90-feedback.png",
+      "sha256": "f17a8f77f96e2e2286e9c9304c765552c33160a83b03171a92347cbd5e7b8027",
+      "size": [
+        851,
+        1849
+      ],
+      "prompt": "italia90-prompt.txt",
+      "promptSha256": "fbf92dc6eeea8d5042acd90c891cf4afc843f34bbf21f87c97788b724a0bb769",
+      "referenceImages": [
+        "/Users/antonio.ruffolo/Developer/Lavoro/table-football/design/italia90/reference/italia90-original-board.png",
+        "test/goldens/appearance-italia-90-reference.png"
+      ]
+    },
+    {
+      "image": "south-africa-feedback.png",
+      "sha256": "336166b3a9ea55359f49a4f0236e4efbaa62a8b296eb9d16c160b5980271bd3b",
+      "size": [
+        851,
+        1849
+      ],
+      "prompt": "south-africa-prompt.txt",
+      "promptSha256": "80e3ad9fd05737b2b4c3c16500db2adecf6e0d900e5805d66b4d5afee4eccfb1",
+      "referenceImages": [
+        "test/goldens/appearance-south-africa-2010-reference.png"
+      ]
+    }
+  ],
+  "limitations": [
+    "Generated typography and decorative texture are approximations.",
+    "South Africa footer simplifies the existing football crop.",
+    "No runtime, keyboard, accessibility or delivery validation performed.",
+    "No production artwork acceptance."
+  ],
+  "approval": {
+    "date": "2026-10-13",
+    "userReply": "q9: we are aligned",
+    "surface": "feedback-comparison.png, showing both exact image artifacts listed below",
+    "scope": "Agreed form scope and both visual layouts; implementation remains on hold",
+    "subsequentVisualRequirement": "Pixel-perfect reproduction of these exact proposals; audit existing PNG assets/components/views, then create feature-plan-scaffold."
+  }
+}

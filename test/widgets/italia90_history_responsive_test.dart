@@ -44,7 +44,9 @@ void main() {
     expect(tester.takeException(), isNull);
     await expectLater(
       find.byType(HomeScreen),
-      matchesGoldenFile('../goldens/italia90-history-compact.png'),
+      matchesGoldenFile(
+        '../goldens/reference-corrections/italia90-history-compact.png',
+      ),
     );
 
     final scrollable = find.descendant(

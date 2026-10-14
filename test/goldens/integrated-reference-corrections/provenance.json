@@ -1,0 +1,572 @@
+{
+  "status": "approved additive corrections",
+  "base": "686c2b6502ddcd7e181a7605027ca52e8ddbb67f",
+  "sdk": "Flutter3.44.9 / Dart3.12.2",
+  "count": 28,
+  "originals": "all preserved",
+  "references": [
+    {
+      "name": "core-live-10-12",
+      "dir": "test/goldens/failures",
+      "pixels": 60,
+      "total": 1405392,
+      "max_delta": 13,
+      "bbox": [
+        34,
+        1170,
+        744,
+        1651
+      ],
+      "old_sha256": "6d2d167a31347a33779adc004f04a52ddadd03134d4cfd6cb30d750f6f7b853c",
+      "candidate_sha256": "119436c075f0e92d08e22d80b95e1edd5dd8762cdce67ab9aa68359197451e9a",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/core-live-10-12.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-17-reference/core-live-10-12.png"
+      ]
+    },
+    {
+      "name": "core-live-4-5",
+      "dir": "test/goldens/failures",
+      "pixels": 60,
+      "total": 1405392,
+      "max_delta": 13,
+      "bbox": [
+        34,
+        1170,
+        744,
+        1651
+      ],
+      "old_sha256": "4c9f5c7adaef9dea5dfba573359d1bbb9c82914971c8e1715b01ec03224722ea",
+      "candidate_sha256": "dce9c4ae309d700b33db38209007ffb3627a0ffce6e1609d98da7f5c52f77519",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/core-live-4-5.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-17-reference/core-live-4-5.png"
+      ]
+    },
+    {
+      "name": "core-live-large",
+      "dir": "test/goldens/failures",
+      "pixels": 30,
+      "total": 1405392,
+      "max_delta": 13,
+      "bbox": [
+        98,
+        1175,
+        660,
+        1655
+      ],
+      "old_sha256": "92f120dabfeffc8bfc52871fca1ab1c49b2002d16877bfea7377941feb04e441",
+      "candidate_sha256": "31dab6e67cbf11df8fffbba148f1d1be4d46afb64bb4782177414f935fda0449",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/core-live-large.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-17-reference/core-live-large.png"
+      ]
+    },
+    {
+      "name": "core-setup",
+      "dir": "test/goldens/failures",
+      "pixels": 10842,
+      "total": 1405392,
+      "max_delta": 242,
+      "bbox": [
+        84,
+        162,
+        744,
+        1651
+      ],
+      "old_sha256": "97093490da8034c53db02ee0a990b38d083d2958707b3409425b7cf09fb199bb",
+      "candidate_sha256": "f24c34be3219d6008902a6604c35cadb8d9124e17af92aee7d266f71334078e3",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/core-setup.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-15-reference/core-setup.png"
+      ]
+    },
+    {
+      "name": "flows-pair-profile-intesa-large",
+      "dir": "test/goldens/failures",
+      "pixels": 44283,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        64,
+        1463,
+        740,
+        1744
+      ],
+      "old_sha256": "28a1ed7550a13039d8e2e6558175acb12b019bddbe8ecc020a2c9265a9e7aef0",
+      "candidate_sha256": "837281616e0f3946248e9828c8a54031c2d83fef53c71af5a4f6caf111730ba6",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/flows-pair-profile-intesa-large.png",
+      "previous_references": [
+        "test/goldens/italia90-reference/flows-pair-profile-intesa-large.png"
+      ]
+    },
+    {
+      "name": "flows-pair-profile-intesa",
+      "dir": "test/goldens/failures",
+      "pixels": 319420,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        40,
+        874,
+        764,
+        1748
+      ],
+      "old_sha256": "1b92f068daf8d5fc9cac135a1326c4a2a8ecc1f1be91b0b8a9c2a0e13fe2508f",
+      "candidate_sha256": "fe27a6917a96f36b6978d8453c5dd5caa485a1bb88c1e01398455810caf5cbda",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/flows-pair-profile-intesa.png",
+      "previous_references": [
+        "test/goldens/italia90-reference/flows-pair-profile-intesa.png"
+      ]
+    },
+    {
+      "name": "flows-profile-archived",
+      "dir": "test/goldens/failures",
+      "pixels": 13109,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        40,
+        385,
+        168,
+        513
+      ],
+      "old_sha256": "395dcddea4d6405a7cdcfeba67087cc1d8742619f8d9909d4cb38d6ebe513be9",
+      "candidate_sha256": "abd93666da5efe3b3261fb63261914999d92370f56b2e8c853637e70fcf2ab49",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/flows-profile-archived.png",
+      "previous_references": [
+        "test/goldens/italia90-reference/flows-profile-archived.png"
+      ]
+    },
+    {
+      "name": "flows-profile-large",
+      "dir": "test/goldens/failures",
+      "pixels": 190611,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        40,
+        520,
+        764,
+        1742
+      ],
+      "old_sha256": "2a55a31ff8619d866293a0fbc7db0948db73c42aeab10e5a6070581e4461deb9",
+      "candidate_sha256": "870e5e545976e02329332878e7516895f7f53ecea185ce62666a5c4c60db3686",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/flows-profile-large.png",
+      "previous_references": [
+        "test/goldens/italia90-reference/flows-profile-large.png"
+      ]
+    },
+    {
+      "name": "flows-profile-no-matches",
+      "dir": "test/goldens/failures",
+      "pixels": 13109,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        40,
+        385,
+        168,
+        513
+      ],
+      "old_sha256": "bfef94e01adaa398bc72eedede7d328890fa8f3421886f063acbe8730e31dfe4",
+      "candidate_sha256": "cbeaab0fff1a07f10114c5d39e3ac27be75a907cc3d8a4bbe77f50033bff9f10",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/flows-profile-no-matches.png",
+      "previous_references": [
+        "test/goldens/italia90-reference/flows-profile-no-matches.png"
+      ]
+    },
+    {
+      "name": "flows-profile",
+      "dir": "test/goldens/failures",
+      "pixels": 419098,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        40,
+        385,
+        764,
+        1748
+      ],
+      "old_sha256": "645481aa74ca839079e575243a4559a567411736810088e8e92c4aa2dd9b3c46",
+      "candidate_sha256": "1b6fa233698348837627be543edf37cfb23f6a44ee68e3f56718a88eaa200266",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/flows-profile.png",
+      "previous_references": [
+        "test/goldens/italia90-reference/flows-profile.png"
+      ]
+    },
+    {
+      "name": "flows-scorers",
+      "dir": "test/goldens/failures",
+      "pixels": 92,
+      "total": 1405392,
+      "max_delta": 6,
+      "bbox": [
+        84,
+        166,
+        746,
+        1651
+      ],
+      "old_sha256": "145ef804e30833f0ef4c5afe2b990edccbe4cf7c8abace730a27a0376dbbc110",
+      "candidate_sha256": "effd826e686663e70b56249732bb0971683de8fded57da5b3dd6f257c6f88f8c",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/flows-scorers.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-14-reference/flows-scorers.png"
+      ]
+    },
+    {
+      "name": "flows-setup-final-player",
+      "dir": "test/goldens/failures",
+      "pixels": 10716,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        54,
+        162,
+        744,
+        1651
+      ],
+      "old_sha256": "281e6e724c7ca33b26714682220b658fb8588d0e061b2ea7427d65eee2af7917",
+      "candidate_sha256": "07f174e65608a3af54a97a55f58ac8920cca27c832caa3477867dafa4b8a383a",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/flows-setup-final-player.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-15-reference/flows-setup-final-player.png"
+      ]
+    },
+    {
+      "name": "flows-setup-large",
+      "dir": "test/goldens/failures",
+      "pixels": 63591,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        15,
+        173,
+        791,
+        1655
+      ],
+      "old_sha256": "ed1fe33d829d3e8867ac9f5a1cdbd019ed25f05359e6571052d8304c29aad399",
+      "candidate_sha256": "eaf306613e3c8a7277f2359176b6488fde99fb066a3e0c018ac069c5ac2819be",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/flows-setup-large.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-15-reference/flows-setup-large.png"
+      ]
+    },
+    {
+      "name": "flows-setup-rules",
+      "dir": "test/goldens/failures",
+      "pixels": 8606,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        84,
+        162,
+        744,
+        1651
+      ],
+      "old_sha256": "c3bb94dac8bcb522e9156447c58e6c1f201977e6d430170dfbdede2f88e96bfa",
+      "candidate_sha256": "d8282ae8a136b65f4bc00587ac2d776e6ed5532a909cfdefd4161ee6c939501a",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/flows-setup-rules.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-15-reference/flows-setup-rules.png"
+      ]
+    },
+    {
+      "name": "flows-standings-0",
+      "dir": "test/goldens/failures",
+      "pixels": 49,
+      "total": 1405392,
+      "max_delta": 4,
+      "bbox": [
+        84,
+        166,
+        744,
+        1651
+      ],
+      "old_sha256": "31dd011f5514a4dbf5ebd38b5219e7698f0a13fcd378067985a46512fe5e6edd",
+      "candidate_sha256": "7eedaea2194ef5a9379c29fd66d5933527dc6ff77dd9ec2cf987e1f347e84fe4",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/flows-standings-0.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-14-reference/flows-standings-0.png"
+      ]
+    },
+    {
+      "name": "flows-standings-1",
+      "dir": "test/goldens/failures",
+      "pixels": 79,
+      "total": 1405392,
+      "max_delta": 6,
+      "bbox": [
+        84,
+        166,
+        746,
+        1651
+      ],
+      "old_sha256": "303642b3e756adbfdb685bb12fd3a28c25ad7aca66affc8df7300cdf3deb1b0f",
+      "candidate_sha256": "49c2317388b3aad9fc6b8a2d1c9324dcc60d94edcd76b3e70c471e6b526cf0cd",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/flows-standings-1.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-14-reference/flows-standings-1.png"
+      ]
+    },
+    {
+      "name": "flows-standings-2",
+      "dir": "test/goldens/failures",
+      "pixels": 81,
+      "total": 1405392,
+      "max_delta": 6,
+      "bbox": [
+        84,
+        166,
+        746,
+        1651
+      ],
+      "old_sha256": "f017b9e1fdbc9aef3ec5c7d72a4070eedb1af701f252f4b5ac79c3be6ef0388b",
+      "candidate_sha256": "de66c82490910da24a7402d931fa0ba33eceb1933eff76e7a508964c33c1fe90",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/flows-standings-2.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-14-reference/flows-standings-2.png"
+      ]
+    },
+    {
+      "name": "flows-standings-intesa",
+      "dir": "test/goldens/failures",
+      "pixels": 107,
+      "total": 1405392,
+      "max_delta": 13,
+      "bbox": [
+        84,
+        166,
+        746,
+        1651
+      ],
+      "old_sha256": "7c612738299c283eb07ec1e8f66515c24dc1f096fda34bdf1003e5d81fa9cae5",
+      "candidate_sha256": "232676d0b5d88614b95f05691d74ec2d1d6542ef5e71228770a7ddf707706265",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/flows-standings-intesa.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-14-reference/flows-standings-intesa.png"
+      ]
+    },
+    {
+      "name": "flows-standings-large",
+      "dir": "test/goldens/failures",
+      "pixels": 114,
+      "total": 1405392,
+      "max_delta": 13,
+      "bbox": [
+        86,
+        177,
+        746,
+        1655
+      ],
+      "old_sha256": "8a1cf34d6772b8402434a4e6eac21518cb7a22df0ce6366ba95a494c4a0ecdc4",
+      "candidate_sha256": "b8d5076748f5c98e8afeb514b997f3f28a4145047e343aa38747ac27e0c63d78",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/flows-standings-large.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-14-reference/flows-standings-large.png"
+      ]
+    },
+    {
+      "name": "flows-standings",
+      "dir": "test/goldens/failures",
+      "pixels": 93,
+      "total": 1405392,
+      "max_delta": 6,
+      "bbox": [
+        84,
+        166,
+        746,
+        1651
+      ],
+      "old_sha256": "4702ce90507acce755f96c7f29076f58f242ec371c9f9ea486e6e4a26b574640",
+      "candidate_sha256": "e015298ab6cf76cb93abfb4467782cc48ee0946adeb01845f550d8e58c871009",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/flows-standings.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-14-reference/flows-standings.png"
+      ]
+    },
+    {
+      "name": "supplement-leaderboard-compact-large",
+      "dir": "test/goldens/failures",
+      "pixels": 90,
+      "total": 727040,
+      "max_delta": 13,
+      "bbox": [
+        71,
+        177,
+        582,
+        1040
+      ],
+      "old_sha256": "5bd52468e169a16e9cafd77131e3452c0d1e2f4e2ab803f27905a63157190dca",
+      "candidate_sha256": "a24e29fc916a047d9b091b47914cd0306aed3603ae04f393751a61ba3b2db08f",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/supplement-leaderboard-compact-large.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-14-reference/supplement-leaderboard-compact-large.png"
+      ]
+    },
+    {
+      "name": "supplement-leaderboard-long-name-compact-large-corrected",
+      "dir": "test/goldens/failures",
+      "pixels": 84,
+      "total": 727040,
+      "max_delta": 13,
+      "bbox": [
+        71,
+        177,
+        582,
+        1040
+      ],
+      "old_sha256": "1855ae50b3c3a006776ff15933ecf1266bf412a77000b46a1dddec5ab3c5dc5e",
+      "candidate_sha256": "dd6dd3642891b495baeb2d59f1defb6272e1b1efd0e917d2cc59a37732443b1b",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/supplement-leaderboard-long-name-compact-large-corrected.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-14-reference/supplement-leaderboard-long-name-compact-large-corrected.png"
+      ]
+    },
+    {
+      "name": "supplement-leaderboard-long-name-normal-corrected",
+      "dir": "test/goldens/failures",
+      "pixels": 108,
+      "total": 1405392,
+      "max_delta": 6,
+      "bbox": [
+        84,
+        166,
+        746,
+        1651
+      ],
+      "old_sha256": "4798fe41e73d675e2d0281526d994da116a68317b16b4d3abde3330721951536",
+      "candidate_sha256": "f68d5a438abd9fd5b4566bad286330f65e81cbd59fff4a217c57bc211f1da171",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/supplement-leaderboard-long-name-normal-corrected.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-14-reference/supplement-leaderboard-long-name-normal-corrected.png"
+      ]
+    },
+    {
+      "name": "supplement-match-compact-large",
+      "dir": "test/goldens/failures",
+      "pixels": 132918,
+      "total": 727040,
+      "max_delta": 238,
+      "bbox": [
+        13,
+        688,
+        627,
+        918
+      ],
+      "old_sha256": "d85bd6d70e052148f7046e6b78da61c3f15a8c1044c31d15237aa4f105f1b98f",
+      "candidate_sha256": "10152ff4ce16e7e6dd9cbd0b2aced7194ce143b651d61a69032c60e831b263f0",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/supplement-match-compact-large.png",
+      "previous_references": [
+        "test/goldens/italia90-reference/supplement-match-compact-large.png"
+      ]
+    },
+    {
+      "name": "flows-setup-300",
+      "dir": "test/widgets/failures",
+      "pixels": 50213,
+      "total": 351348,
+      "max_delta": 254,
+      "bbox": [
+        16,
+        45,
+        386,
+        827
+      ],
+      "old_sha256": "01cddfa141a6a6f0f97ea9e9ba56af703bd247e3b7c3ffac592d30e1b93034a5",
+      "candidate_sha256": "03e5931936d6baff26e8645c39c3d64f8e8a49c67161fcdd1869d0f7bbc6b31a",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/flows-setup-300.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-15-reference/flows-setup-300.png"
+      ]
+    },
+    {
+      "name": "italia90-team-assignment",
+      "dir": "test/widgets/failures",
+      "pixels": 1177,
+      "total": 108540,
+      "max_delta": 242,
+      "bbox": [
+        45,
+        34,
+        365,
+        223
+      ],
+      "old_sha256": "0febe28572c3f649a247cd89164942f5556a9ff8d9fab245292a1fa4cc19a1ae",
+      "candidate_sha256": "10308a3c08c20b7b6a9f556a5ba95f4b28b330d665a8fe75e8d107eacc5f392f",
+      "group": "target layout / colors",
+      "file": "test/goldens/integrated-reference-corrections/italia90-team-assignment.png",
+      "previous_references": [
+        "test/goldens/italia90-team-assignment.png"
+      ]
+    },
+    {
+      "name": "live-1v1-2-0",
+      "dir": "test/widgets/failures",
+      "pixels": 11,
+      "total": 351348,
+      "max_delta": 9,
+      "bbox": [
+        51,
+        277,
+        266,
+        754
+      ],
+      "old_sha256": "b14a4292dd572f08fdccdfad682aea3a9fd35da6a7e89dc5d0b9c0c8da79e4ce",
+      "candidate_sha256": "7ccf16b63cb65f7b97940242f00969f10b2085fad965ad89da3974d1c6cc2fef",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/live-1v1-2-0.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-17-reference/live-1v1-2-0.png"
+      ]
+    },
+    {
+      "name": "live-1v1",
+      "dir": "test/widgets/failures",
+      "pixels": 6,
+      "total": 351348,
+      "max_delta": 9,
+      "bbox": [
+        105,
+        438,
+        266,
+        754
+      ],
+      "old_sha256": "5bedc9f52f12434c936df0e07e8de5b6d0ed6cda05dedb65eeb2abcd03f37f59",
+      "candidate_sha256": "b2acb637b50bb9715e11bd508001e5c70b9cbc4d1e7df9cdbaef41e6e1d338de",
+      "group": "edge shades",
+      "file": "test/goldens/integrated-reference-corrections/live-1v1.png",
+      "previous_references": [
+        "test/goldens/italia90-issue-17-reference/live-1v1.png"
+      ]
+    }
+  ],
+  "approval": "Approve these 28 corrections",
+  "approval_date": "2026-10-14",
+  "pixel_tolerance": "unchanged exact comparison"
+}
