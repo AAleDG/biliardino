@@ -11,6 +11,7 @@ import '../../repositories/feedback_repository.dart';
 import '../../widgets/feedback/feedback_page_frame.dart';
 import 'feedback_confirmation_view.dart';
 import 'feedback_form_view.dart';
+import 'feedback_recovery_view.dart';
 
 /// Stable route owner: controllers and request survive presentation rebuilds.
 class FeedbackScreen extends StatefulWidget {
@@ -129,6 +130,12 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                       ),
                     ],
                   ],
+                )
+              : state.status == FeedbackStatus.recovery
+              ? FeedbackRecoveryView(
+                  style: style,
+                  onRestore: _cubit.restoreDraft,
+                  error: state.error,
                 )
               : state.status == FeedbackStatus.sent
               ? FeedbackConfirmationView(

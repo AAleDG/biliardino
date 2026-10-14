@@ -2,6 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:biliardino/data/database_helper.dart';
+import 'package:biliardino/cubits/feedback/feedback_cubit.dart';
+import 'package:biliardino/models/app_style.dart';
+import 'package:biliardino/services/formspree_feedback.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:biliardino/models/feedback_draft.dart';
 import 'package:biliardino/repositories/feedback_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +14,117 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   setUpAll(sqfliteFfiInit);
+
+  test(
+    'acknowledged feedback cannot return as a sendable draft after failed cleanup and restart',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'feedback-receipt-',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      final path = '${directory.path}/draft.db';
+      var db = await databaseFactoryFfi.openDatabase(path);
+      await db.execute(
+        'CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)',
+      );
+      final repository = FeedbackRepository(
+        DatabaseHelper.withDatabase(db),
+        contextLoader: () async =>
+            const FeedbackContext(version: '1', build: '1', platform: 'iOS'),
+        transport: FormspreeFeedback(
+          clientFactory: () => MockClient((_) async {
+            await db.execute(
+              "CREATE TRIGGER fail_cleanup BEFORE INSERT ON settings BEGIN SELECT RAISE(ABORT, 'storage unavailable'); END",
+            );
+            return http.Response(
+              '{"next":"/thanks"}',
+              200,
+              headers: {'content-type': 'application/json'},
+            );
+          }),
+        ),
+      );
+      await repository.saveDraft(
+        const FeedbackDraft(message: 'Already delivered'),
+      );
+      final cubit = FeedbackCubit(repository);
+      await cubit.load();
+      await cubit.send(AppStyle.italia90);
+      expect(cubit.state.status, FeedbackStatus.sent);
+      expect(cubit.state.draftNotice, isNotNull);
+      expect((await repository.loadDraft()).message, '');
+      await cubit.close();
+      await db.close();
+      db = await databaseFactoryFfi.openDatabase(path);
+      addTearDown(db.close);
+      final restarted = FeedbackRepository(DatabaseHelper.withDatabase(db));
+      await expectLater(
+        restarted.loadDraft(),
+        throwsA(isA<FeedbackRecoveryRequired>()),
+      );
+      final recovery = FeedbackCubit(restarted);
+      addTearDown(recovery.close);
+      await recovery.load();
+      expect(recovery.state.status, FeedbackStatus.recovery);
+      await recovery.restoreDraft();
+      expect(recovery.state.status, FeedbackStatus.recovery);
+      await db.execute('DROP TRIGGER fail_cleanup');
+      await recovery.restoreDraft();
+      expect(recovery.state.status, FeedbackStatus.editing);
+      expect(recovery.state.draft.message, 'Already delivered');
+      expect(
+        (await FeedbackRepository(
+          DatabaseHelper.withDatabase(db),
+        ).loadDraft()).message,
+        'Already delivered',
+      );
+    },
+  );
+
+  test(
+    'failed journal transaction prevents dispatch and preserves the previous draft',
+    () async {
+      final db = await databaseFactoryFfi.openDatabase(inMemoryDatabasePath);
+      addTearDown(db.close);
+      await db.execute(
+        'CREATE TABLE settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)',
+      );
+      var requests = 0;
+      final repository = FeedbackRepository(
+        DatabaseHelper.withDatabase(db),
+        contextLoader: () async =>
+            const FeedbackContext(version: '1', build: '1', platform: 'iOS'),
+        transport: FormspreeFeedback(
+          clientFactory: () => MockClient((_) async {
+            requests++;
+            return http.Response(
+              '{"next":"/thanks"}',
+              200,
+              headers: {'content-type': 'application/json'},
+            );
+          }),
+        ),
+      );
+      await repository.saveDraft(const FeedbackDraft(message: 'previous'));
+      await db.execute(
+        "CREATE TRIGGER fail_journal BEFORE INSERT ON settings WHEN NEW.key = 'feedback.delivery.v1' BEGIN SELECT RAISE(ABORT, 'storage unavailable'); END",
+      );
+      await expectLater(
+        repository.send(
+          const FeedbackDraft(message: 'unsaved change'),
+          AppStyle.italia90,
+        ),
+        throwsA(isA<DatabaseException>()),
+      );
+      expect(requests, 0);
+      expect(
+        (await FeedbackRepository(
+          DatabaseHelper.withDatabase(db),
+        ).loadDraft()).message,
+        'previous',
+      );
+    },
+  );
 
   test(
     'draft survives database close/reopen and preserves unrelated settings',

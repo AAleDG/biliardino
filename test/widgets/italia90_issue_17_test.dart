@@ -464,7 +464,9 @@ void main() {
     await tester.pumpAndSettle();
     await expectLater(
       find.byType(Scaffold),
-      matchesGoldenFile('../goldens/italia90-issue-17-reference/live-1v1.png'),
+      matchesGoldenFile(
+        '../goldens/integrated-reference-corrections/live-1v1.png',
+      ),
     );
   });
 
@@ -488,7 +490,7 @@ void main() {
     await expectLater(
       find.byType(Scaffold),
       matchesGoldenFile(
-        '../goldens/italia90-issue-17-reference/live-1v1-2-0.png',
+        '../goldens/integrated-reference-corrections/live-1v1-2-0.png',
       ),
     );
   });

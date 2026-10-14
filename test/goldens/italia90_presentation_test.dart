@@ -60,11 +60,57 @@ void main() {
     'supplement-players-normal':
         'reference-corrections/supplement-players-normal-corrected.png',
   };
-  final references = jsonDecode(
-    File(
-      'test/goldens/italia90-reference/provenance.json',
-    ).readAsStringSync(),
-  ) as Map<String, dynamic>;
+  // Exact additive candidates approved after target synchronization.
+  const integratedReferenceCorrections = <String, String>{
+    'core-live-10-12': 'integrated-reference-corrections/core-live-10-12.png',
+    'core-live-4-5': 'integrated-reference-corrections/core-live-4-5.png',
+    'core-live-large': 'integrated-reference-corrections/core-live-large.png',
+    'core-setup': 'integrated-reference-corrections/core-setup.png',
+    'flows-pair-profile-intesa-large':
+        'integrated-reference-corrections/flows-pair-profile-intesa-large.png',
+    'flows-pair-profile-intesa':
+        'integrated-reference-corrections/flows-pair-profile-intesa.png',
+    'flows-profile-archived':
+        'integrated-reference-corrections/flows-profile-archived.png',
+    'flows-profile-large':
+        'integrated-reference-corrections/flows-profile-large.png',
+    'flows-profile-no-matches':
+        'integrated-reference-corrections/flows-profile-no-matches.png',
+    'flows-profile': 'integrated-reference-corrections/flows-profile.png',
+    'flows-scorers': 'integrated-reference-corrections/flows-scorers.png',
+    'flows-setup-final-player':
+        'integrated-reference-corrections/flows-setup-final-player.png',
+    'flows-setup-large':
+        'integrated-reference-corrections/flows-setup-large.png',
+    'flows-setup-rules':
+        'integrated-reference-corrections/flows-setup-rules.png',
+    'flows-standings-0':
+        'integrated-reference-corrections/flows-standings-0.png',
+    'flows-standings-1':
+        'integrated-reference-corrections/flows-standings-1.png',
+    'flows-standings-2':
+        'integrated-reference-corrections/flows-standings-2.png',
+    'flows-standings-intesa':
+        'integrated-reference-corrections/flows-standings-intesa.png',
+    'flows-standings-large':
+        'integrated-reference-corrections/flows-standings-large.png',
+    'flows-standings': 'integrated-reference-corrections/flows-standings.png',
+    'supplement-leaderboard-compact-large':
+        'integrated-reference-corrections/supplement-leaderboard-compact-large.png',
+    'supplement-leaderboard-long-name-compact-large':
+        'integrated-reference-corrections/supplement-leaderboard-long-name-compact-large-corrected.png',
+    'supplement-leaderboard-long-name-normal':
+        'integrated-reference-corrections/supplement-leaderboard-long-name-normal-corrected.png',
+    'supplement-match-compact-large':
+        'integrated-reference-corrections/supplement-match-compact-large.png',
+  };
+  final references =
+      jsonDecode(
+            File(
+              'test/goldens/italia90-reference/provenance.json',
+            ).readAsStringSync(),
+          )
+          as Map<String, dynamic>;
   const awardRecognitionAcceptanceNames = {
     'flows-standings',
     'flows-standings-intesa',
@@ -85,23 +131,25 @@ void main() {
     // PNGs stay frozen and the new stage has dedicated acceptance goldens.
     final isTeamAssignmentAcceptance =
         name == 'core-setup' || name.startsWith('flows-setup-');
-    final isAwardRecognitionAcceptance =
-        awardRecognitionAcceptanceNames.contains(name);
+    final isAwardRecognitionAcceptance = awardRecognitionAcceptanceNames
+        .contains(name);
     final testTitle = isLiveScoreAcceptance
         ? 'Italia live-score acceptance'
         : isTeamAssignmentAcceptance
-            ? 'Italia team-assignment acceptance'
-            : isAwardRecognitionAcceptance
-                ? 'Italia award-recognition acceptance'
-                : referenceCorrections.containsKey(name)
-                    ? 'Italia presentation correction'
-                    : 'Italia donor parity';
+        ? 'Italia team-assignment acceptance'
+        : isAwardRecognitionAcceptance
+        ? 'Italia award-recognition acceptance'
+        : referenceCorrections.containsKey(name)
+        ? 'Italia presentation correction'
+        : 'Italia donor parity';
     testWidgets('$testTitle: $name', (tester) async {
-      final metadata = jsonDecode(
-        File(
-          'test/goldens/italia90-reference/$name.json',
-        ).readAsStringSync(),
-      ) as Map<String, dynamic>;
+      final metadata =
+          jsonDecode(
+                File(
+                  'test/goldens/italia90-reference/$name.json',
+                ).readAsStringSync(),
+              )
+              as Map<String, dynamic>;
       final viewport = metadata['viewport'] as Map;
       final safe = metadata['safe_area'] as Map;
       final capturedAt = DateTime.parse(metadata['captured_at'] as String);
@@ -116,8 +164,8 @@ void main() {
       );
       tester.platformDispatcher.textScaleFactorTestValue =
           name == 'flows-setup-large'
-              ? 1
-              : (metadata['text_scale'] as num).toDouble();
+          ? 1
+          : (metadata['text_scale'] as num).toDouble();
       addTearDown(tester.view.reset);
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       final shadows = debugDisableShadows;
@@ -268,15 +316,16 @@ void main() {
         await expectLater(
           image,
           matchesGoldenFile(
-            name.startsWith('supplement-more-')
-                ? 'appearance-altro-$name.png'
-                : isLiveScoreAcceptance
+            integratedReferenceCorrections[name] ??
+                (name.startsWith('supplement-more-')
+                    ? 'appearance-altro-$name.png'
+                    : isLiveScoreAcceptance
                     ? 'italia90-issue-17-reference/$name.png'
                     : isTeamAssignmentAcceptance
-                        ? 'italia90-issue-15-reference/$name.png'
-                        : isAwardRecognitionAcceptance
-                            ? 'italia90-issue-14-reference/${reference['corrected_expected'] ?? '$name.png'}'
-                        : expectedGolden,
+                    ? 'italia90-issue-15-reference/$name.png'
+                    : isAwardRecognitionAcceptance
+                    ? 'italia90-issue-14-reference/${reference['corrected_expected'] ?? '$name.png'}'
+                    : expectedGolden),
           ),
         );
       } finally {

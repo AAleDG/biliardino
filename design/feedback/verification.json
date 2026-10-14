@@ -1,7 +1,7 @@
 {
   "date": "2026-10-13",
   "plan_revision": "R4",
-  "status": "final verification passed; ready to prepare dependent MR; awaiting merge",
+  "status": "R5 current integrated checks passed; ready for MR24 update; awaiting merge",
   "source": {
     "base": "0d6108ff09a779b8b17269370e0e061f0dc38f67",
     "branch": "codex/feedback-form-discovery",
@@ -332,5 +332,53 @@
     "resolution": "Keep target live-score/team-assignment/award acceptance paths; retain approved corrections for remaining captures. Newer issue-specific references take precedence.",
     "tests_and_reviews": "Not rerun, per explicit user instruction",
     "earlier_checks_apply_to": "Verified feedback state before target synchronization"
+  },
+  "recovery_verification": {
+    "date": "2026-10-14",
+    "revision": "R5",
+    "base": "686c2b6502ddcd7e181a7605027ca52e8ddbb67f",
+    "sdk": "Flutter3.44.9 / Dart3.12.2",
+    "source_sha256": {
+      "lib/cubits/feedback/feedback_cubit.dart": "da66ebf13b227dd45962e5112fa287bf0cddd2cf6d10ce687a0470c9922dfafd",
+      "lib/repositories/feedback_repository.dart": "7a51c15caef371b15f4287351f5ead8dba6d8ae9dc74362dc92f99fcd50b0340",
+      "lib/screens/feedback/feedback_confirmation_view.dart": "85bef6b9ec33e4c5d05c4fd17cf158df1d2cda28f3fe8237632193b79a72cff9",
+      "lib/screens/feedback/feedback_form_view.dart": "f7708117169d23594664e51c9a8985a775d7c695dac4b0221a98c24b17a51a27",
+      "lib/screens/feedback/feedback_recovery_view.dart": "5d0366cf01e7c2c7037f5198d7c5832e430e8e5d8052d12f85d084932ad6b0cb",
+      "lib/screens/feedback/feedback_screen.dart": "997cf3f105b699b1e7054df8b2836ba76e50254754ecba3cf150b4f98bd5f978",
+      "lib/widgets/feedback/feedback_page_frame.dart": "ffb56d208febbbccea3bab8e81b11c6298984ed88ee0c6669c4e778431ab16e2"
+    },
+    "baseline": {
+      "passed": 468,
+      "failed_goldens": 28,
+      "deliberate_recovery_regression_failed": true
+    },
+    "focused": {
+      "passed": 16,
+      "failed": 0
+    },
+    "full": {
+      "passed": 499,
+      "failed": 0,
+      "command": "/opt/homebrew/bin/flutter test --no-pub --reporter expanded"
+    },
+    "analysis": "No issues found",
+    "format": "9 changed Dart files / 0 changes",
+    "build": {
+      "automatic_spm_build": "passed; generated migration discarded",
+      "existing_cocoapods_build": "passed; final production source, unchanged tracked iOS configuration",
+      "override": "FLUTTER_SWIFT_PACKAGE_MANAGER=false (per command; no global config change)"
+    },
+    "reference_corrections": {
+      "count": 28,
+      "approval": "Approve these 28 corrections",
+      "provenance": "test/goldens/integrated-reference-corrections/provenance.json",
+      "comparison": "exact; unchanged tolerance",
+      "originals": "304 existing protected assets/fonts/references/AGENTS/lockfile byte-identical to686c2b6"
+    },
+    "native": "Not rerun: agent device access disabled. Prior R4 native evidence is historical after recovery source changes.",
+    "delivery": "Prior one authorized native message/email receipt accepted; no further external POST",
+    "voiceover": "excluded by user; not run",
+    "review": "Bounded local correctness inspection only; no additional external or companion review",
+    "worktree_recovery": "Temporary worktree disappeared; recreated from686c2b6. Baseline/focused/full checks rerun."
   }
 }

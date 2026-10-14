@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/models/feedback_draft.dart';
@@ -15,6 +16,58 @@ import 'package:http/testing.dart';
 import '../support/design_fixture.dart';
 
 void main() {
+  testWidgets(
+    'uncertain delivery warns before explicit restore and never sends automatically',
+    (tester) async {
+      var requests = 0;
+      final fixture = await _open(
+        tester,
+        handler: (_) async {
+          requests++;
+          return _ack();
+        },
+      );
+      await Navigator.of(
+        tester.element(find.byType(FeedbackScreen)),
+      ).maybePop();
+      await tester.pumpAndSettle();
+      await fixture.database.setSettings({
+        FeedbackRepository.storageKey: jsonEncode(
+          const FeedbackDraft(message: 'Possible duplicate').toJson(),
+        ),
+        FeedbackRepository.deliveryKey: jsonEncode({
+          'id': 'interrupted',
+          'status': 'pending',
+        }),
+      });
+      await _tap(tester, find.byKey(const ValueKey('more-feedback')));
+      expect(
+        find.textContaining('potresti duplicare il feedback'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('feedback-send')), findsNothing);
+      final repository = fixture.feedbackRepository as _StorageRepository;
+      repository.failSave = true;
+      await _tap(tester, find.text('Ripristina bozza'));
+      expect(
+        find.text('Non siamo riusciti a ripristinare la bozza. Riprova.'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('feedback-send')), findsNothing);
+      // Closing preserves the warning on the next visit.
+      await Navigator.of(
+        tester.element(find.byType(FeedbackScreen)),
+      ).maybePop();
+      await tester.pumpAndSettle();
+      await _tap(tester, find.byKey(const ValueKey('more-feedback')));
+      repository.failSave = false;
+      await _tap(tester, find.text('Ripristina bozza'));
+      expect(_message(tester), 'Possible duplicate');
+      expect(find.byKey(const ValueKey('feedback-send')), findsOneWidget);
+      expect(requests, 0);
+    },
+  );
+
   testWidgets(
     'required message and optional valid email validate before any send',
     (tester) async {

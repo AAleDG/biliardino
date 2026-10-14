@@ -229,7 +229,7 @@ void main() {
     await expectLater(
       find.byKey(boundaryKey),
       matchesGoldenFile(
-        '../goldens/italia90-issue-15-reference/flows-setup-300.png',
+        '../goldens/integrated-reference-corrections/flows-setup-300.png',
       ),
     );
   });
@@ -294,7 +294,9 @@ void main() {
 
     await expectLater(
       find.byKey(boundaryKey),
-      matchesGoldenFile('../goldens/italia90-team-assignment.png'),
+      matchesGoldenFile(
+        '../goldens/integrated-reference-corrections/italia90-team-assignment.png',
+      ),
     );
   });
 }

@@ -4,7 +4,7 @@ import '../../models/app_style.dart';
 import '../../models/feedback_draft.dart';
 import '../../repositories/feedback_repository.dart';
 
-enum FeedbackStatus { loading, editing, sending, sent }
+enum FeedbackStatus { loading, recovery, editing, sending, sent }
 
 class FeedbackState {
   const FeedbackState({
@@ -35,11 +35,39 @@ class FeedbackCubit extends Cubit<FeedbackState> {
       if (!isClosed) {
         emit(FeedbackState(status: FeedbackStatus.editing, draft: draft));
       }
+    } on FeedbackRecoveryRequired catch (recovery) {
+      if (!isClosed) {
+        emit(
+          FeedbackState(status: FeedbackStatus.recovery, draft: recovery.draft),
+        );
+      }
     } on Object {
       if (!isClosed) {
         emit(
           const FeedbackState(
             error: 'Non siamo riusciti a recuperare la bozza. Riprova.',
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> restoreDraft() async {
+    if (state.status != FeedbackStatus.recovery) return;
+    final draft = state.draft;
+    emit(FeedbackState(status: FeedbackStatus.loading, draft: draft));
+    try {
+      await _repository.restoreDraft(draft).timeout(const Duration(seconds: 5));
+      if (!isClosed) {
+        emit(FeedbackState(status: FeedbackStatus.editing, draft: draft));
+      }
+    } on Object {
+      if (!isClosed) {
+        emit(
+          FeedbackState(
+            status: FeedbackStatus.recovery,
+            draft: draft,
+            error: 'Non siamo riusciti a ripristinare la bozza. Riprova.',
           ),
         );
       }
