@@ -37,6 +37,7 @@ void main() {
     }
   });
   // Independently reviewed corrections; original donor references remain frozen.
+  // Newer issue-specific acceptance references below take precedence.
   const referenceCorrections = <String, String>{
     'flows-history-detail': 'reference-corrections/flows-history-detail.png',
     'flows-history-edit': 'reference-corrections/flows-history-edit.png',
@@ -59,26 +60,48 @@ void main() {
     'supplement-players-normal':
         'reference-corrections/supplement-players-normal-corrected.png',
   };
-  final references =
-      jsonDecode(
-            File(
-              'test/goldens/italia90-reference/provenance.json',
-            ).readAsStringSync(),
-          )
-          as Map<String, dynamic>;
+  final references = jsonDecode(
+    File(
+      'test/goldens/italia90-reference/provenance.json',
+    ).readAsStringSync(),
+  ) as Map<String, dynamic>;
+  const awardRecognitionAcceptanceNames = {
+    'flows-standings',
+    'flows-standings-intesa',
+    'flows-standings-large',
+    'flows-standings-0',
+    'flows-standings-1',
+    'flows-standings-2',
+    'flows-scorers',
+    'supplement-leaderboard-compact-large',
+    'supplement-leaderboard-long-name-normal',
+    'supplement-leaderboard-long-name-compact-large',
+  };
   for (final reference in references['references'] as List) {
     final name = reference['name'] as String;
-    final description = referenceCorrections.containsKey(name)
-        ? 'Italia presentation correction: $name'
-        : 'Italia donor parity: $name';
-    testWidgets(description, (tester) async {
-      final metadata =
-          jsonDecode(
-                File(
-                  'test/goldens/italia90-reference/$name.json',
-                ).readAsStringSync(),
-              )
-              as Map<String, dynamic>;
+    // Issue 17 intentionally replaces the live composition; donor PNGs stay frozen.
+    final isLiveScoreAcceptance = name.startsWith('core-live-');
+    // Issue 15 intentionally replaces the team-assignment composition; donor
+    // PNGs stay frozen and the new stage has dedicated acceptance goldens.
+    final isTeamAssignmentAcceptance =
+        name == 'core-setup' || name.startsWith('flows-setup-');
+    final isAwardRecognitionAcceptance =
+        awardRecognitionAcceptanceNames.contains(name);
+    final testTitle = isLiveScoreAcceptance
+        ? 'Italia live-score acceptance'
+        : isTeamAssignmentAcceptance
+            ? 'Italia team-assignment acceptance'
+            : isAwardRecognitionAcceptance
+                ? 'Italia award-recognition acceptance'
+                : referenceCorrections.containsKey(name)
+                    ? 'Italia presentation correction'
+                    : 'Italia donor parity';
+    testWidgets('$testTitle: $name', (tester) async {
+      final metadata = jsonDecode(
+        File(
+          'test/goldens/italia90-reference/$name.json',
+        ).readAsStringSync(),
+      ) as Map<String, dynamic>;
       final viewport = metadata['viewport'] as Map;
       final safe = metadata['safe_area'] as Map;
       final capturedAt = DateTime.parse(metadata['captured_at'] as String);
@@ -93,8 +116,8 @@ void main() {
       );
       tester.platformDispatcher.textScaleFactorTestValue =
           name == 'flows-setup-large'
-          ? 1
-          : (metadata['text_scale'] as num).toDouble();
+              ? 1
+              : (metadata['text_scale'] as num).toDouble();
       addTearDown(tester.view.reset);
       addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       final shadows = debugDisableShadows;
@@ -128,6 +151,14 @@ void main() {
           ctx,
         ),
       );
+      if (isLiveScoreAcceptance) {
+        await tester.runAsync(
+          () => precacheImage(
+            const AssetImage('assets/italia90/live-poster-editoriale.png'),
+            ctx,
+          ),
+        );
+      }
       await tester.pumpAndSettle();
       final home = ctx.read<HomeCubit>();
       final match = ctx.read<NewMatchCubit>();
@@ -157,6 +188,9 @@ void main() {
         HomeDestination.values.byName(metadata['destination'] as String),
       );
       await tester.pumpAndSettle();
+      if (isLiveScoreAcceptance) {
+        expect(find.byType(NavigationBar), findsOneWidget);
+      }
       if (name.endsWith('-scorers') || name == 'flows-standings-large') {
         ranks.selectTab(1);
         await tester.pumpAndSettle();
@@ -236,7 +270,13 @@ void main() {
           matchesGoldenFile(
             name.startsWith('supplement-more-')
                 ? 'appearance-altro-$name.png'
-                : expectedGolden,
+                : isLiveScoreAcceptance
+                    ? 'italia90-issue-17-reference/$name.png'
+                    : isTeamAssignmentAcceptance
+                        ? 'italia90-issue-15-reference/$name.png'
+                        : isAwardRecognitionAcceptance
+                            ? 'italia90-issue-14-reference/${reference['corrected_expected'] ?? '$name.png'}'
+                        : expectedGolden,
           ),
         );
       } finally {

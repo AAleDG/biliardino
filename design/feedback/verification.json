@@ -323,5 +323,14 @@
     "test/widgets/feedback_screen_test.dart": "85daada9570b944c269cfc648d366068526a696003639693e93e252655f67a13",
     "test/widgets/italia90_history_responsive_test.dart": "a886da5b08abddb6bf7029d918a53690736fb0073e34010cceab9fb4f82a5b93",
     "test/widgets/style_presentation_boundary_test.dart": "79c3bd6b1c8ab654ca9f1ef858ce26dfa80e732a8ec816ba57f76842a1972111"
+  },
+  "post_verification_target_merge": {
+    "date": "2026-10-14",
+    "target_commit": "f2922dfb0864d3ae57ad24c8342ba42ac5bab825",
+    "mr": 24,
+    "resolved_file": "test/goldens/italia90_presentation_test.dart",
+    "resolution": "Keep target live-score/team-assignment/award acceptance paths; retain approved corrections for remaining captures. Newer issue-specific references take precedence.",
+    "tests_and_reviews": "Not rerun, per explicit user instruction",
+    "earlier_checks_apply_to": "Verified feedback state before target synchronization"
   }
 }

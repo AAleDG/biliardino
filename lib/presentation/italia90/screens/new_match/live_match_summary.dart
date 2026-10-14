@@ -16,27 +16,26 @@ class LiveMatchSummary extends StatelessWidget {
   final String team1Name, team2Name;
   @override
   Widget build(BuildContext context) {
-    final text = rules.isFree
-        ? 'PUNTEGGIO LIBERO'
-        : 'PRIMO A ${rules.targetScore}${rules.winByTwo ? ' · +2' : ''}';
+    final showRulePill = !rules.isFree;
     return Column(
       children: [
-        Container(
-          constraints: const BoxConstraints(minHeight: 40),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-          decoration: BoxDecoration(
-            color: AppColors.divider.withValues(alpha: .25),
-            borderRadius: BorderRadius.circular(24),
+        if (showRulePill)
+          Container(
+            constraints: const BoxConstraints(minHeight: 40),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.divider.withValues(alpha: .25),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Text(
+              'PRIMO A ${rules.targetScore}${rules.winByTwo ? ' · +2' : ''}',
+              textAlign: TextAlign.center,
+              style: AppType.utility,
+            ),
           ),
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: AppType.utility,
-          ),
-        ),
         if (rivalry != null && team1Name.isNotEmpty && team2Name.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: EdgeInsets.only(top: showRulePill ? 8 : 0),
             child: Column(
               children: [
                 const Text('RIVALITA ATTIVA', style: AppType.utility),

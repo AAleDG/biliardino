@@ -61,6 +61,18 @@ La fondazione implementata per l'estensione Home usa cinque voci primarie tipizz
 - **Classifica**: classifica completa e profili.
 - **Altro**: accesso tramite route complete a **Storico** e **Dati**, mantenendo filtri e comportamenti esistenti.
 
+La partita attiva Italia '90 conserva la parte superiore del poster fino al
+tricolore sotto i punteggi. Giocatori, nomi e azioni sottostanti sono widget
+Flutter: in 1vs1 un collega centrato per squadra, in 2vs2 due colleghi per
+squadra. Le figure riusano solo il ritaglio decorativo del poster, senza nomi
+dimostrativi o pulsanti raster. I nomi possono andare a capo; con testo
+ingrandito le squadre e le azioni si impilano nello stesso contenuto scorrevole.
+Goal, annullamento e registrazione restano collegati al Cubit esistente.
+Il punteggio aggiornato e' visibile dal primo frame: il breve impulso di scala
+non conserva il numero precedente e non attende una dissolvenza. Quando solo
+una squadra ha goal, tutta l'area ANNULLA agisce su quella squadra; con goal
+per entrambe restano le due azioni di annullamento associate alle squadre.
+
 **Dati** raggruppa **Crea backup** (JSON) ed **Esporta risultati** (CSV) sotto ESPORTA, e **Ripristina backup** sotto RIPRISTINA. Le schede Pass condividono la presentazione con Altro e mantengono un’unica azione accessibile. `DataManagementCubit` coordina le operazioni tramite una dipendenza iniettata; picker, condivisione e conferma restano effetti della presentazione. Il ripristino verifica il file prima della conferma e sostituisce i dati atomicamente. Se il successivo aggiornamento dei repository fallisce, il messaggio distingue il ripristino già avvenuto e permette di ritentare soltanto l’aggiornamento. Aprire il foglio di condivisione non certifica che il backup sia stato salvato. La lettura del file e la decodifica UTF-8 avvengono su worker nativi; il limite resta 10 MiB. Il coordinatore analizza e valida il JSON in un isolate tramite un callback statico che non trasferisce il database. Il Cubit consuma il risultato del picker prima di attendere il parser, mantiene l'operazione occupata e ignora risultati dopo la chiusura. Il ripristino esegue inserimenti in batch di massimo 500 righe, senza raccogliere risultati inutilizzati: tutti i batch appartengono alla stessa transazione, con giocatori prima delle partite. Un errore annulla anche cancellazioni e batch precedenti; le impostazioni restano intatte.
 
 `HomeCubit` espone `HomeDestination` invece di indici numerici. `HistoryCubit` vive sopra le route, cosi' i filtri sopravvivono alle visite da **Altro**. `DashboardCubit` e' alimentato direttamente dagli stream di `PlayerRepository` e `MatchRepository`: riusa `StatsService.sortedByMostRecent` e `StatsService.computeLeaderboard`, limita i risultati a cinque e le posizioni giocate a quattro, e non possiede persistenza, filtri dello storico o una nuova formula punti. La Home usa l'hero H2 approvato come PNG trasparente decorativo: e' l'unico elemento a tutta larghezza, conserva il rapporto intrinseco 1516:1038 e non usa crop. Wordmark, tagline, azione avvia/riprendi, righe, link e navigazione restano widget Flutter. L'azione Home e' una variante locale a capsula da 72dp con bordo bianco, ombra contenuta e lockup Barlow Condensed; non modifica i pulsanti condivisi delle altre schermate. Le righe hanno target da almeno 48dp, quindi la pagina scorre invece di comprimere la classifica sotto i risultati; con testo ingrandito le intestazioni si impilano e la barra primaria mantiene cinque destinazioni stabili.

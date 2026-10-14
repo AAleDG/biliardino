@@ -40,3 +40,7 @@ Exactly one anonymous message was authorized and sent: “Biliardino feedback ve
 All required R4 verification gates are satisfied. The MR draft is prepared in the ignored feature packet; the packet and raw evidence remain until verified primary-branch landing. The branch depends on runtime-style-selection, which is not present in the current local master. Prepare a dependent MR against that branch or verify its landing before retargeting.
 
 Android native runtime has not been tested. macOS delivery is unsupported/unverified in this iOS/Android increment. No additional external submission is authorized.
+
+## Target-branch synchronization — 14 October 2026
+
+MR !24 incorporates target commit `f2922dfb0864d3ae57ad24c8342ba42ac5bab825`. The Italia golden-test conflict preserves the target’s newer live-score, team-assignment and award-recognition acceptance references, which take precedence for those screens, and keeps the approved corrections for the remaining screens. Original reference images stay retained. The checks above describe the pre-synchronization verified feedback state; no tests or reviews were rerun, as explicitly instructed by the user.

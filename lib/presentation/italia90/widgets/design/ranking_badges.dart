@@ -19,27 +19,39 @@ class RankingBadges extends StatelessWidget {
   static const labelStyle = Italia90.caption;
 
   @override
-  Widget build(BuildContext context) => Wrap(
-    spacing: Italia90.xs,
-    runSpacing: Italia90.xs,
-    children: [
-      for (final badge in badges)
-        Tooltip(
-          message: badge.description,
-          child: Chip(
-            avatar: Icon(_iconFor(badge), size: 14),
-            label: Text(badge.label),
-            labelStyle: Italia90.caption.copyWith(
-              color: _foregroundFor(badge),
-              fontWeight: FontWeight.w700,
+  Widget build(BuildContext context) {
+    final largeText = MediaQuery.textScalerOf(context).scale(1) > 1.3;
+    return LayoutBuilder(
+      builder: (context, constraints) => Wrap(
+        spacing: Italia90.xs,
+        runSpacing: Italia90.xs,
+        children: [
+          for (final badge in badges)
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: largeText && constraints.hasBoundedWidth
+                    ? constraints.maxWidth
+                    : double.infinity,
+              ),
+              child: Tooltip(
+                message: badge.description,
+                child: Chip(
+                  avatar: Icon(_iconFor(badge), size: 14),
+                  label: Text(badge.label, softWrap: true),
+                  labelStyle: Italia90.caption.copyWith(
+                    color: _foregroundFor(badge),
+                    fontWeight: FontWeight.w700,
+                  ),
+                  backgroundColor: _backgroundFor(badge),
+                  visualDensity: VisualDensity.compact,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                ),
+              ),
             ),
-            backgroundColor: _backgroundFor(badge),
-            visualDensity: VisualDensity.compact,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-          ),
-        ),
-    ],
-  );
+        ],
+      ),
+    );
+  }
 
   static IconData _iconFor(PlayerBadge badge) => switch (badge.code) {
     'leader' => Icons.emoji_events,
