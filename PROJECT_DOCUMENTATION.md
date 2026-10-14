@@ -97,7 +97,7 @@ La verifica finale e i limiti mantenuti sono documentati in `design/runtime-styl
 
 ### Feedback nell’app
 
-**Altro → Invia feedback** apre una route completa in entrambe le presentazioni, con messaggio obbligatorio ed email facoltativa. `FeedbackScreen` conserva controller e Cubit durante i rebuild dello stile. `FeedbackPageFrame` applica i token esistenti e i soli sfondi R2 approvati; testo, logo, campi e controlli restano widget Flutter. La cornice scorre con tastiera e testo ingrandito.
+**Altro → Invia feedback** apre una route completa in entrambe le presentazioni, con messaggio obbligatorio ed email facoltativa. `FeedbackScreen` conserva controller e Cubit durante i rebuild dello stile. `FeedbackPageFrame` applica i token esistenti e i soli sfondi R2 approvati; testo, logo, campi e controlli restano widget Flutter. La cornice scorre con tastiera e testo ingrandito. I campi espongono nomi semantici associati (“Messaggio (obbligatorio)” e “Email (facoltativa)”) anche quando compilati o non validi; le etichette visive non duplicano gli annunci.
 
 `FeedbackRepository`, creato in modo lazy, salva una sola bozza condivisa tra gli stili nella chiave `feedback.draft.v1` della tabella settings. Le scritture serializzate includono la cancellazione dopo un invio riconosciuto; una scrittura fallita non interrompe la coda. La chiusura attende il salvataggio e, se fallisce, consente di restare o chiudere consapevolmente. Le notifiche distinguono salvataggio in corso, errore e bozza salvata.
 

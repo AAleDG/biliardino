@@ -70,22 +70,24 @@ class FeedbackFormView extends StatelessWidget {
           fillColor: italia ? Italia90.panel : AppColors.surface,
           contentPadding: const EdgeInsets.all(12),
         );
-    Widget fieldLabel(String text) => Padding(
-      padding: EdgeInsets.only(bottom: italia ? 6 : 10),
-      child: text == 'Email (facoltativa)'
-          ? Text.rich(
-              TextSpan(
-                children: [
-                  const TextSpan(text: 'Email '),
-                  TextSpan(
-                    text: '(facoltativa)',
-                    style: label.copyWith(fontWeight: FontWeight.w400),
-                  ),
-                ],
-              ),
-              style: label,
-            )
-          : Text(text, style: label),
+    Widget fieldLabel(String text) => ExcludeSemantics(
+      child: Padding(
+        padding: EdgeInsets.only(bottom: italia ? 6 : 10),
+        child: text == 'Email (facoltativa)'
+            ? Text.rich(
+                TextSpan(
+                  children: [
+                    const TextSpan(text: 'Email '),
+                    TextSpan(
+                      text: '(facoltativa)',
+                      style: label.copyWith(fontWeight: FontWeight.w400),
+                    ),
+                  ],
+                ),
+                style: label,
+              )
+            : Text(text, style: label),
+      ),
     );
     final fields = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -100,48 +102,54 @@ class FeedbackFormView extends StatelessWidget {
         Text('Raccontacelo qui.', style: intro),
         SizedBox(height: italia ? 18 : 24),
         fieldLabel('Messaggio'),
-        TextFormField(
-          key: const ValueKey('feedback-message'),
-          controller: message,
-          enabled: !sending && !readOnly,
-          style: body.copyWith(
-            fontSize: 16,
-            height: italia ? 1.35 : 1.3,
-            letterSpacing: 0,
+        Semantics(
+          label: 'Messaggio (obbligatorio)',
+          child: TextFormField(
+            key: const ValueKey('feedback-message'),
+            controller: message,
+            enabled: !sending && !readOnly,
+            style: body.copyWith(
+              fontSize: 16,
+              height: italia ? 1.35 : 1.3,
+              letterSpacing: 0,
+            ),
+            minLines: compact ? 4 : (italia ? 6 : 7),
+            textAlignVertical: TextAlignVertical.top,
+            maxLines: null,
+            keyboardType: TextInputType.multiline,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: decoration('Scrivi il tuo messaggio…'),
+            validator: (value) => value == null || value.trim().isEmpty
+                ? 'Scrivi un messaggio.'
+                : null,
+            onChanged: (_) => onChanged(),
           ),
-          minLines: compact ? 4 : (italia ? 6 : 7),
-          textAlignVertical: TextAlignVertical.top,
-          maxLines: null,
-          keyboardType: TextInputType.multiline,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: decoration('Scrivi il tuo messaggio…'),
-          validator: (value) => value == null || value.trim().isEmpty
-              ? 'Scrivi un messaggio.'
-              : null,
-          onChanged: (_) => onChanged(),
         ),
         const SizedBox(height: 22),
         fieldLabel('Email (facoltativa)'),
-        TextFormField(
-          key: const ValueKey('feedback-email'),
-          controller: email,
-          enabled: !sending && !readOnly,
-          style: body.copyWith(fontSize: 16, height: 1.2, letterSpacing: 0),
-          keyboardType: TextInputType.emailAddress,
-          textInputAction: TextInputAction.done,
-          autocorrect: false,
-          enableSuggestions: false,
-          autofillHints: const [AutofillHints.email],
-          decoration: decoration('Per ricevere una risposta', minHeight: 48),
-          validator: (value) {
-            final text = value?.trim() ?? '';
-            if (text.isEmpty) return null;
-            return RegExp(r'^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$').hasMatch(text)
-                ? null
-                : 'Inserisci un’email valida.';
-          },
-          onChanged: (_) => onChanged(),
-          onFieldSubmitted: (_) => sending ? null : onSubmit(),
+        Semantics(
+          label: 'Email (facoltativa)',
+          child: TextFormField(
+            key: const ValueKey('feedback-email'),
+            controller: email,
+            enabled: !sending && !readOnly,
+            style: body.copyWith(fontSize: 16, height: 1.2, letterSpacing: 0),
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            autocorrect: false,
+            enableSuggestions: false,
+            autofillHints: const [AutofillHints.email],
+            decoration: decoration('Per ricevere una risposta', minHeight: 48),
+            validator: (value) {
+              final text = value?.trim() ?? '';
+              if (text.isEmpty) return null;
+              return RegExp(r'^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$').hasMatch(text)
+                  ? null
+                  : 'Inserisci un’email valida.';
+            },
+            onChanged: (_) => onChanged(),
+            onFieldSubmitted: (_) => sending ? null : onSubmit(),
+          ),
         ),
         const SizedBox(height: 16),
         Text(

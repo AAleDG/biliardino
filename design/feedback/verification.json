@@ -1,7 +1,7 @@
 {
   "date": "2026-10-13",
   "plan_revision": "R4",
-  "status": "R5 current integrated checks passed; ready for MR24 update; awaiting merge",
+  "status": "R6 field labels/README:allcurrentchecks passed;readyforMRupdate;awaitingmerge",
   "source": {
     "base": "0d6108ff09a779b8b17269370e0e061f0dc38f67",
     "branch": "codex/feedback-form-discovery",
@@ -380,5 +380,36 @@
     "voiceover": "excluded by user; not run",
     "review": "Bounded local correctness inspection only; no additional external or companion review",
     "worktree_recovery": "Temporary worktree disappeared; recreated from686c2b6. Baseline/focused/full checks rerun."
+  },
+  "labels_readme_verification": {
+    "date": "2026-10-14",
+    "revision": "R6",
+    "base": "bbe6da8d1a8a499221952bdecb403f44bc9db558",
+    "sdk": "Flutter3.44.9 / Dart3.12.2",
+    "source_sha256": {
+      "README.md": "209407ee018b5ed71105729ae63004d001cd0119648647d35d98cf648da72bf0",
+      "lib/screens/feedback/feedback_form_view.dart": "b13fa89d99142d60e36afbc9cc0cecc246315a39776002c044ecd337b84096de",
+      "test/widgets/feedback_screen_test.dart": "38f169686ac25f0e26e31b27ecd1b3adf3ab1c9c64e160542f816245f82a3ad1"
+    },
+    "behavior": "Associated Messaggio(obbligatorio)/Email(facoltativa) labels on empty/populated/invalid native editable nodes; values and validation error hints retained; duplicate visible label announcements excluded.",
+    "regression": "Both-style route semantics failed on original placeholder-only field name before production fix, then passed.",
+    "focused": {
+      "command": "flutter test --no-pub --reporter expanded test/widgets/feedback_screen_test.dart test/goldens/feedback_screen_test.dart",
+      "passed": 16,
+      "failed": 0
+    },
+    "full": {
+      "command": "flutter test --no-pub --reporter expanded",
+      "passed": 501,
+      "failed": 0
+    },
+    "analysis": "No issues found",
+    "format": "2Dart files/0changes",
+    "integrity": "278existingartwork/font/goldenfiles byte-identical tobbe6da8;6existingfeedbackgoldens pass exact without updates",
+    "build": "passed;finalproduction source;per-command FLUTTER_SWIFT_PACKAGE_MANAGER=false;unchangedtrackedCocoaPodsproject",
+    "native": "No new native check;device access unavailable. Automated semantics is not a VoiceOver run;user excludes VoiceOver.",
+    "delivery": "No further external submission;prior authorized emailreceipt retained as historical.",
+    "sdk_changes": "none;READMEportablePATHcommands now document installed3.44.9",
+    "scope": "Only user-authorized labels andREADME fixes;noFormspreeprotocol/device/Android change."
   }
 }

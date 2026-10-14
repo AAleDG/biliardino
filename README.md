@@ -12,23 +12,31 @@ Flutter app for tracking office table football matches.
 
 ## Development
 
-Use the Flutter version installed at:
+The verified toolchain is **Flutter 3.44.9 / Dart 3.12.2**. Use the existing
+installed SDK through `flutter` on your PATH. Golden comparisons are exact and
+can differ between SDK versions; verification results must record the version
+used. Confirm the toolchain and resolve the locked dependencies:
 
 ```sh
-/Users/alessandroantonio.delgaudio/fvm/versions/3.44.1/bin/flutter
+flutter --version
+flutter pub get --enforce-lockfile
 ```
 
-Run tests:
+Run tests and static analysis:
 
 ```sh
-/Users/alessandroantonio.delgaudio/fvm/versions/3.44.1/bin/flutter test
+flutter test --no-pub
+flutter analyze --no-pub
 ```
 
-Build for iOS simulator:
+Build for the iOS simulator using the existing CocoaPods project:
 
 ```sh
-/Users/alessandroantonio.delgaudio/fvm/versions/3.44.1/bin/flutter build ios --simulator
+FLUTTER_SWIFT_PACKAGE_MANAGER=false flutter build ios --simulator --debug --no-pub
 ```
+
+The environment override applies only to that command and prevents automatic
+Swift Package Manager migration; it does not change global Flutter settings.
 
 ## Database migrations
 

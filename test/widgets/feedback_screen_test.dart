@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/models/feedback_draft.dart';
+import 'package:biliardino/models/app_style.dart';
 import 'package:biliardino/presentation/presentation_host.dart';
 import 'package:biliardino/repositories/feedback_repository.dart';
 import 'package:biliardino/screens/feedback/feedback_screen.dart';
@@ -16,6 +17,56 @@ import 'package:http/testing.dart';
 import '../support/design_fixture.dart';
 
 void main() {
+  for (final style in AppStyle.values) {
+    testWidgets(
+      'feedback fields keep associated accessible labels in ${style.storageValue}',
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        try {
+          await _open(tester, style: style, handler: (_) async => _ack());
+          final message = find.byKey(const ValueKey('feedback-message'));
+          final email = find.byKey(const ValueKey('feedback-email'));
+          void expectFieldLabels() {
+            final messageData = tester.getSemantics(message).getSemanticsData();
+            final emailData = tester.getSemantics(email).getSemanticsData();
+            expect(messageData.flagsCollection.isTextField, isTrue);
+            expect(emailData.flagsCollection.isTextField, isTrue);
+            expect(messageData.label, contains('Messaggio (obbligatorio)'));
+            expect(emailData.label, contains('Email (facoltativa)'));
+          }
+
+          expectFieldLabels();
+          await tester.enterText(message, 'Una proposta');
+          await tester.enterText(email, 'person@example.com');
+          await tester.pumpAndSettle();
+          expectFieldLabels();
+          expect(
+            tester.getSemantics(message).getSemanticsData().value,
+            'Una proposta',
+          );
+          expect(
+            tester.getSemantics(email).getSemanticsData().value,
+            'person@example.com',
+          );
+          await tester.enterText(message, '');
+          await tester.enterText(email, 'invalid');
+          await _tap(tester, find.byKey(const ValueKey('feedback-send')));
+          expectFieldLabels();
+          expect(
+            tester.getSemantics(message).getSemanticsData().hint,
+            contains('Scrivi un messaggio.'),
+          );
+          expect(
+            tester.getSemantics(email).getSemanticsData().hint,
+            contains('Inserisci un’email valida.'),
+          );
+        } finally {
+          semantics.dispose();
+        }
+      },
+    );
+  }
+
   testWidgets(
     'uncertain delivery warns before explicit restore and never sends automatically',
     (tester) async {
@@ -342,6 +393,7 @@ void main() {
 Future<DesignFixture> _open(
   WidgetTester tester, {
   required Future<http.Response> Function(http.Request) handler,
+  AppStyle style = AppStyle.southAfrica2010,
   bool failCleanup = false,
   bool failLoad = false,
   bool failSave = false,
@@ -352,6 +404,7 @@ Future<DesignFixture> _open(
   addTearDown(tester.view.reset);
   final fixture = DesignFixture();
   await fixture.load();
+  await fixture.styleRepository.save(style);
   final transport = FormspreeFeedback(clientFactory: () => MockClient(handler));
   Future<FeedbackContext> metadata() async =>
       const FeedbackContext(version: '1', build: '2', platform: 'iOS');
