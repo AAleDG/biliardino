@@ -98,6 +98,7 @@ abstract final class AppTheme {
     );
     return ThemeData(
       useMaterial3: true,
+      splashFactory: NoSplash.splashFactory,
       adaptations: const [_AppSwitchAdaptation()],
       colorScheme: scheme,
       brightness: Brightness.light,

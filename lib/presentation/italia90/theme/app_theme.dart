@@ -125,6 +125,7 @@ class AppTheme {
         );
     return ThemeData(
       useMaterial3: true,
+      splashFactory: NoSplash.splashFactory,
       brightness: Brightness.light,
       colorScheme: scheme,
       scaffoldBackgroundColor: Italia90.surface,

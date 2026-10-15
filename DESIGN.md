@@ -358,6 +358,10 @@ The frontmatter provides core colors, typography and dimensions. Component varia
 
 A short screen title, player name and numeric metric are always real text widgets. Decorative layers exclude themselves from semantics and do not intercept input. Avatar initials remain generated from the name; photographs are not introduced.
 
+### Tap feedback — 15 October 2026
+
+The user requested removal of the expanding Material tap ripple throughout both runtime styles. South Africa 2010 and Italia ’90 use `NoSplash.splashFactory` in their shared theme definitions so buttons, navigation and tappable rows inherit this behavior. Retain pressed colors, selection states, keyboard focus indicators, semantics and existing haptics.
+
 ### Shared switch decision — 11 September 2026
 
 The user selected the existing match-options switch appearance for every switch in the app: blue selected track, white thumb, neutral outlined-token off track, and the shared disabled colors with platform disabled treatment. Players presence, match rules/rivalry and history editing all use adaptive switches driven by AppTheme; on iOS this preserves the reference's compact pill geometry. A theme adaptation preserves the common palette when Flutter adapts shape. No screen supplies its own switch color. Presence labels remain green with explicit In ufficio/Assente text, independent of switch styling. Keep enabled/toggled semantics, platform interaction, focus and at least 48dp targets. This is a control-style decision, not new artwork.
