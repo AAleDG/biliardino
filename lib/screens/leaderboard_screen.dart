@@ -1,3 +1,4 @@
+import '../widgets/sliding_segmented_button.dart';
 import '../presentation/ranking_tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -79,7 +80,7 @@ class LeaderboardScreen extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SegmentedButton<MatchMode>(
+            child: SlidingSegmentedButton<MatchMode>(
               key: const ValueKey('leaderboard-mode'),
               showSelectedIcon: false,
               style: SegmentedButton.styleFrom(
@@ -120,7 +121,7 @@ class LeaderboardScreen extends StatelessWidget {
           ),
         ],
       );
-      final panes = TabBarView(
+      final panes = RankingTabView(
         children: [
           _LeaderboardPane(
             ranked: rankedByPoints,

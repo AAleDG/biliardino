@@ -1,3 +1,4 @@
+import '../../../../widgets/selection_motion.dart';
 import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
@@ -51,10 +52,31 @@ class BrandChoiceSelector<T> extends StatelessWidget {
         constraints.maxWidth - 4,
         double.infinity,
       );
-      final row = Row(
+      final row = Stack(
         children: [
-          for (var index = 0; index < choices.length; index++)
-            Expanded(child: _choice(choices[index], index)),
+          Positioned.fill(
+            child: SlidingSelection(
+              index: choices.indexWhere((choice) => choice.value == selected),
+              count: choices.length,
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.horizontal(
+                  left: Radius.circular(
+                    selected == choices.first.value ? 28 : 16,
+                  ),
+                  right: Radius.circular(
+                    selected == choices.last.value ? 28 : 16,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              for (var index = 0; index < choices.length; index++)
+                Expanded(child: _choice(choices[index], index)),
+            ],
+          ),
         ],
       );
       return Container(
@@ -71,11 +93,11 @@ class BrandChoiceSelector<T> extends StatelessWidget {
         ),
         child: width <= constraints.maxWidth - 4
             ? row
-            : SingleChildScrollView(
-                key: ValueKey(selected),
-                scrollDirection: Axis.horizontal,
-                reverse: selected == choices.last.value,
-                child: SizedBox(width: width, child: row),
+            : ScrollableSelection(
+                index: choices.indexWhere((choice) => choice.value == selected),
+                count: choices.length,
+                width: width,
+                child: row,
               ),
       );
     },
@@ -94,11 +116,12 @@ class BrandChoiceSelector<T> extends StatelessWidget {
       button: true,
       enabled: onTap != null,
       selected: active,
+      inMutuallyExclusiveGroup: true,
       label: choice.semanticLabel ?? choice.label,
       onTap: onTap,
       child: ExcludeSemantics(
         child: Material(
-          color: active ? AppColors.primary : Colors.transparent,
+          color: Colors.transparent,
           borderRadius: radius,
           child: InkWell(
             onTap: onTap,

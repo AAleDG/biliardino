@@ -1,3 +1,5 @@
+import '../../../widgets/selection_motion.dart';
+import '../../../widgets/sliding_segmented_button.dart';
 import '../../ranking_tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -88,7 +90,7 @@ class LeaderboardScreen extends StatelessWidget {
             : null,
         onModeChanged: context.read<LeaderboardCubit>().selectMode,
       );
-      final panes = TabBarView(
+      final panes = RankingTabView(
         children: [
           _LeaderboardPane(
             ranked: rankedByPoints,
@@ -272,7 +274,7 @@ class _LeaderboardModeSelector extends StatelessWidget {
     child: Semantics(
       container: true,
       label: 'Modalità classifica',
-      child: SegmentedButton<MatchMode>(
+      child: SlidingSegmentedButton<MatchMode>(
         key: const ValueKey('leaderboard-mode-selector'),
         segments: const [
           ButtonSegment<MatchMode>(
@@ -317,14 +319,9 @@ class _LeaderboardModeSelector extends StatelessWidget {
   );
 }
 
-/// Keeps both ranking tabs fully readable at accessibility-extra-large sizes.
-///
-/// The ordinary tab bar remains unchanged for the approved normal layout. At
-/// large text it becomes a vertical pair of full-width actions, while the
-/// existing DefaultTabController and TabBarView continue to own navigation.
+/// Keeps the same moving selection in horizontal and enlarged-text layouts.
 class _LeaderboardTabSelector extends StatelessWidget {
   const _LeaderboardTabSelector({required this.largeText});
-
   final bool largeText;
 
   @override
@@ -334,55 +331,69 @@ class _LeaderboardTabSelector extends StatelessWidget {
       animation: controller,
       builder: (context, _) {
         if (!largeText) {
-          return Material(
-            color: Italia90.panel,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(Italia90.controlRadius),
-              side: const BorderSide(color: Italia90.outline),
-            ),
-            child: const TabBar(
-              dividerColor: Colors.transparent,
-              indicatorSize: TabBarIndicatorSize.tab,
-              labelColor: Colors.white,
-              unselectedLabelColor: Italia90.ink,
-              labelStyle: Italia90.label,
-              indicator: BoxDecoration(
-                color: Italia90.teamOne,
-                borderRadius: BorderRadius.all(
-                  Radius.circular(Italia90.controlRadius),
+          return SlidingSegmentedButton<int>(
+            showSelectedIcon: false,
+            selected: {controller.index},
+            onSelectionChanged: (selection) =>
+                controller.index = selection.single,
+            expandedInsets: EdgeInsets.zero,
+            style: const ButtonStyle(
+              textStyle: WidgetStatePropertyAll(Italia90.label),
+              foregroundColor: WidgetStateProperty.fromMap({
+                WidgetState.selected: Colors.white,
+                WidgetState.any: Italia90.ink,
+              }),
+              backgroundColor: WidgetStateProperty.fromMap({
+                WidgetState.selected: Italia90.teamOne,
+                WidgetState.any: Italia90.panel,
+              }),
+              side: WidgetStatePropertyAll(BorderSide(color: Italia90.outline)),
+              shape: WidgetStatePropertyAll(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(Italia90.controlRadius),
+                  ),
                 ),
               ),
-              tabs: [
-                Tab(text: 'Generale', height: 40),
-                Tab(text: 'Marcatori', height: 40),
-              ],
             ),
+            segments: const [
+              ButtonSegment(value: 0, label: Text('Generale')),
+              ButtonSegment(value: 1, label: Text('Marcatori')),
+            ],
           );
         }
-
         return DecoratedBox(
-          decoration: ShapeDecoration(
+          decoration: BoxDecoration(
             color: Italia90.panel,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(Italia90.controlRadius),
-              side: const BorderSide(color: Italia90.outline),
-            ),
+            borderRadius: BorderRadius.circular(Italia90.controlRadius),
+            border: Border.all(color: Italia90.outline),
           ),
           child: Padding(
             padding: const EdgeInsets.all(4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            child: Stack(
               children: [
-                _largeTextTab(
-                  controller: controller,
-                  index: 0,
-                  label: 'Generale',
+                Positioned.fill(
+                  child: SlidingSelection(
+                    index: controller.index,
+                    count: 2,
+                    vertical: true,
+                    inset: const EdgeInsets.symmetric(vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Italia90.teamOne,
+                      borderRadius: BorderRadius.circular(
+                        Italia90.controlRadius,
+                      ),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 4),
-                _largeTextTab(
-                  controller: controller,
-                  index: 1,
-                  label: 'Marcatori',
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _largeTextTab(controller, 0, 'Generale'),
+                    const SizedBox(height: 4),
+                    _largeTextTab(controller, 1, 'Marcatori'),
+                  ],
                 ),
               ],
             ),
@@ -392,32 +403,35 @@ class _LeaderboardTabSelector extends StatelessWidget {
     );
   }
 
-  Widget _largeTextTab({
-    required TabController controller,
-    required int index,
-    required String label,
-  }) {
+  Widget _largeTextTab(TabController controller, int index, String label) {
     final selected = controller.index == index;
     return Semantics(
       button: true,
       selected: selected,
+      inMutuallyExclusiveGroup: true,
       label: label,
       hint: selected ? 'Scheda selezionata' : 'Mostra la scheda $label',
-      onTap: () => controller.animateTo(index),
+      onTap: () => controller.index = index,
       child: ExcludeSemantics(
         child: Material(
-          color: selected ? Italia90.teamOne : Italia90.panel,
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(Italia90.controlRadius),
           child: InkWell(
-            onTap: () => controller.animateTo(index),
+            onTap: () => controller.index = index,
             borderRadius: BorderRadius.circular(Italia90.controlRadius),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: Text(
-                label,
-                textAlign: TextAlign.center,
-                style: Italia90.label.copyWith(
-                  color: selected ? Colors.white : Italia90.ink,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 48),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: Italia90.label.copyWith(
+                    color: selected ? Colors.white : Italia90.ink,
+                  ),
                 ),
               ),
             ),

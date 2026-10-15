@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../widgets/selection_motion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/leaderboard/leaderboard_cubit.dart';
@@ -11,6 +12,7 @@ class RankingTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DefaultTabController(
     length: 2,
+    animationDuration: Duration.zero,
     initialIndex: context.read<LeaderboardCubit>().state.selectedTab,
     child: _TabSync(child: child),
   );
@@ -52,4 +54,23 @@ class _TabSyncState extends State<_TabSync> {
 
   @override
   Widget build(BuildContext context) => widget.child;
+}
+
+/// Retains the native swipe gesture and both pane states. Tapped selections
+/// jump to the current pane and fade in rather than sliding stale rankings.
+class RankingTabView extends StatelessWidget {
+  const RankingTabView({super.key, required this.children});
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) =>
+      BlocBuilder<LeaderboardCubit, LeaderboardState>(
+        buildWhen: (previous, current) =>
+            previous.selectedTab != current.selectedTab ||
+            previous.selectedMode != current.selectedMode,
+        builder: (context, state) => SelectionFade(
+          selection: (state.selectedTab, state.selectedMode),
+          child: TabBarView(children: children),
+        ),
+      );
 }

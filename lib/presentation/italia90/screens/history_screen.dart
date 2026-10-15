@@ -1,3 +1,4 @@
+import '../../../widgets/sliding_segmented_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -324,7 +325,7 @@ class _EditMatchDialogState extends State<_EditMatchDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SegmentedButton<MatchMode>(
+              SlidingSegmentedButton<MatchMode>(
                 segments: const [
                   ButtonSegment<MatchMode>(
                     value: MatchMode.oneVsOne,
