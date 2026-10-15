@@ -204,7 +204,7 @@ class _LeaderboardHeader extends StatelessWidget {
         ),
       ),
       Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 12, 8),
+        padding: const EdgeInsets.fromLTRB(20, 12, 12, 0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -241,17 +241,14 @@ class _LeaderboardHeader extends StatelessWidget {
           ],
         ),
       ),
-      Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
-        child: _LeaderboardTabSelector(largeText: largeText),
-      ),
-      Padding(
-        padding: const EdgeInsets.only(bottom: 4),
-        child: _LeaderboardModeSelector(
+      RankingSelectors(
+        horizontalPadding: 20,
+        modeSelector: _LeaderboardModeSelector(
           selectedMode: selectedMode,
           largeText: largeText,
           onChanged: onModeChanged,
         ),
+        tabSelector: _LeaderboardTabSelector(largeText: largeText),
       ),
     ],
   );
@@ -278,12 +275,12 @@ class _LeaderboardModeSelector extends StatelessWidget {
         key: const ValueKey('leaderboard-mode-selector'),
         segments: const [
           ButtonSegment<MatchMode>(
-            value: MatchMode.twoVsTwo,
-            label: Text('2vs2'),
-          ),
-          ButtonSegment<MatchMode>(
             value: MatchMode.oneVsOne,
             label: Text('1vs1'),
+          ),
+          ButtonSegment<MatchMode>(
+            value: MatchMode.twoVsTwo,
+            label: Text('2vs2'),
           ),
         ],
         selected: {selectedMode},

@@ -74,3 +74,39 @@ class RankingTabView extends StatelessWidget {
         ),
       );
 }
+
+/// Shared ranking hierarchy and spacing; each presentation supplies its skin.
+class RankingSelectors extends StatelessWidget {
+  const RankingSelectors({
+    super.key,
+    required this.modeSelector,
+    required this.tabSelector,
+    required this.horizontalPadding,
+  });
+  final Widget modeSelector;
+  final Widget tabSelector;
+  final double horizontalPadding;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.fromLTRB(horizontalPadding, 16, horizontalPadding, 24),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.textScalerOf(context).scale(16) > 22
+                  ? 320
+                  : 236,
+            ),
+            child: modeSelector,
+          ),
+        ),
+        const SizedBox(height: 12),
+        tabSelector,
+      ],
+    ),
+  );
+}
