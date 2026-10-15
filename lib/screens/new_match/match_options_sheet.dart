@@ -304,11 +304,6 @@ class _RulesControls extends StatelessWidget {
           style: ButtonStyle(
             minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
             textStyle: const WidgetStatePropertyAll(AppType.action),
-            shape: WidgetStatePropertyAll(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.control),
-              ),
-            ),
             backgroundColor: WidgetStateProperty.resolveWith(
               (states) => states.contains(WidgetState.selected)
                   ? AppColors.primary

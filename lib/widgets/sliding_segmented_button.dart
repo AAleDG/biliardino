@@ -35,7 +35,10 @@ class SlidingSegmentedButton<T> extends StatelessWidget {
     final disabled = onSelectionChanged == null;
     final states = <WidgetState>{if (disabled) WidgetState.disabled};
     final selectedStates = {...states, WidgetState.selected};
-    final shape = effective.shape?.resolve(states) ?? const StadiumBorder();
+    const shape = SelectionShape.border;
+    final outline =
+        effective.side?.resolve(states) ??
+        BorderSide(color: theme.colorScheme.outline);
     final background =
         effective.backgroundColor?.resolve(states) ?? theme.colorScheme.surface;
     final fill =
@@ -64,42 +67,55 @@ class SlidingSegmentedButton<T> extends StatelessWidget {
     );
     return Padding(
       padding: expandedInsets ?? EdgeInsets.zero,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: ShapeDecoration(
-                color: background,
-                shape: shape.copyWith(side: BorderSide.none),
-              ),
-              child: SlidingSelection(
-                index: index,
-                count: segments.length,
+      child: DecoratedBox(
+        position: DecorationPosition.foreground,
+        decoration: ShapeDecoration(shape: shape.copyWith(side: outline)),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: DecoratedBox(
                 decoration: ShapeDecoration(
-                  color: fill,
+                  color: background,
                   shape: shape.copyWith(side: BorderSide.none),
+                ),
+                child: SlidingSelection(
+                  index: index,
+                  count: segments.length,
+                  decoration: ShapeDecoration(
+                    color: fill,
+                    shape: shape.copyWith(side: BorderSide.none),
+                  ),
                 ),
               ),
             ),
-          ),
-          SegmentedButton<T>(
-            segments: segments,
-            selected: selected,
-            onSelectionChanged: onSelectionChanged,
-            expandedInsets: expandedInsets == null ? null : EdgeInsets.zero,
-            showSelectedIcon: showSelectedIcon,
-            style: effective.copyWith(
-              backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
-              foregroundColor: foreground,
-              animationDuration: Duration.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              visualDensity: VisualDensity.standard,
-              padding: WidgetStatePropertyAll(
-                padding.copyWith(top: verticalPadding, bottom: verticalPadding),
+            SegmentedButton<T>(
+              segments: segments,
+              selected: selected,
+              onSelectionChanged: onSelectionChanged,
+              expandedInsets: expandedInsets == null ? null : EdgeInsets.zero,
+              showSelectedIcon: showSelectedIcon,
+              style: effective.copyWith(
+                // Flutter uses side for both the perimeter and inner dividers.
+                // Draw the perimeter once above the control instead.
+                side: const WidgetStatePropertyAll(BorderSide.none),
+                shape: const WidgetStatePropertyAll(shape),
+                backgroundColor: const WidgetStatePropertyAll(
+                  Colors.transparent,
+                ),
+                foregroundColor: foreground,
+                animationDuration: Duration.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.standard,
+                padding: WidgetStatePropertyAll(
+                  padding.copyWith(
+                    top: verticalPadding,
+                    bottom: verticalPadding,
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

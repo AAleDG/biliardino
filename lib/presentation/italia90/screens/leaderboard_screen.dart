@@ -308,11 +308,6 @@ class _LeaderboardModeSelector extends StatelessWidget {
           side: const WidgetStatePropertyAll(
             BorderSide(color: Italia90.outline),
           ),
-          shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(Italia90.controlRadius),
-            ),
-          ),
         ),
       ),
     ),
@@ -348,13 +343,6 @@ class _LeaderboardTabSelector extends StatelessWidget {
                 WidgetState.any: Italia90.panel,
               }),
               side: WidgetStatePropertyAll(BorderSide(color: Italia90.outline)),
-              shape: WidgetStatePropertyAll(
-                RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(Italia90.controlRadius),
-                  ),
-                ),
-              ),
             ),
             segments: const [
               ButtonSegment(value: 0, label: Text('Generale')),
@@ -365,7 +353,7 @@ class _LeaderboardTabSelector extends StatelessWidget {
         return DecoratedBox(
           decoration: BoxDecoration(
             color: Italia90.panel,
-            borderRadius: BorderRadius.circular(Italia90.controlRadius),
+            borderRadius: SelectionShape.borderRadius,
             border: Border.all(color: Italia90.outline),
           ),
           child: Padding(
@@ -378,11 +366,9 @@ class _LeaderboardTabSelector extends StatelessWidget {
                     count: 2,
                     vertical: true,
                     inset: const EdgeInsets.symmetric(vertical: 2),
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Italia90.teamOne,
-                      borderRadius: BorderRadius.circular(
-                        Italia90.controlRadius,
-                      ),
+                      borderRadius: SelectionShape.borderRadius,
                     ),
                   ),
                 ),
@@ -415,10 +401,10 @@ class _LeaderboardTabSelector extends StatelessWidget {
       child: ExcludeSemantics(
         child: Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(Italia90.controlRadius),
+          borderRadius: SelectionShape.borderRadius,
           child: InkWell(
             onTap: () => controller.index = index,
-            borderRadius: BorderRadius.circular(Italia90.controlRadius),
+            borderRadius: SelectionShape.borderRadius,
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 48),
               child: Padding(

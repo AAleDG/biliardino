@@ -58,23 +58,16 @@ class BrandChoiceSelector<T> extends StatelessWidget {
             child: SlidingSelection(
               index: choices.indexWhere((choice) => choice.value == selected),
               count: choices.length,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.primary,
-                borderRadius: BorderRadius.horizontal(
-                  left: Radius.circular(
-                    selected == choices.first.value ? 28 : 16,
-                  ),
-                  right: Radius.circular(
-                    selected == choices.last.value ? 28 : 16,
-                  ),
-                ),
+                borderRadius: SelectionShape.borderRadius,
               ),
             ),
           ),
           Row(
             children: [
               for (var index = 0; index < choices.length; index++)
-                Expanded(child: _choice(choices[index], index)),
+                Expanded(child: _choice(choices[index])),
             ],
           ),
         ],
@@ -88,7 +81,7 @@ class BrandChoiceSelector<T> extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: SelectionShape.borderRadius,
           border: Border.all(color: AppColors.outline),
         ),
         child: width <= constraints.maxWidth - 4
@@ -103,13 +96,9 @@ class BrandChoiceSelector<T> extends StatelessWidget {
     },
   );
 
-  Widget _choice(BrandChoice<T> choice, int index) {
+  Widget _choice(BrandChoice<T> choice) {
     final active = choice.value == selected;
     final onTap = onChanged == null ? null : () => onChanged!(choice.value);
-    final radius = BorderRadius.horizontal(
-      left: Radius.circular(index == 0 ? 28 : 16),
-      right: Radius.circular(index == choices.length - 1 ? 28 : 16),
-    );
     return Semantics(
       key: choice.semanticKey,
       container: true,
@@ -122,10 +111,10 @@ class BrandChoiceSelector<T> extends StatelessWidget {
       child: ExcludeSemantics(
         child: Material(
           color: Colors.transparent,
-          borderRadius: radius,
+          borderRadius: SelectionShape.borderRadius,
           child: InkWell(
             onTap: onTap,
-            borderRadius: radius,
+            borderRadius: SelectionShape.borderRadius,
             child: Center(
               child: Text(
                 choice.label,

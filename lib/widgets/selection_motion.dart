@@ -8,6 +8,12 @@ abstract final class SelectionMotion {
   static const curve = Curves.easeInOut;
 }
 
+/// The same corner geometry for every tab/segment in either presentation.
+abstract final class SelectionShape {
+  static const borderRadius = BorderRadius.all(Radius.circular(30));
+  static const border = RoundedRectangleBorder(borderRadius: borderRadius);
+}
+
 /// One moving fill beneath persistent, immediately updated choice labels.
 class SlidingSelection extends StatefulWidget {
   const SlidingSelection({
