@@ -332,11 +332,30 @@ void main() {
       find.text('Impossibile salvare le opzioni. Riprova.'),
       findsOneWidget,
     );
-    final selector = tester.widget<SegmentedButton<MatchRuleMode>>(
-      find.byKey(const ValueKey('match-rule-selector')),
-    );
-    expect(selector.selected, {MatchRuleMode.free});
-    expect(selector.onSelectionChanged, isNotNull);
+    final semantics = tester.ensureSemantics();
+    try {
+      expect(
+        tester
+            .getSemantics(find.text('Libero'))
+            .flagsCollection
+            .isSelected
+            .toBoolOrNull(),
+        isTrue,
+      );
+      expect(
+        tester
+            .getSemantics(find.text('Primo a N'))
+            .flagsCollection
+            .isSelected
+            .toBoolOrNull(),
+        isFalse,
+      );
+    } finally {
+      semantics.dispose();
+    }
+    await tester.tap(find.text('Primo a N'));
+    await tester.pumpAndSettle();
+    verify(() => sample.matchRulesRepo.save(any())).called(2);
     await tester.tap(find.byKey(const ValueKey('close-match-options')));
     await tester.pumpAndSettle();
     expect(find.text('Punteggio libero'), findsOneWidget);
@@ -1039,6 +1058,7 @@ void main() {
           matchesSemantics(
             label: '1 VS 1: 2 giocatori totali, uno per squadra.',
             isButton: true,
+            isInMutuallyExclusiveGroup: true,
             isSelected: false,
             hasSelectedState: true,
             hasEnabledState: true,
@@ -1055,6 +1075,7 @@ void main() {
           matchesSemantics(
             label: '1 VS 1: 2 giocatori totali, uno per squadra.',
             isButton: true,
+            isInMutuallyExclusiveGroup: true,
             isSelected: true,
             hasSelectedState: true,
             hasEnabledState: true,

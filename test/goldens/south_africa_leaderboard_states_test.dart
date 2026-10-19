@@ -1,3 +1,4 @@
+import '../support/tab_transition_goldens.dart';
 import 'package:flutter/material.dart';
 import 'package:biliardino/models/game_match.dart';
 import 'package:biliardino/models/ranking_stats.dart';
@@ -43,7 +44,9 @@ void main() {
         expect(tester.takeException(), isNull);
         await expectLater(
           find.byKey(const ValueKey('capture')),
-          matchesGoldenFile('leaderboard-pairs-$count-$tab.png'),
+          matchesGoldenFile(
+            tabTransitionGolden('leaderboard-pairs-$count-$tab.png'),
+          ),
         );
       }
     });
@@ -77,7 +80,7 @@ void main() {
       expect(tester.takeException(), isNull);
       await expectLater(
         find.byKey(const ValueKey('capture')),
-        matchesGoldenFile('leaderboard-$count.png'),
+        matchesGoldenFile(tabTransitionGolden('leaderboard-$count.png')),
       );
     });
   }
@@ -137,7 +140,11 @@ void main() {
                 : 'leaderboard-long';
             await expectLater(
               find.byKey(const ValueKey('capture')),
-              matchesGoldenFile('$prefix-$mode-${size.width.toInt()}-top.png'),
+              matchesGoldenFile(
+                tabTransitionGolden(
+                  '$prefix-$mode-${size.width.toInt()}-top.png',
+                ),
+              ),
             );
             final List<RankingStats> ranked = matchMode == MatchMode.twoVsTwo
                 ? (tab == 'Generale'
@@ -168,7 +175,9 @@ void main() {
             await expectLater(
               find.byKey(const ValueKey('capture')),
               matchesGoldenFile(
-                '$prefix-$mode-${size.width.toInt()}-bottom.png',
+                tabTransitionGolden(
+                  '$prefix-$mode-${size.width.toInt()}-bottom.png',
+                ),
               ),
             );
           }

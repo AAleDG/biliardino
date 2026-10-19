@@ -1,3 +1,4 @@
+import '../../../../widgets/selection_motion.dart';
 import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
@@ -51,10 +52,24 @@ class BrandChoiceSelector<T> extends StatelessWidget {
         constraints.maxWidth - 4,
         double.infinity,
       );
-      final row = Row(
+      final row = Stack(
         children: [
-          for (var index = 0; index < choices.length; index++)
-            Expanded(child: _choice(choices[index], index)),
+          Positioned.fill(
+            child: SlidingSelection(
+              index: choices.indexWhere((choice) => choice.value == selected),
+              count: choices.length,
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: SelectionShape.borderRadius,
+              ),
+            ),
+          ),
+          Row(
+            children: [
+              for (var index = 0; index < choices.length; index++)
+                Expanded(child: _choice(choices[index])),
+            ],
+          ),
         ],
       );
       return Container(
@@ -66,43 +81,40 @@ class BrandChoiceSelector<T> extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: SelectionShape.borderRadius,
           border: Border.all(color: AppColors.outline),
         ),
         child: width <= constraints.maxWidth - 4
             ? row
-            : SingleChildScrollView(
-                key: ValueKey(selected),
-                scrollDirection: Axis.horizontal,
-                reverse: selected == choices.last.value,
-                child: SizedBox(width: width, child: row),
+            : ScrollableSelection(
+                index: choices.indexWhere((choice) => choice.value == selected),
+                count: choices.length,
+                width: width,
+                child: row,
               ),
       );
     },
   );
 
-  Widget _choice(BrandChoice<T> choice, int index) {
+  Widget _choice(BrandChoice<T> choice) {
     final active = choice.value == selected;
     final onTap = onChanged == null ? null : () => onChanged!(choice.value);
-    final radius = BorderRadius.horizontal(
-      left: Radius.circular(index == 0 ? 28 : 16),
-      right: Radius.circular(index == choices.length - 1 ? 28 : 16),
-    );
     return Semantics(
       key: choice.semanticKey,
       container: true,
       button: true,
       enabled: onTap != null,
       selected: active,
+      inMutuallyExclusiveGroup: true,
       label: choice.semanticLabel ?? choice.label,
       onTap: onTap,
       child: ExcludeSemantics(
         child: Material(
-          color: active ? AppColors.primary : Colors.transparent,
-          borderRadius: radius,
+          color: Colors.transparent,
+          borderRadius: SelectionShape.borderRadius,
           child: InkWell(
             onTap: onTap,
-            borderRadius: radius,
+            borderRadius: SelectionShape.borderRadius,
             child: Center(
               child: Text(
                 choice.label,

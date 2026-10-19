@@ -1,3 +1,4 @@
+import '../../../widgets/selection_motion.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../app_presentation.dart';
@@ -5,7 +6,6 @@ import '../../app_presentation.dart';
 import '../../../cubits/home/home_cubit.dart';
 import '../../../cubits/new_match/new_match_cubit.dart';
 import '../../../cubits/new_match/new_match_state.dart';
-import '../theme/italia90_motion.dart';
 import '../theme/italia90_tokens.dart';
 import 'dashboard_screen.dart';
 import 'leaderboard_screen.dart';
@@ -49,15 +49,18 @@ class HomeScreen extends StatelessWidget {
                 Navigator.of(context).pop(result);
               },
               child: Scaffold(
-                body: IndexedStack(
-                  index: index,
-                  children: [
-                    for (var page = 0; page < _pageEntries.length; page++)
-                      TickerMode(
-                        enabled: page == index,
-                        child: _pageEntries[page].page,
-                      ),
-                  ],
+                body: SelectionFade(
+                  selection: index,
+                  child: IndexedStack(
+                    index: index,
+                    children: [
+                      for (var page = 0; page < _pageEntries.length; page++)
+                        TickerMode(
+                          enabled: page == index,
+                          child: _pageEntries[page].page,
+                        ),
+                    ],
+                  ),
                 ),
                 bottomNavigationBar: _BottomNav(
                   destination: destination,
@@ -146,28 +149,10 @@ class _BottomNav extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final tabWidth = constraints.maxWidth / _visibleEntries.length;
-              return SizedBox(
-                height: 3,
-                child: Stack(
-                  children: [
-                    AnimatedPositioned(
-                      duration: Italia90Motion.durationOf(
-                        context,
-                        Italia90Motion.navigation,
-                      ),
-                      curve: Curves.easeOutCubic,
-                      left: tabWidth * visibleIndex + tabWidth * .30,
-                      width: tabWidth * .40,
-                      height: 3,
-                      child: const ColoredBox(color: Italia90.primary),
-                    ),
-                  ],
-                ),
-              );
-            },
+          NavigationSelectionIndicator(
+            index: visibleIndex,
+            count: _visibleEntries.length,
+            color: Italia90.primary,
           ),
           MediaQuery(
             data: MediaQuery.of(context).copyWith(
@@ -176,6 +161,7 @@ class _BottomNav extends StatelessWidget {
               ).clamp(maxScaleFactor: 1.3),
             ),
             child: NavigationBar(
+              animationDuration: Duration.zero,
               selectedIndex: visibleIndex,
               onDestinationSelected: (index) =>
                   onSelected(_visibleEntries[index].destination),

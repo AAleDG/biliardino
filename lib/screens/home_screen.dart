@@ -1,3 +1,4 @@
+import '../widgets/selection_motion.dart';
 import '../presentation/app_presentation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -45,15 +46,18 @@ class HomeScreen extends StatelessWidget {
                 Navigator.of(context).pop(result);
               },
               child: Scaffold(
-                body: IndexedStack(
-                  index: index,
-                  children: [
-                    for (var page = 0; page < _homeEntries.length; page++)
-                      TickerMode(
-                        enabled: page == index,
-                        child: _homeEntries[page].page,
-                      ),
-                  ],
+                body: SelectionFade(
+                  selection: index,
+                  child: IndexedStack(
+                    index: index,
+                    children: [
+                      for (var page = 0; page < _homeEntries.length; page++)
+                        TickerMode(
+                          enabled: page == index,
+                          child: _homeEntries[page].page,
+                        ),
+                    ],
+                  ),
                 ),
                 bottomNavigationBar: _BottomNav(
                   destination: destination,
@@ -146,32 +150,10 @@ class _BottomNav extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final tabWidth = constraints.maxWidth / _homeEntries.length;
-              return SizedBox(
-                height: 3,
-                child: Stack(
-                  children: [
-                    AnimatedPositioned(
-                      duration: shouldReduceMotion(context)
-                          ? Duration.zero
-                          : AppMotion.navigation,
-                      curve: Curves.easeOutCubic,
-                      left: tabWidth * selectedIndex + tabWidth * 0.30,
-                      width: tabWidth * 0.40,
-                      height: 3,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
+          NavigationSelectionIndicator(
+            index: selectedIndex,
+            count: _homeEntries.length,
+            color: AppColors.primary,
           ),
           MediaQuery(
             data: MediaQuery.of(context).copyWith(
@@ -180,6 +162,7 @@ class _BottomNav extends StatelessWidget {
               ).clamp(maxScaleFactor: 1.3),
             ),
             child: NavigationBar(
+              animationDuration: Duration.zero,
               selectedIndex: selectedIndex,
               onDestinationSelected: (index) =>
                   onSelected(_homeEntries[index].destination),

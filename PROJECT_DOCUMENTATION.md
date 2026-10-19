@@ -95,6 +95,10 @@ La verifica usa entrambe le vere presentazioni, persistenza SQLite, identità de
 
 La verifica finale e i limiti mantenuti sono documentati in `design/runtime-style-selection/IMPLEMENTATION.md`. Il piano temporaneo rimane ignorato fino alla conferma del landing sul ramo primario; AGENTS.md viene preservato verbatim come richiesto dall’utente.
 
+### Movimento di tab e selettori
+
+`SelectionMotion`, `SlidingSelection` e `SelectionFade` condividono la transizione di 180 ms tra le due presentazioni. La barra primaria conserva la linea superiore; i selettori di modalità/regole e Generale/Marcatori spostano un solo riempimento sotto etichette persistenti. `SlidingSegmentedButton` mantiene focus, semantica e callback del controllo nativo con colori dello stile corrente. Le destinazioni della shell restano nello stesso `IndexedStack`; la dissolvenza non sostituisce il sottoalbero e non conserva una copia interattiva dei vecchi contenuti. `RankingTabView` mantiene gli swipe nativi, mentre i tap cambiano subito pagina e la rivelano con una dissolvenza. I cambi di modalità riavviano soltanto la rivelazione; gol, rinomina e aggiornamenti dei dati non la riavviano. Movimento ridotto e presentazioni inattive mostrano lo stato finale. Gli indicatori osservano anche le preferenze di accessibilità cambiate a runtime. Nessuna modifica a repository, Cubit, Navigator o protezioni della partita. La verifica runtime di questo incremento è affidata all’utente.
+
 ### Feedback nell’app
 
 **Altro → Invia feedback** apre una route completa in entrambe le presentazioni, con messaggio obbligatorio ed email facoltativa. `FeedbackScreen` conserva controller e Cubit durante i rebuild dello stile. `FeedbackPageFrame` applica i token esistenti e i soli sfondi R2 approvati; testo, logo, campi e controlli restano widget Flutter. La cornice scorre con tastiera e testo ingrandito. I campi espongono nomi semantici associati (“Messaggio (obbligatorio)” e “Email (facoltativa)”) anche quando compilati o non validi; le etichette visive non duplicano gli annunci.

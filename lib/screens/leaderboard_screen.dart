@@ -1,3 +1,4 @@
+import '../widgets/sliding_segmented_button.dart';
 import '../presentation/ranking_tabs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -43,7 +44,7 @@ class LeaderboardScreen extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 0),
             child: Row(
               children: [
                 if (!compact) const SizedBox(width: 48),
@@ -77,9 +78,9 @@ class LeaderboardScreen extends StatelessWidget {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SegmentedButton<MatchMode>(
+          RankingSelectors(
+            horizontalPadding: 16,
+            modeSelector: SlidingSegmentedButton<MatchMode>(
               key: const ValueKey('leaderboard-mode'),
               showSelectedIcon: false,
               style: SegmentedButton.styleFrom(
@@ -98,10 +99,7 @@ class LeaderboardScreen extends StatelessWidget {
               onSelectionChanged: (modes) =>
                   context.read<LeaderboardCubit>().selectMode(modes.single),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-            child: Builder(
+            tabSelector: Builder(
               builder: (context) {
                 final controller = DefaultTabController.of(context);
                 return AnimatedBuilder(
@@ -120,7 +118,7 @@ class LeaderboardScreen extends StatelessWidget {
           ),
         ],
       );
-      final panes = TabBarView(
+      final panes = RankingTabView(
         children: [
           _LeaderboardPane(
             ranked: rankedByPoints,
@@ -257,7 +255,6 @@ class _LeaderboardPane extends StatelessWidget {
     final list = ListView.builder(
       key: PageStorageKey((sectionLabel, pairs)),
       padding: EdgeInsets.only(
-        top: 8,
         bottom: 24 + MediaQuery.paddingOf(context).bottom,
       ),
       itemCount: ranked.length > 3 ? ranked.length - 1 : 1,

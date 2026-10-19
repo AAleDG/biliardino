@@ -1,3 +1,4 @@
+import '../support/tab_transition_goldens.dart';
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/screens/home_screen.dart';
@@ -32,7 +33,7 @@ void main() {
         expect(tester.takeException(), isNull);
         await expectLater(
           find.byKey(const ValueKey('screen-capture')),
-          matchesGoldenFile('$name.png'),
+          matchesGoldenFile(tabTransitionGolden('$name.png')),
         );
       }
 

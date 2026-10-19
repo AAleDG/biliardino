@@ -1,3 +1,4 @@
+import '../support/tab_transition_goldens.dart';
 import 'package:biliardino/models/app_style.dart';
 import 'package:biliardino/navigation/app_navigation.dart';
 import 'package:biliardino/presentation/italia90/screens/history/history_match_card.dart';
@@ -45,7 +46,9 @@ void main() {
     await expectLater(
       find.byType(HomeScreen),
       matchesGoldenFile(
-        '../goldens/reference-corrections/italia90-history-compact.png',
+        tabTransitionGolden(
+          '../goldens/reference-corrections/italia90-history-compact.png',
+        ),
       ),
     );
 

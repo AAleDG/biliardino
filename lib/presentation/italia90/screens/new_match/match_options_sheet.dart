@@ -1,3 +1,4 @@
+import '../../../../widgets/sliding_segmented_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -287,7 +288,7 @@ class _RulesControls extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SegmentedButton<MatchRuleMode>(
+        SlidingSegmentedButton<MatchRuleMode>(
           key: const ValueKey('match-rule-selector'),
           expandedInsets: EdgeInsets.zero,
           showSelectedIcon: false,
@@ -305,11 +306,6 @@ class _RulesControls extends StatelessWidget {
           style: ButtonStyle(
             minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
             textStyle: const WidgetStatePropertyAll(AppType.action),
-            shape: WidgetStatePropertyAll(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.control),
-              ),
-            ),
             backgroundColor: WidgetStateProperty.resolveWith(
               (states) => states.contains(WidgetState.selected)
                   ? AppColors.primary
