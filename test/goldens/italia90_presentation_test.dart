@@ -1,3 +1,4 @@
+import '../support/tab_transition_goldens.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:biliardino/cubits/home/home_cubit.dart';
@@ -316,16 +317,18 @@ void main() {
         await expectLater(
           image,
           matchesGoldenFile(
-            integratedReferenceCorrections[name] ??
-                (name.startsWith('supplement-more-')
-                    ? 'appearance-altro-$name.png'
-                    : isLiveScoreAcceptance
-                    ? 'italia90-issue-17-reference/$name.png'
-                    : isTeamAssignmentAcceptance
-                    ? 'italia90-issue-15-reference/$name.png'
-                    : isAwardRecognitionAcceptance
-                    ? 'italia90-issue-14-reference/${reference['corrected_expected'] ?? '$name.png'}'
-                    : expectedGolden),
+            tabTransitionGolden(
+              integratedReferenceCorrections[name] ??
+                  (name.startsWith('supplement-more-')
+                      ? 'appearance-altro-$name.png'
+                      : isLiveScoreAcceptance
+                      ? 'italia90-issue-17-reference/$name.png'
+                      : isTeamAssignmentAcceptance
+                      ? 'italia90-issue-15-reference/$name.png'
+                      : isAwardRecognitionAcceptance
+                      ? 'italia90-issue-14-reference/${reference['corrected_expected'] ?? '$name.png'}'
+                      : expectedGolden),
+            ),
           ),
         );
       } finally {

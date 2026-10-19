@@ -1,0 +1,1225 @@
+{
+  "status": "Reviewed snapshot replacements for MR !25; user authorized fixes and golden updates on 2026-10-19",
+  "source_base": "f155fb9db9e9fd1d6cafff9dc061e77ec7aa2bb8",
+  "production_fix": "36e95e5",
+  "sdk": "Flutter 3.44.9 / Dart 3.12.2",
+  "count": 81,
+  "originals": "All existing PNG references preserved byte-for-byte",
+  "references": [
+    {
+      "previous": "test/goldens/appearance-altro-supplement-more-compact-large.png",
+      "sha256": "4fbb0cc96bc09f4f99fd0d65c8ccc98834fc48cbf3765a6ba77b9ef5aaa43504",
+      "previous_sha256": "24a72857357cd93be2e6aed0d2acedc8f85455a48110fed96dfbd434a584dbc6",
+      "pixels": 20,
+      "total": 727040,
+      "max_delta": 121,
+      "bbox": [
+        550,
+        918,
+        602,
+        924
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/appearance-altro-supplement-more-compact-large.png"
+    },
+    {
+      "previous": "test/goldens/appearance-altro-supplement-more-normal.png",
+      "sha256": "7a85a758a96a562c9600ee464aac8a5fbaba2b94e3627ece3a403e8b4f7f2217",
+      "previous_sha256": "f3b2139e0136d42789bcf4834764696c0f472eb875c8d9695587046ff7f66fd3",
+      "pixels": 20,
+      "total": 1405392,
+      "max_delta": 153,
+      "bbox": [
+        691,
+        1530,
+        756,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/appearance-altro-supplement-more-normal.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/core-live-10-12.png",
+      "sha256": "ef04356fb11c0b37e08896245176ab626442e7e49f476bb1a290b47544a50cf4",
+      "previous_sha256": "119436c075f0e92d08e22d80b95e1edd5dd8762cdce67ab9aa68359197451e9a",
+      "pixels": 28,
+      "total": 1405392,
+      "max_delta": 165,
+      "bbox": [
+        369,
+        1530,
+        435,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/core-live-10-12.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/core-live-4-5.png",
+      "sha256": "9c64d776b944489e65b65e6f04b13306942ecf68a6217432227ca1f7c4121866",
+      "previous_sha256": "dce9c4ae309d700b33db38209007ffb3627a0ffce6e1609d98da7f5c52f77519",
+      "pixels": 28,
+      "total": 1405392,
+      "max_delta": 165,
+      "bbox": [
+        369,
+        1530,
+        435,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/core-live-4-5.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/core-live-large.png",
+      "sha256": "82a9a4906eb4d60c2ea89a8eac24df66619d80ffc97bdf4ca5b8e3ea3c83d10d",
+      "previous_sha256": "31dab6e67cbf11df8fffbba148f1d1be4d46afb64bb4782177414f935fda0449",
+      "pixels": 28,
+      "total": 1405392,
+      "max_delta": 165,
+      "bbox": [
+        369,
+        1530,
+        435,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/core-live-large.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/core-setup.png",
+      "sha256": "8db87469cb4226f31ba0df7f9102ba73ffa90c59722a7512c1bd648ad234124a",
+      "previous_sha256": "f24c34be3219d6008902a6604c35cadb8d9124e17af92aee7d266f71334078e3",
+      "pixels": 970,
+      "total": 1405392,
+      "max_delta": 210,
+      "bbox": [
+        369,
+        396,
+        734,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/core-setup.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/flows-scorers.png",
+      "sha256": "160637e64764e56a34e4909b2835143a2791ac72a15cf2fb55347e9c222626ef",
+      "previous_sha256": "effd826e686663e70b56249732bb0971683de8fded57da5b3dd6f257c6f88f8c",
+      "pixels": 408098,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        40,
+        376,
+        764,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/flows-scorers.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/flows-setup-300.png",
+      "sha256": "743a86267e63c05727ece5419ec54b6dafd09bf1aef38e166218c2b4eec233b6",
+      "previous_sha256": "03e5931936d6baff26e8645c39c3d64f8e8a49c67161fcdd1869d0f7bbc6b31a",
+      "pixels": 14,
+      "total": 351348,
+      "max_delta": 101,
+      "bbox": [
+        184,
+        765,
+        218,
+        768
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/flows-setup-300.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/flows-setup-final-player.png",
+      "sha256": "6bbe9aadb16bdeef3215fba46a941d24083d744409dddf5d19e7336c769dea38",
+      "previous_sha256": "07f174e65608a3af54a97a55f58ac8920cca27c832caa3477867dafa4b8a383a",
+      "pixels": 28,
+      "total": 1405392,
+      "max_delta": 165,
+      "bbox": [
+        369,
+        1530,
+        435,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/flows-setup-final-player.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/flows-setup-large.png",
+      "sha256": "cc023824873d8274be817f12688dd331e24fa7afc75b803f771b898dfdde3a54",
+      "previous_sha256": "eaf306613e3c8a7277f2359176b6488fde99fb066a3e0c018ac069c5ac2819be",
+      "pixels": 1378,
+      "total": 1405392,
+      "max_delta": 210,
+      "bbox": [
+        369,
+        410,
+        768,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/flows-setup-large.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/flows-setup-rules.png",
+      "sha256": "861d056bbb735d35a115fc5438f9d083b1366bf4a5599d4c76d3be445f4bf18d",
+      "previous_sha256": "d8282ae8a136b65f4bc00587ac2d776e6ed5532a909cfdefd4161ee6c939501a",
+      "pixels": 970,
+      "total": 1405392,
+      "max_delta": 210,
+      "bbox": [
+        369,
+        396,
+        734,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/flows-setup-rules.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/flows-standings-0.png",
+      "sha256": "eb1d593bbdd81d025effdba2b19c6b9454e5dbc10dc90ad167c1b9eb7f153f95",
+      "previous_sha256": "7eedaea2194ef5a9379c29fd66d5933527dc6ff77dd9ec2cf987e1f347e84fe4",
+      "pixels": 235262,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        40,
+        376,
+        764,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/flows-standings-0.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/flows-standings-1.png",
+      "sha256": "10c13991c13837bfd8e6c203da9cd1dfdeb5759ec7f231164e5fe36313c947c3",
+      "previous_sha256": "49c2317388b3aad9fc6b8a2d1c9324dcc60d94edcd76b3e70c471e6b526cf0cd",
+      "pixels": 311512,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        40,
+        376,
+        764,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/flows-standings-1.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/flows-standings-2.png",
+      "sha256": "ab9a7444cabb37501eb486ec96837c8ca033283f626326d2a8e13e1226c1bda0",
+      "previous_sha256": "de66c82490910da24a7402d931fa0ba33eceb1933eff76e7a508964c33c1fe90",
+      "pixels": 350266,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        40,
+        376,
+        764,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/flows-standings-2.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/flows-standings-intesa.png",
+      "sha256": "97b956aed87d59580aac1880a0058455522f69d0817fc521bc246b2785daeca8",
+      "previous_sha256": "232676d0b5d88614b95f05691d74ec2d1d6542ef5e71228770a7ddf707706265",
+      "pixels": 433107,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        39,
+        376,
+        765,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/flows-standings-intesa.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/flows-standings-large.png",
+      "sha256": "b386e080209a5e0cd3a4d456e25519cb12e092ba377174b77e777688aeae90b2",
+      "previous_sha256": "b8d5076748f5c98e8afeb514b997f3f28a4145047e343aa38747ac27e0c63d78",
+      "pixels": 440181,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        40,
+        451,
+        764,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/flows-standings-large.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/flows-standings.png",
+      "sha256": "da4c17bb1fccecac806b879aca7bb812113de77060f93f63eb794a6a6a5f3833",
+      "previous_sha256": "e015298ab6cf76cb93abfb4467782cc48ee0946adeb01845f550d8e58c871009",
+      "pixels": 402272,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        40,
+        376,
+        764,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/flows-standings.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/supplement-leaderboard-compact-large.png",
+      "sha256": "76be7a9ad404cc6548a43e803fde4b87e9e63c46fa205b45c9e57c6c1ec61145",
+      "previous_sha256": "a24e29fc916a047d9b091b47914cd0306aed3603ae04f393751a61ba3b2db08f",
+      "pixels": 210540,
+      "total": 727040,
+      "max_delta": 255,
+      "bbox": [
+        39,
+        412,
+        601,
+        924
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/supplement-leaderboard-compact-large.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/supplement-leaderboard-long-name-compact-large-corrected.png",
+      "sha256": "76be7a9ad404cc6548a43e803fde4b87e9e63c46fa205b45c9e57c6c1ec61145",
+      "previous_sha256": "dd6dd3642891b495baeb2d59f1defb6272e1b1efd0e917d2cc59a37732443b1b",
+      "pixels": 208025,
+      "total": 727040,
+      "max_delta": 255,
+      "bbox": [
+        39,
+        412,
+        601,
+        924
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/supplement-leaderboard-long-name-compact-large-corrected.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/supplement-leaderboard-long-name-normal-corrected.png",
+      "sha256": "bf4a6702509ba7aa0ea8589383e69751de3fb56f95f99c9fe3a1c71e99615ed9",
+      "previous_sha256": "f68d5a438abd9fd5b4566bad286330f65e81cbd59fff4a217c57bc211f1da171",
+      "pixels": 405349,
+      "total": 1405392,
+      "max_delta": 255,
+      "bbox": [
+        40,
+        376,
+        764,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/supplement-leaderboard-long-name-normal-corrected.png"
+    },
+    {
+      "previous": "test/goldens/integrated-reference-corrections/supplement-match-compact-large.png",
+      "sha256": "d1fb9d714a819032b264f15b5e5fa67f6659f515d857a3e75c28b7db849648a8",
+      "previous_sha256": "10152ff4ce16e7e6dd9cbd0b2aced7194ce143b651d61a69032c60e831b263f0",
+      "pixels": 1368,
+      "total": 727040,
+      "max_delta": 210,
+      "bbox": [
+        294,
+        754,
+        604,
+        924
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/integrated-reference-corrections/supplement-match-compact-large.png"
+    },
+    {
+      "previous": "test/goldens/italia90-reference/core-home-empty.png",
+      "sha256": "616f47baf4604a023ec1847cc92add5d0de08141b34f2b66e4df39d1bb00616f",
+      "previous_sha256": "ff18ec95e2e51cfb1d8b99c18c940d4c5742a0db90bc1b17111cb5d33ecf0042",
+      "pixels": 20,
+      "total": 1405392,
+      "max_delta": 153,
+      "bbox": [
+        48,
+        1530,
+        113,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/italia90-reference/core-home-empty.png"
+    },
+    {
+      "previous": "test/goldens/italia90-reference/core-home.png",
+      "sha256": "8bf37bcebe73cd9dfcf56d6d7417fc41a4048a872320e6b97de964a40d3362cf",
+      "previous_sha256": "863c84abf485e148828e2504771906f471e57014e71656deaa4d9d796fcffc2a",
+      "pixels": 20,
+      "total": 1405392,
+      "max_delta": 153,
+      "bbox": [
+        48,
+        1530,
+        113,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/italia90-reference/core-home.png"
+    },
+    {
+      "previous": "test/goldens/italia90-reference/flows-data-large.png",
+      "sha256": "ab6857eed4ea0c166c2f2ea502831c6293f21ebf06a89e8a67d5fdff4249cfbd",
+      "previous_sha256": "feee05b81b7023b28221797b96dd290b6243223e75615b1e2463273afc970480",
+      "pixels": 20,
+      "total": 1405392,
+      "max_delta": 153,
+      "bbox": [
+        691,
+        1530,
+        756,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/italia90-reference/flows-data-large.png"
+    },
+    {
+      "previous": "test/goldens/italia90-reference/flows-data.png",
+      "sha256": "a92db34b8a956a490e28b0284e287dfcd12f1d6c0eddee0f7c96c1bd2ea94a54",
+      "previous_sha256": "5433fcadc26141332fa52f11e64da491944e5c5729be7f618c151fe6e0caf4a6",
+      "pixels": 20,
+      "total": 1405392,
+      "max_delta": 153,
+      "bbox": [
+        691,
+        1530,
+        756,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/italia90-reference/flows-data.png"
+    },
+    {
+      "previous": "test/goldens/italia90-reference/flows-home-large.png",
+      "sha256": "e199a5007651b08c975c2b3de93cd7da2c71fba4ac6bc5043268901a054ce23d",
+      "previous_sha256": "9f75ce9fcc88d246fc35dac6bb7d1f97f4abe375d4d1bec6f229766f66e25844",
+      "pixels": 20,
+      "total": 1405392,
+      "max_delta": 153,
+      "bbox": [
+        48,
+        1530,
+        113,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/italia90-reference/flows-home-large.png"
+    },
+    {
+      "previous": "test/goldens/italia90-reference/supplement-data-compact-large.png",
+      "sha256": "f44719a3b281bf25d5fc3eb15b715e7af83b99d221243510c144386ab5d0b26a",
+      "previous_sha256": "1a1cd0ef871f5c0c7d8f7c29669b1598c219cd1a76efb6e162fd7bdf515dbb7b",
+      "pixels": 20,
+      "total": 727040,
+      "max_delta": 121,
+      "bbox": [
+        550,
+        918,
+        602,
+        924
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/italia90-reference/supplement-data-compact-large.png"
+    },
+    {
+      "previous": "test/goldens/italia90-reference/supplement-home-compact-large.png",
+      "sha256": "a29783503c0622a65df1e58d4026199e0c1822945ae1097e9e144ad5d5bf5635",
+      "previous_sha256": "d477f46c0bb70b25a6894065c37e3018bf549122f15a19cd7717e38bf2bc3a6d",
+      "pixels": 20,
+      "total": 727040,
+      "max_delta": 121,
+      "bbox": [
+        38,
+        918,
+        90,
+        924
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/italia90-reference/supplement-home-compact-large.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-0.png",
+      "sha256": "0c4e8580298d249ee163a7dce0ddbff22db5d454f07c01b3dd474a08cbc13b24",
+      "previous_sha256": "f7c09917c62d318a8f6ffc87639e338a261855e7501a078340d691534b53a76e",
+      "pixels": 21759,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        166,
+        386,
+        652
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-0.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-1.png",
+      "sha256": "7c2d22e01ff40642a2aea7a50fcc90033e2357da20f0b05ff569dbcf8cbf60f4",
+      "previous_sha256": "50a76312f650995dd78e343c5881144903c63f73c57cf9231515a92ae4a0ac99",
+      "pixels": 98828,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        166,
+        402,
+        626
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-1.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-2.png",
+      "sha256": "1d7217f723d9815cd0f3fc666ddf5ef2f9bff7f64c4556da567a8733daaca9a6",
+      "previous_sha256": "a600eb23cd4a5d648fc4ecaffbe55a7864c003ebb7c98a9a6d03b40d864fa664",
+      "pixels": 99787,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        166,
+        402,
+        626
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-2.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-3.png",
+      "sha256": "ac61163d370281a3a71c96e1013dad563d2e8cfeb4fc373e1d94d430a4152720",
+      "previous_sha256": "808f2853c3733b71f6838f4a919e6001a636a26844de31b3880d215d13063783",
+      "pixels": 104076,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        166,
+        402,
+        626
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-3.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-long-general-320-bottom.png",
+      "sha256": "4d1d3293da13d4fe73795f7216754597a3fdd519069317b8ab2c1c180dda2f0a",
+      "previous_sha256": "f22f2fd8062fd54a1c83dd0c75030bc806279dbce6226515825f883c0a3893a6",
+      "pixels": 37372,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        123,
+        304,
+        301
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-long-general-320-bottom.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-long-general-320-top.png",
+      "sha256": "11c5f5f6b47474b6b9fd6b089fe52f522ac407838ecbb45e85021aaf62ebef8f",
+      "previous_sha256": "731614120bef7118555eba5634d508396525ecba12778f33bda780bd4c5fc1af",
+      "pixels": 64390,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        123,
+        304,
+        568
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-long-general-320-top.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-long-general-402-bottom.png",
+      "sha256": "200b20ce800049b4847534f1ee1b8c9b661d026a253529cbce1a0e5077ba52cc",
+      "previous_sha256": "d42ed6f6d88f13adf58ff33ca0e595c989e77762957aa22c1ca7d6344590c757",
+      "pixels": 21221,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        144,
+        386,
+        300
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-long-general-402-bottom.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-long-general-402-top.png",
+      "sha256": "37153de3e118cc290e7387ea775bb28e3437ac7b63de6482ff81f127aa630332",
+      "previous_sha256": "d2d41b8753b67a5f9fe628090f63c1ae783a5cdaf128653bc0ae21e8fb02092e",
+      "pixels": 100732,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        144,
+        386,
+        874
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-long-general-402-top.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-long-general-568-top.png",
+      "sha256": "e70d03ce80e64b7cdee52c1493aa37471a69ccf05b59c403658158e9dcff14dd",
+      "previous_sha256": "107685700792b1106b496719dd847ef80a087ddad3a1c1b1b82aa0db7f0b2b8a",
+      "pixels": 19870,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        32,
+        552,
+        320
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-long-general-568-top.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-long-scorers-320-bottom.png",
+      "sha256": "ed23f83f1003f7dffb065335f30a325869f74b3413092000127c1ff9fe99b409",
+      "previous_sha256": "6c74b1bc261fc903637693b4f97b76883262447217bd09e1c2d1ddbc0f167e47",
+      "pixels": 37981,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        123,
+        304,
+        301
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-long-scorers-320-bottom.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-long-scorers-320-top.png",
+      "sha256": "66a5033494b3324b516321ba002b5d70dcc402fa0b694eb175648ed5ff1c924e",
+      "previous_sha256": "f30e81ad252308b8bd6d4241845f7ae835d6dca51334d56425a6468585e189b6",
+      "pixels": 64536,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        123,
+        304,
+        568
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-long-scorers-320-top.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-long-scorers-402-bottom.png",
+      "sha256": "4d594e0c30bd59b3534d5e662f279fb5ad7cf943fa4d39511966869fdf16f33e",
+      "previous_sha256": "1bb7330740c672e7d970dcc7c5a4347056c0f9595c299e548f5dc8fb7205e590",
+      "pixels": 21219,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        144,
+        386,
+        300
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-long-scorers-402-bottom.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-long-scorers-402-top.png",
+      "sha256": "0ca204c2d65335c9aff1e13a32658360e8d0be7f6c218ae32b7353015aefa599",
+      "previous_sha256": "7c51895ffacd006ef4a35239842abfa848627b27779fe5656fa986db3853dba1",
+      "pixels": 101431,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        144,
+        386,
+        874
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-long-scorers-402-top.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-long-scorers-568-top.png",
+      "sha256": "3a5db9d2befa926b25735c366c62a3a6f7493362e6e82cf7bce0a81d7937fbfc",
+      "previous_sha256": "ca94c0434435b0465dae22bc359fa6a3512df6a2557d712087e0de7c157e4d80",
+      "pixels": 20028,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        32,
+        552,
+        320
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-long-scorers-568-top.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-0-Generale.png",
+      "sha256": "15ea67026fe04dade483d4aa5a4b1e7a7f32abb3d79ae12f29baba362acf8e0e",
+      "previous_sha256": "acd846a737110044169289490f3ab17eb667f3f53ef4a1a69e5389e9df7f5b83",
+      "pixels": 21760,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        174,
+        386,
+        656
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-0-Generale.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-0-Marcatori.png",
+      "sha256": "b897177419c00cd51a4706d2f40845c8e4baa026f856da0c249c499b75f7311a",
+      "previous_sha256": "03860e5b1e364233410f7c6b090996836c30df64704b14be064360e7ccceebb5",
+      "pixels": 25460,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        174,
+        386,
+        667
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-0-Marcatori.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-1-Generale.png",
+      "sha256": "539106f6ae47789a705935f8f5c16992eec98f694f1b1142b8aa987836acac5a",
+      "previous_sha256": "73623de0c97839cda4a76908e60653b0b88977543ecff25eb6dbd45b666b25fd",
+      "pixels": 100248,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        174,
+        402,
+        634
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-1-Generale.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-1-Marcatori.png",
+      "sha256": "6fbd9efca4f56d54730f745f755824bcc464540c667dbb646bf994f041bfef3b",
+      "previous_sha256": "380b823458cf0febf832b65c5dc71a0368b8742bc153e2d953fb922231d2108c",
+      "pixels": 100319,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        174,
+        402,
+        634
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-1-Marcatori.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-2-Generale.png",
+      "sha256": "9ddf3287c6e4e99a57de291f68f01979851bf38ab223763c13286abe035a7145",
+      "previous_sha256": "8e190966f046e97b3db1ad5506c142135ec10791b51ecd3aaa9ddacd08c2eacb",
+      "pixels": 101388,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        174,
+        402,
+        634
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-2-Generale.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-2-Marcatori.png",
+      "sha256": "b0263da7dbae4402ef3273cc152c5ceb167185bf6c3c8f3be66abd40e778b024",
+      "previous_sha256": "b4983b9e67a1d1efeb98f6f9b2e5a65e41cf93a0d0fce50b8e67f406dd62b6c8",
+      "pixels": 101465,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        174,
+        402,
+        634
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-2-Marcatori.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-3-Generale.png",
+      "sha256": "5825fa85e33f45b47d83a934b18cdffc30e18b8ef1e61f4fef3d81a17b58c79d",
+      "previous_sha256": "5d664c4b200660521a86d92716f90730cdb506a49357d4045ae5ba30c04c5d83",
+      "pixels": 106725,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        174,
+        402,
+        634
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-3-Generale.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-3-Marcatori.png",
+      "sha256": "b50b7c5d83d59040f19f6db2a4b21218295c01af67d210d36efcbdf740b42460",
+      "previous_sha256": "e416b2328a48d54c8333859d24e42630443ed5bd2595e42691eb815042e1c57d",
+      "pixels": 106861,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        174,
+        402,
+        634
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-3-Marcatori.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-4-Generale.png",
+      "sha256": "70a21880ac6a59a7267fb4fb79ebd7ac883ebf9be395f981c86545738860436c",
+      "previous_sha256": "3d116eee24a2f3d7e88f1c4c56e4d68ab5e27dae2cf37cc81ea9faea4fcaea8a",
+      "pixels": 124065,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        174,
+        402,
+        757
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-4-Generale.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-4-Marcatori.png",
+      "sha256": "5484b02263d17715a3db611f7cf63f3ff39750ea80a162701b15c3ff03540002",
+      "previous_sha256": "df23feb326f7de4373cdc5495bbb0190e4450b90af8d0c945ce0e3fddb7118bd",
+      "pixels": 124847,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        174,
+        402,
+        757
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-4-Marcatori.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-long-general-320-bottom.png",
+      "sha256": "8b99bcf5e6623ff7b81bd8143c8fa151176ad972ff46c926bae199cc25f5d775",
+      "previous_sha256": "6d7f8308232dad54461df70768dd43ee57dc6637c430c902947c0848c5f484c4",
+      "pixels": 37690,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        123,
+        304,
+        301
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-long-general-320-bottom.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-long-general-320-top.png",
+      "sha256": "9326f5aea337142a7b9e5074ae4da13e3d5c2c4ac6b448e0e87cc67e38d218b7",
+      "previous_sha256": "acdd34d7791663a40b79a6c45996a04d7ffd297137d7297748c13ab4d056b58f",
+      "pixels": 59647,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        123,
+        304,
+        568
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-long-general-320-top.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-long-general-402-bottom.png",
+      "sha256": "35e3bcb8cc4ab8a1b14fcae644c12bab8a8c1213096337ebfc7ddba4082c829d",
+      "previous_sha256": "a3a09dfdb4c076936589ffbea3c767cee84d7bbf119070c93716d87a5da00bcd",
+      "pixels": 21216,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        144,
+        386,
+        329
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-long-general-402-bottom.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-long-general-402-top.png",
+      "sha256": "a6bdeaa4767b82cef6c68dcb88a191bfc18da76d944751b6a8dc0b76837f6ec1",
+      "previous_sha256": "f26968bf8b865a45adba5ca3e5e88ed385a850948f1d5805861760238af142e7",
+      "pixels": 103806,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        144,
+        386,
+        874
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-long-general-402-top.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-long-scorers-320-bottom.png",
+      "sha256": "5f490efeee36ca216fe4166421bee601cebecc9ca0001c003750d5fb77b238c1",
+      "previous_sha256": "96140affacb991236d5814e11dcc8bd6f53257e0fcce212208a9ad68041d6e37",
+      "pixels": 37482,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        123,
+        304,
+        301
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-long-scorers-320-bottom.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-long-scorers-320-top.png",
+      "sha256": "5d7aed22d8ec2665caea53b054f50d6feb2d6834afc7f9d68512d51c1823c82b",
+      "previous_sha256": "cb477c04cd4788d8aff0e026f033ed6f2c57cf372f3e2806bbcc4fb47e1cfd0e",
+      "pixels": 59465,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        123,
+        304,
+        568
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-long-scorers-320-top.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-long-scorers-402-bottom.png",
+      "sha256": "81d4ac66a4c7c38d36f555ae60ae2c7a889f60455e69aeac009e839b58a77797",
+      "previous_sha256": "00e0af72415756e72c02272292aabc59485fc051348fe9f1c6180adddb886b8f",
+      "pixels": 21149,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        144,
+        386,
+        349
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-long-scorers-402-bottom.png"
+    },
+    {
+      "previous": "test/goldens/leaderboard-pairs-long-scorers-402-top.png",
+      "sha256": "b244d1b3176f43c62d0ba52ce44ac1b24266461cb9931d7541c05972fc924621",
+      "previous_sha256": "54cfac41c77caa40ea27daa643657dbc04f282242d9ae073b628cefcecc4ddfc",
+      "pixels": 102749,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        144,
+        386,
+        874
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/leaderboard-pairs-long-scorers-402-top.png"
+    },
+    {
+      "previous": "test/goldens/reference-corrections/flows-history-edit.png",
+      "sha256": "6f34675b9ed4e5491f9a80667130d0f759ce5cb30e5cea859f043940390d41a2",
+      "previous_sha256": "2056a01a562466820fcdc6f7f2e769392965f153e7d3d31c595ba2c0ffb317f4",
+      "pixels": 942,
+      "total": 1405392,
+      "max_delta": 210,
+      "bbox": [
+        78,
+        420,
+        402,
+        524
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/reference-corrections/flows-history-edit.png"
+    },
+    {
+      "previous": "test/goldens/reference-corrections/flows-history-empty.png",
+      "sha256": "149f4f1428a5d2f34d607674faee1009330f76829ddaf450bd62c6d7fd8663b1",
+      "previous_sha256": "0797d617bbcd025e34384e84b5743c7f204b11097de751043538585997c9fa9e",
+      "pixels": 20,
+      "total": 1405392,
+      "max_delta": 153,
+      "bbox": [
+        691,
+        1530,
+        756,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/reference-corrections/flows-history-empty.png"
+    },
+    {
+      "previous": "test/goldens/reference-corrections/flows-history-large.png",
+      "sha256": "8cf5f47b0f0501f9c7f3130e3f4a1e64ec3ad8ad1fa15d85fa103032a1cb38dd",
+      "previous_sha256": "5f070e1949338da79a5193cd57786db7d0ec66c1998ab167884158368e299c0f",
+      "pixels": 20,
+      "total": 1405392,
+      "max_delta": 153,
+      "bbox": [
+        691,
+        1530,
+        756,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/reference-corrections/flows-history-large.png"
+    },
+    {
+      "previous": "test/goldens/reference-corrections/flows-history.png",
+      "sha256": "5bf238b5e93cbeb96a46d8bdfc615fb293b65832e0e5a7e87a0fcf48fff71065",
+      "previous_sha256": "4a143385612bb2c8dd54bf9c01bba41f1ec26e57d50341d0eccaa9756df00b60",
+      "pixels": 20,
+      "total": 1405392,
+      "max_delta": 153,
+      "bbox": [
+        691,
+        1530,
+        756,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/reference-corrections/flows-history.png"
+    },
+    {
+      "previous": "test/goldens/reference-corrections/italia90-history-compact.png",
+      "sha256": "a55584b1142c4d7617039e85c1c4cb928fdd0c6e623d3916fa528fc6fb82ebe1",
+      "previous_sha256": "d5970aff6cd7e53898da49a61550e17554f8024d3a9ebf0ebfa81e8da9d47be2",
+      "pixels": 10,
+      "total": 181760,
+      "max_delta": 100,
+      "bbox": [
+        275,
+        459,
+        301,
+        462
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/reference-corrections/italia90-history-compact.png"
+    },
+    {
+      "previous": "test/goldens/reference-corrections/supplement-players-compact-large.png",
+      "sha256": "f091cbb83d1ad0ba66921e058e7fc19dc618577a0d8ee2346927cd6feffd6609",
+      "previous_sha256": "2b45c53c68a722baba0f62989dac34dcf9802b850e43a86ba57ede3627fba734",
+      "pixels": 20,
+      "total": 727040,
+      "max_delta": 121,
+      "bbox": [
+        166,
+        918,
+        218,
+        924
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/reference-corrections/supplement-players-compact-large.png"
+    },
+    {
+      "previous": "test/goldens/reference-corrections/supplement-players-long-name-compact-large.png",
+      "sha256": "f091cbb83d1ad0ba66921e058e7fc19dc618577a0d8ee2346927cd6feffd6609",
+      "previous_sha256": "2b45c53c68a722baba0f62989dac34dcf9802b850e43a86ba57ede3627fba734",
+      "pixels": 20,
+      "total": 727040,
+      "max_delta": 121,
+      "bbox": [
+        166,
+        918,
+        218,
+        924
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/reference-corrections/supplement-players-long-name-compact-large.png"
+    },
+    {
+      "previous": "test/goldens/reference-corrections/supplement-players-long-name-normal.png",
+      "sha256": "f1918afa527166f212e37364ccd7c6f250996022939b5c0b5008fc488cad6e3a",
+      "previous_sha256": "b838f8c8af9da277f8e8f23cda57cde9fbecea33c0311557c18614e1fb546a66",
+      "pixels": 24,
+      "total": 1405392,
+      "max_delta": 177,
+      "bbox": [
+        209,
+        1530,
+        274,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/reference-corrections/supplement-players-long-name-normal.png"
+    },
+    {
+      "previous": "test/goldens/reference-corrections/supplement-players-normal-corrected.png",
+      "sha256": "e8131ba1732fb37f6011c55932590b43eaec1a27591243092c72a0a704958ed4",
+      "previous_sha256": "6983629c8cf43d5dacc51562caaec3fcb718a26e81d33cba46c5b8b548683ed4",
+      "pixels": 24,
+      "total": 1405392,
+      "max_delta": 177,
+      "bbox": [
+        209,
+        1530,
+        274,
+        1536
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/reference-corrections/supplement-players-normal-corrected.png"
+    },
+    {
+      "previous": "test/goldens/south-africa-distinta-compact.png",
+      "sha256": "b8c794a1a1afb91db53edd77a22ba042f1237cb3b028997485526c90a9118086",
+      "previous_sha256": "dc00e9cdff6b76ee9e6b8222c682a9fb474f3724e9c6d80d9ce17836c756be77",
+      "pixels": 260,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        160,
+        419,
+        302,
+        449
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/south-africa-distinta-compact.png"
+    },
+    {
+      "previous": "test/goldens/south-africa-distinta-legacy.png",
+      "sha256": "0d1308e91dd66e7988b19617ef8ce5b0ffdec9630c5548341d8b227e158e5b57",
+      "previous_sha256": "98c0fbfad3ec389fa21adbece36194767eb8c9db19f2e80d6f18a634045b5d95",
+      "pixels": 300,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        33,
+        206,
+        202,
+        260
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/south-africa-distinta-legacy.png"
+    },
+    {
+      "previous": "test/goldens/south-africa-distinta-mismatch.png",
+      "sha256": "8bbbcb8f0b36a21a56cadbb5658d9cfbc137169cee581f16e29fc141bdf2dfcb",
+      "previous_sha256": "34924ceb21aaafb381e0985945a3a5a12651a41f320cc9c6593756a1730efb43",
+      "pixels": 302,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        200,
+        178,
+        369,
+        232
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/south-africa-distinta-mismatch.png"
+    },
+    {
+      "previous": "test/goldens/south-africa-distinta-reference.png",
+      "sha256": "d512771ba90e17751691304b927ad3bb8ff5560fcc9b687a8b8486b3ba7d95ff",
+      "previous_sha256": "a3d71e69e7b61555678752f2dd8178fe9ce5b719cc1da7ae1e15e044290077a5",
+      "pixels": 302,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        200,
+        206,
+        369,
+        260
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/south-africa-distinta-reference.png"
+    },
+    {
+      "previous": "test/goldens/south-africa-scorers-compact.png",
+      "sha256": "8f77a1c9c673d704bb004e6abbd31c8795fec80254db5bbb2f945380f5516e9e",
+      "previous_sha256": "929bf8c450419ca0f33361069adba2c0b91ff9a0bb780c973a6bad5eb7d4c16e",
+      "pixels": 46537,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        153,
+        304,
+        463
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/south-africa-scorers-compact.png"
+    },
+    {
+      "previous": "test/goldens/south-africa-scorers.png",
+      "sha256": "4ba84dc75ab1eba8c0e9b98bcf01793912a6cc3cbd14bfc435f9fc867e0b5848",
+      "previous_sha256": "a14a83482e5c1b2972e54fe1ef72ad15a4e2f94e9882ef683c8d0ccb12431fc8",
+      "pixels": 102162,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        174,
+        402,
+        634
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/south-africa-scorers.png"
+    },
+    {
+      "previous": "test/goldens/south-africa-setup-options-free.png",
+      "sha256": "1573f3ca1ef16e432f80f659507c012f43fdf3952979d9dfe9e2b74c9d4b8eca",
+      "previous_sha256": "06250f8363740b195f4a158d74274c96a0dc282ac498def27afa2cebb904cea4",
+      "pixels": 15915,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        19,
+        148,
+        383,
+        699
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/south-africa-setup-options-free.png"
+    },
+    {
+      "previous": "test/goldens/south-africa-setup-options-target.png",
+      "sha256": "46782aa94855db4fc310e50fb4a5f065c15f236abeb7ea2a869e2b641533b4d2",
+      "previous_sha256": "cb27c41531fb8a1edcf31b1d5431c79ecf4e893ad1921309a9bd1f9108fa7baa",
+      "pixels": 19316,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        19,
+        148,
+        383,
+        831
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/south-africa-setup-options-target.png"
+    },
+    {
+      "previous": "test/goldens/south-africa-setup-players.png",
+      "sha256": "f3d21203ed2b5a9f74ccbad1fe04d5667b1090d4a0ae765fb6a400cb0af1cdf4",
+      "previous_sha256": "31a5242fe283882ba4f787b9c3a2f508eb3df71890ea461060849332171e27fb",
+      "pixels": 155,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        201,
+        62,
+        369,
+        93
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/south-africa-setup-players.png"
+    },
+    {
+      "previous": "test/goldens/south-africa-setup-top.png",
+      "sha256": "4a16e4dab90e3f9e6161a29b53852095e47a9d45b9ea35e06c589cebc63a7db3",
+      "previous_sha256": "775bd267bf22f1c746e77005e486b36f1b04423fcc3b3cf66cdfc625c3211208",
+      "pixels": 302,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        200,
+        148,
+        369,
+        202
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/south-africa-setup-top.png"
+    },
+    {
+      "previous": "test/goldens/south-africa-standings-compact.png",
+      "sha256": "4d6906a6c2117ec49f5dbb116884001c40076bcc1304f9d61ec92fc4900519f6",
+      "previous_sha256": "ef539f0cd34731224b077b026974770e5e4e72915b89addc3dfe72eaf9ed3489",
+      "pixels": 46639,
+      "total": 181760,
+      "max_delta": 255,
+      "bbox": [
+        16,
+        153,
+        304,
+        463
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/south-africa-standings-compact.png"
+    },
+    {
+      "previous": "test/goldens/south-africa-standings.png",
+      "sha256": "64bc219fc048d564bbfae255751e3e9157d32e4c27de20ff6510b2892e9e21f7",
+      "previous_sha256": "f25f5cb13081e7c15d7b8f57a09e2eddc3cefcc2cf520a3400c63bf20d0e35ba",
+      "pixels": 101991,
+      "total": 351348,
+      "max_delta": 255,
+      "bbox": [
+        0,
+        174,
+        402,
+        634
+      ],
+      "file": "test/goldens/tab-transition-reference-corrections/south-africa-standings.png"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import '../support/tab_transition_goldens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../support/design_fixture.dart';
@@ -21,7 +22,9 @@ void main() {
       );
       await expectLater(
         find.byKey(const ValueKey('editor-capture')),
-        matchesGoldenFile('south-africa-distinta-${scene.$1}.png'),
+        matchesGoldenFile(
+          tabTransitionGolden('south-africa-distinta-${scene.$1}.png'),
+        ),
       );
       if (scene.$5) {
         await tester.scrollUntilVisible(
@@ -38,7 +41,11 @@ void main() {
         expect(tester.takeException(), isNull);
         await expectLater(
           find.byKey(const ValueKey('editor-capture')),
-          matchesGoldenFile('south-africa-distinta-${scene.$1}-scrolled.png'),
+          matchesGoldenFile(
+            tabTransitionGolden(
+              'south-africa-distinta-${scene.$1}-scrolled.png',
+            ),
+          ),
         );
       }
       if (scene.$1 == 'reference') {
@@ -48,7 +55,9 @@ void main() {
         );
         await expectLater(
           find.byKey(const ValueKey('editor-capture')),
-          matchesGoldenFile('south-africa-distinta-mismatch.png'),
+          matchesGoldenFile(
+            tabTransitionGolden('south-africa-distinta-mismatch.png'),
+          ),
         );
       }
     });

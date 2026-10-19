@@ -1,3 +1,4 @@
+import '../support/tab_transition_goldens.dart';
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/models/app_style.dart';
@@ -229,7 +230,9 @@ void main() {
     await expectLater(
       find.byKey(boundaryKey),
       matchesGoldenFile(
-        '../goldens/integrated-reference-corrections/flows-setup-300.png',
+        tabTransitionGolden(
+          '../goldens/integrated-reference-corrections/flows-setup-300.png',
+        ),
       ),
     );
   });
@@ -295,7 +298,9 @@ void main() {
     await expectLater(
       find.byKey(boundaryKey),
       matchesGoldenFile(
-        '../goldens/integrated-reference-corrections/italia90-team-assignment.png',
+        tabTransitionGolden(
+          '../goldens/integrated-reference-corrections/italia90-team-assignment.png',
+        ),
       ),
     );
   });

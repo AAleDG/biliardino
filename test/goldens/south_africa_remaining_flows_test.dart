@@ -1,3 +1,4 @@
+import '../support/tab_transition_goldens.dart';
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/screens/home_screen.dart';
 import 'package:flutter/material.dart';
@@ -40,8 +41,10 @@ void main() {
           await expectLater(
             find.byKey(const ValueKey('capture')),
             matchesGoldenFile(
-              '${name == 'filters' ? 'reference-corrections/' : ''}'
-              'south-africa-$name${compact ? '-compact' : ''}.png',
+              tabTransitionGolden(
+                '${name == 'filters' ? 'reference-corrections/' : ''}'
+                'south-africa-$name${compact ? '-compact' : ''}.png',
+              ),
             ),
           );
         }
