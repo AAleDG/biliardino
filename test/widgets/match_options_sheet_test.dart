@@ -96,9 +96,27 @@ void main() {
     expect(tester.getRect(opener), summaryRect);
     expect(tester.getRect(stage), stageRect);
     await open(tester);
-    expect(tester.widget<SegmentedButton<MatchRuleMode>>(selector).selected, {
-      MatchRuleMode.firstTo,
-    });
+    final semantics = tester.ensureSemantics();
+    try {
+      expect(
+        tester
+            .getSemantics(find.text('Primo a N'))
+            .flagsCollection
+            .isSelected
+            .toBoolOrNull(),
+        isTrue,
+      );
+      expect(
+        tester
+            .getSemantics(find.text('Libero'))
+            .flagsCollection
+            .isSelected
+            .toBoolOrNull(),
+        isFalse,
+      );
+    } finally {
+      semantics.dispose();
+    }
     await tester.tap(find.text('Libero'));
     await tester.pumpAndSettle();
     expect(tester.getRect(selector), selectorRect);

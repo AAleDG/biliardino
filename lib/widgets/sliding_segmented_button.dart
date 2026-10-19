@@ -29,8 +29,8 @@ class SlidingSegmentedButton<T> extends StatelessWidget {
     assert(selected.length == 1);
     final theme = Theme.of(context);
     final effective =
-        SegmentedButtonTheme.of(context).style?.merge(style) ??
-        style ??
+        style?.merge(SegmentedButtonTheme.of(context).style) ??
+        SegmentedButtonTheme.of(context).style ??
         const ButtonStyle();
     final disabled = onSelectionChanged == null;
     final states = <WidgetState>{if (disabled) WidgetState.disabled};
