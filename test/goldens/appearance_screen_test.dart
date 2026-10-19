@@ -15,6 +15,7 @@ import '../support/design_fixture.dart';
 import '../support/controlled_style_fixture.dart';
 
 void main() {
+  const paletteRevisionGoldenRoot = 'italia90-palette-2026-reference';
   setUpAll(() async {
     await loadDesignFonts();
     for (final e in {
@@ -64,7 +65,9 @@ void main() {
           await precacheImage(const AssetImage(homeHeroAssetPath), ctx);
           await precacheImage(const AssetImage(FoosballScene.asset), ctx);
           await precacheImage(
-            const AssetImage('assets/italia90/backdrop-proposal-2.png'),
+            const AssetImage(
+              'assets/italia90/backdrop-working-petrol-amaranto.png',
+            ),
             ctx,
           );
         });
@@ -90,12 +93,15 @@ void main() {
                 'Decorative footer reaches the screen edge below the safe area',
           );
         }
+        final goldenPath = style == AppStyle.italia90
+            ? '$paletteRevisionGoldenRoot/$name.png'
+            : '$name.png';
         final back = find.byTooltip('Back');
         expect(back.hitTestable(), findsOneWidget);
         expect(tester.getRect(back).top, greaterThanOrEqualTo(62));
         await expectLater(
           find.byKey(const ValueKey('appearance-capture')),
-          matchesGoldenFile('$name.png'),
+          matchesGoldenFile(goldenPath),
         );
         if (compact) {
           final footer = style == AppStyle.southAfrica2010
@@ -119,7 +125,11 @@ void main() {
           expect(tester.takeException(), isNull);
           await expectLater(
             find.byKey(const ValueKey('appearance-capture')),
-            matchesGoldenFile('$name-scrolled.png'),
+            matchesGoldenFile(
+              style == AppStyle.italia90
+                  ? '$paletteRevisionGoldenRoot/$name-scrolled.png'
+                  : '$name-scrolled.png',
+            ),
           );
         }
       });

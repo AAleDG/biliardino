@@ -728,14 +728,12 @@ class TeamScorePanel extends StatelessWidget {
     required this.players,
     required this.score,
     required this.onAdd,
-    required this.onUndo,
     this.enabled = true,
   });
   final ItaliaTeam team;
   final List<Player> players;
   final int score;
   final ValueChanged<String> onAdd;
-  final VoidCallback onUndo;
   final bool enabled;
 
   @override
@@ -1050,10 +1048,14 @@ class ItaliaScoreboard extends StatelessWidget {
     required this.first,
     required this.second,
     this.showUndo = true,
+    this.undoEnabled = false,
+    this.onUndo,
   });
   final TeamScorePanel first;
   final TeamScorePanel second;
   final bool showUndo;
+  final bool undoEnabled;
+  final VoidCallback? onUndo;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -1067,7 +1069,7 @@ class ItaliaScoreboard extends StatelessWidget {
             second,
             if (showUndo) ...[
               const SizedBox(height: 10),
-              ItaliaSharedUndoAction(first: first, second: second),
+              ItaliaSharedUndoAction(enabled: undoEnabled, onPressed: onUndo),
             ],
           ],
         );
@@ -1084,7 +1086,7 @@ class ItaliaScoreboard extends StatelessWidget {
           ),
           if (showUndo) ...[
             const SizedBox(height: 10),
-            ItaliaSharedUndoAction(first: first, second: second),
+            ItaliaSharedUndoAction(enabled: undoEnabled, onPressed: onUndo),
           ],
         ],
       );
@@ -1095,161 +1097,55 @@ class ItaliaScoreboard extends StatelessWidget {
 class ItaliaSharedUndoAction extends StatelessWidget {
   const ItaliaSharedUndoAction({
     super.key,
-    required this.first,
-    required this.second,
+    required this.enabled,
+    required this.onPressed,
   });
 
-  final TeamScorePanel first;
-  final TeamScorePanel second;
+  final bool enabled;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final firstEnabled = first.enabled && first.score > 0;
-    final secondEnabled = second.enabled && second.score > 0;
-    final splitLabels = firstEnabled && secondEnabled;
-    final teamControls = IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: _UndoHitTarget(
-              key: ValueKey('score-undo-team-${first.team.number}'),
-              team: first.team,
-              enabled: firstEnabled,
-              onPressed: first.onUndo,
-              showTeamLabel: splitLabels,
+    final actionable = enabled && onPressed != null;
+    final foreground = actionable ? Italia90.primary : Italia90.muted;
+    return Semantics(
+      container: true,
+      button: true,
+      enabled: actionable,
+      label: 'Annulla ultimo goal',
+      onTap: actionable ? onPressed : null,
+      child: ExcludeSemantics(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Italia90.surface,
+            border: Border.all(
+              color: actionable ? Italia90.primary : Italia90.outline,
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: TextButton(
+            key: const ValueKey('score-undo-action'),
+            onPressed: actionable ? onPressed : null,
+            style: TextButton.styleFrom(
+              foregroundColor: foreground,
+              disabledForegroundColor: foreground,
+              overlayColor: Colors.transparent,
+              minimumSize: const Size(double.infinity, 64),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              alignment: Alignment.center,
+            ),
+            child: Text(
+              'ANNULLA',
+              textAlign: TextAlign.center,
+              style: Italia90.label.copyWith(color: foreground),
             ),
           ),
-          if (splitLabels)
-            const SizedBox(width: 1, child: ColoredBox(color: Italia90.error)),
-          Expanded(
-            child: _UndoHitTarget(
-              key: ValueKey('score-undo-team-${second.team.number}'),
-              team: second.team,
-              enabled: secondEnabled,
-              onPressed: second.onUndo,
-              showTeamLabel: splitLabels,
-            ),
-          ),
-        ],
-      ),
-    );
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Italia90.surface,
-        border: Border.all(color: Italia90.error, width: 1.5),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 64),
-        child: firstEnabled != secondEnabled
-            ? _UndoHitTarget(
-                key: ValueKey(
-                  'score-undo-team-${firstEnabled ? first.team.number : second.team.number}',
-                ),
-                team: firstEnabled ? first.team : second.team,
-                enabled: true,
-                onPressed: firstEnabled ? first.onUndo : second.onUndo,
-                showTeamLabel: true,
-              )
-            : Stack(
-                fit: StackFit.loose,
-                children: [
-                  if (!splitLabels)
-                    const Center(
-                      child: ExcludeSemantics(
-                        child: Text('ANNULLA', style: Italia90.label),
-                      ),
-                    ),
-                  teamControls,
-                ],
-              ),
+        ),
       ),
     );
   }
-}
-
-class _UndoHitTarget extends StatelessWidget {
-  const _UndoHitTarget({
-    super.key,
-    required this.team,
-    required this.enabled,
-    required this.onPressed,
-    this.showTeamLabel = false,
-  });
-
-  final ItaliaTeam team;
-  final bool enabled;
-  final VoidCallback onPressed;
-  final bool showTeamLabel;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    container: true,
-    button: true,
-    enabled: enabled,
-    label: 'Annulla ultimo goal di ${team.label.toUpperCase()}',
-    onTap: enabled ? onPressed : null,
-    child: ExcludeSemantics(
-      child: TextButton(
-        onPressed: enabled ? onPressed : null,
-        style: TextButton.styleFrom(
-          foregroundColor: Colors.transparent,
-          disabledForegroundColor: Colors.transparent,
-          overlayColor: Colors.transparent,
-          minimumSize: const Size(0, 64),
-          padding: EdgeInsets.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        child: showTeamLabel
-            ? SizedBox(
-                width: double.infinity,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 64),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: enabled ? team.container : Italia90.subtle,
-                    ),
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'ANNULLA',
-                            textAlign: TextAlign.center,
-                            style: Italia90.label.copyWith(
-                              color: enabled
-                                  ? team.onNeutralSurface
-                                  : Italia90.muted,
-                              fontSize: 12,
-                              height: 1.1,
-                              letterSpacing: .8,
-                            ),
-                          ),
-                          Text(
-                            team.label.toUpperCase(),
-                            softWrap: true,
-                            textAlign: TextAlign.center,
-                            style: Italia90.caption.copyWith(
-                              color: enabled
-                                  ? team.onNeutralSurface
-                                  : Italia90.muted,
-                              fontWeight: FontWeight.w700,
-                              height: 1.1,
-                              letterSpacing: .6,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            : const SizedBox.expand(),
-      ),
-    ),
-  );
 }
 
 /// Two related controls or panels stack before labels or team identities clip.

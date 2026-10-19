@@ -8,6 +8,7 @@ import 'package:biliardino/services/data_file_share_service.dart';
 import 'package:biliardino/services/backup_file_picker.dart';
 import 'package:biliardino/services/csv_share_service.dart';
 import 'package:biliardino/main.dart';
+import 'package:biliardino/models/app_style.dart';
 import 'package:biliardino/models/game_match.dart';
 import 'package:biliardino/models/player.dart';
 import 'package:biliardino/repositories/match_repository.dart';
@@ -33,6 +34,7 @@ class DesignFixture {
   DesignFixture({
     bool empty = false,
     this.csvShareService,
+    this.initialStyle = AppStyle.southAfrica2010,
     PlayerRepository Function(FakeDatabaseHelper)? playerRepositoryFactory,
     bool longRoster = false,
     bool populatedDashboard = false,
@@ -96,6 +98,8 @@ class DesignFixture {
               ),
             ],
     );
+    database.settings[AppStyleRepository.storageKey] =
+        initialStyle.storageValue;
     playersRepository =
         playerRepositoryFactory?.call(database) ?? PlayerRepository(database);
     matchesRepository = MatchRepository(database);
@@ -103,6 +107,7 @@ class DesignFixture {
     styleRepository = AppStyleRepository(database);
   }
   final CsvShareService? csvShareService;
+  final AppStyle initialStyle;
   FeedbackRepository? feedbackRepository;
   late final FakeDatabaseHelper database;
   late final PlayerRepository playersRepository;

@@ -1,4 +1,3 @@
-import '../support/tab_transition_goldens.dart';
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/models/app_style.dart';
@@ -199,7 +198,9 @@ void main() {
     final setupContext = tester.element(find.byType(NavigationBar));
     await tester.runAsync(
       () => precacheImage(
-        const AssetImage('assets/italia90/backdrop-proposal-2.png'),
+        const AssetImage(
+          'assets/italia90/backdrop-working-petrol-amaranto.png',
+        ),
         setupContext,
       ),
     );
@@ -230,9 +231,7 @@ void main() {
     await expectLater(
       find.byKey(boundaryKey),
       matchesGoldenFile(
-        tabTransitionGolden(
-          '../goldens/integrated-reference-corrections/flows-setup-300.png',
-        ),
+        '../goldens/italia90-palette-2026-reference/flows-setup-300.png',
       ),
     );
   });
@@ -298,9 +297,7 @@ void main() {
     await expectLater(
       find.byKey(boundaryKey),
       matchesGoldenFile(
-        tabTransitionGolden(
-          '../goldens/integrated-reference-corrections/italia90-team-assignment.png',
-        ),
+        '../goldens/italia90-palette-2026-reference/italia90-team-assignment.png',
       ),
     );
   });

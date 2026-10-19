@@ -29,7 +29,7 @@ class DistintaTeamCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = number == 1 ? AppColors.teamOne : AppColors.teamTwo;
-    final foreground = number == 1 ? AppColors.onPrimary : AppColors.ink;
+    const foreground = AppColors.onPrimary;
     final team = draft.team(number);
     final missing = draft.missing(number);
     final scale = MediaQuery.textScalerOf(context).scale(1);

@@ -7,6 +7,7 @@ import '../../../../models/rivalry_overview.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/italia90_tokens.dart';
 import '../../widgets/italia90_components.dart';
+import '../../widgets/design/ranking_podium_artwork.dart';
 import 'live_match_summary.dart';
 import 'live_poster_header.dart';
 
@@ -28,6 +29,7 @@ class LiveMatchView extends StatelessWidget {
     required this.onSave,
     required this.onBack,
     required this.onReset,
+    this.lastScoringTeam,
     this.showInteractivePanel = true,
   });
   final MatchMode mode;
@@ -35,6 +37,7 @@ class LiveMatchView extends StatelessWidget {
   final RivalryOverview? rivalry;
   final List<Player> team1Players, team2Players;
   final int score1, score2;
+  final int? lastScoringTeam;
   final bool isSaving, awaitingConfirmation, canRegisterResult;
   final void Function(int team, String playerId) onAddGoal;
   final ValueChanged<int> onRemoveGoal;
@@ -53,7 +56,6 @@ class LiveMatchView extends StatelessWidget {
       score: score1,
       enabled: enabled,
       onAdd: (playerId) => onAddGoal(1, playerId),
-      onUndo: () => onRemoveGoal(1),
     );
     final second = TeamScorePanel(
       key: const ValueKey('live-team-panel-2'),
@@ -62,13 +64,17 @@ class LiveMatchView extends StatelessWidget {
       score: score2,
       enabled: enabled,
       onAdd: (playerId) => onAddGoal(2, playerId),
-      onUndo: () => onRemoveGoal(2),
     );
     final actionRow = Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: _LiveMatchActions(
-        first: first,
-        second: second,
+        undoEnabled:
+            enabled &&
+            ((lastScoringTeam == 1 && score1 > 0) ||
+                (lastScoringTeam == 2 && score2 > 0)),
+        onUndo: lastScoringTeam == null
+            ? null
+            : () => onRemoveGoal(lastScoringTeam!),
         isSaving: isSaving,
         onSave: canRegisterResult ? onSave : null,
       ),
@@ -91,16 +97,16 @@ class LiveMatchView extends StatelessWidget {
                 children: [
                   LivePosterHeader(
                     onReset: isSaving ? null : onReset,
-                    overlay: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        if (!showInteractivePanel)
-                          _LivePosterScoreOverlay(
+                    // The interactive composition keeps its native score
+                    // cards below the poster. The production Partita screen
+                    // uses the poster overlay so its header and score share
+                    // the same runtime team colors.
+                    overlay: showInteractivePanel
+                        ? null
+                        : _LivePosterScoreOverlay(
                             score1: score1,
                             score2: score2,
                           ),
-                      ],
-                    ),
                   ),
                   if (showInteractivePanel)
                     Padding(
@@ -125,7 +131,9 @@ class LiveMatchView extends StatelessWidget {
                     final rosters = [
                       for (final panel in [first, second])
                         ItaliaTeamRoster(
-                          key: ValueKey('live-roster-team-${panel.team.number}'),
+                          key: ValueKey(
+                            'live-roster-team-${panel.team.number}',
+                          ),
                           team: panel.team,
                           players: panel.players,
                           largeText: largeText,
@@ -249,29 +257,26 @@ class _LivePosterPlayerBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Reuse only the figure from the original poster, never its sample names
-    // or baked-in controls.
-    final scale = size / 156;
-    final sourceLeft = team == ItaliaTeam.one ? 52.0 : 518.0;
     return ExcludeSemantics(
-      child: SizedBox.square(
-        dimension: size,
-        child: ClipOval(
-          child: OverflowBox(
-            alignment: Alignment.topLeft,
-            minWidth: LivePosterHeader.sourceWidth * scale,
-            maxWidth: LivePosterHeader.sourceWidth * scale,
-            minHeight: LivePosterHeader.sourceHeight * scale,
-            maxHeight: LivePosterHeader.sourceHeight * scale,
-            child: Transform.translate(
-              offset: Offset(-sourceLeft * scale, -1038 * scale),
-              child: Image.asset(
-                'assets/italia90/live-poster-editoriale.png',
-                fit: BoxFit.fill,
-                filterQuality: FilterQuality.medium,
-              ),
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: team.color,
+          shape: BoxShape.circle,
+          border: Border.all(color: Italia90.surface, width: 2),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x22000000),
+              blurRadius: 3,
+              offset: Offset(0, 1),
             ),
-          ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: EdgeInsets.all(size * .035),
+          child: const RankingFoosballFigure(shirtColor: Colors.white),
         ),
       ),
     );
@@ -293,24 +298,50 @@ class _LivePosterScoreOverlay extends StatelessWidget {
       final sourceHeight = LivePosterHeader.sourceHeightForWidth(
         constraints.maxWidth,
       );
-      final scoreTop = sourceHeight * .285;
-      final scoreHeight = sourceHeight * .29;
+      // The source poster bakes the original blue/yellow team headers and
+      // score fields into one image. Paint both regions here so the team
+      // identity is driven by one runtime token instead of two palettes.
+      final teamTop = sourceHeight * .14;
+      final teamBottom = sourceHeight * .59;
+      final teamHeight = teamBottom - teamTop;
       return Stack(
         fit: StackFit.expand,
         children: [
           Positioned(
             left: 0,
-            top: scoreTop,
+            top: teamTop,
             width: halfWidth - dividerWidth / 2,
-            height: scoreHeight,
-            child: _PosterScoreBlock(team: ItaliaTeam.one, score: score1),
+            height: teamHeight,
+            child: _PosterScoreBlock(
+              key: const ValueKey('live-poster-team-panel-1'),
+              team: ItaliaTeam.one,
+              score: score1,
+            ),
           ),
           Positioned(
             left: halfWidth + dividerWidth / 2,
-            top: scoreTop,
+            top: teamTop,
             width: halfWidth - dividerWidth / 2,
-            height: scoreHeight,
-            child: _PosterScoreBlock(team: ItaliaTeam.two, score: score2),
+            height: teamHeight,
+            child: _PosterScoreBlock(
+              key: const ValueKey('live-poster-team-panel-2'),
+              team: ItaliaTeam.two,
+              score: score2,
+            ),
+          ),
+          Positioned(
+            left: constraints.maxWidth * .276,
+            top: sourceHeight * .135,
+            width: constraints.maxWidth * .448,
+            height: sourceHeight * .05,
+            child: const _PosterMatchRibbon(),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            top: sourceHeight * .59,
+            height: sourceHeight * .017,
+            child: const _PosterTricolorRail(),
           ),
         ],
       );
@@ -319,50 +350,148 @@ class _LivePosterScoreOverlay extends StatelessWidget {
 }
 
 class _PosterScoreBlock extends StatelessWidget {
-  const _PosterScoreBlock({required this.team, required this.score});
+  const _PosterScoreBlock({super.key, required this.team, required this.score});
 
   final ItaliaTeam team;
   final int score;
 
   @override
-  Widget build(BuildContext context) {
-    final background = team == ItaliaTeam.one
-        ? const Color(0xFF074DC8)
-        : const Color(0xFFF7CC2F);
-    return ColoredBox(
-      color: background,
+  Widget build(BuildContext context) => ClipPath(
+    clipper: _PosterTeamPanelClipper(team),
+    child: ColoredBox(
+      color: team.color,
       child: Semantics(
         container: true,
         liveRegion: true,
         label: 'Punteggio ${team.label.toUpperCase()}: $score',
         child: ExcludeSemantics(
-          child: Center(
-            child: ItaliaScoreValue(
-              score: score,
-              fit: BoxFit.contain,
-              style: Italia90.score.copyWith(
-                color: team.onColor,
-                fontSize: 400,
-                height: .86,
-              ),
-            ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final labelHeight = constraints.maxHeight * .26;
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(8, 16, 8, 0),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: labelHeight,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          team.label.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: Italia90.display.copyWith(
+                            color: team.onColor,
+                            fontSize: 48,
+                            height: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: ItaliaScoreValue(
+                          score: score,
+                          fit: BoxFit.contain,
+                          style: Italia90.score.copyWith(
+                            color: team.onColor,
+                            fontSize: 400,
+                            height: .86,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
-    );
+    ),
+  );
+}
+
+class _PosterMatchRibbon extends StatelessWidget {
+  const _PosterMatchRibbon();
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(
+      color: Italia90.primary,
+      border: Border.all(color: Colors.white, width: 2),
+    ),
+    child: Center(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          'PARTITA IN CORSO',
+          style: Italia90.display.copyWith(
+            color: Colors.white,
+            fontSize: 20,
+            letterSpacing: 1.8,
+            height: 1,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _PosterTricolorRail extends StatelessWidget {
+  const _PosterTricolorRail();
+
+  @override
+  Widget build(BuildContext context) => const Column(
+    children: [
+      Expanded(child: ColoredBox(color: Italia90.green)),
+      Expanded(child: ColoredBox(color: Colors.white)),
+      Expanded(child: ColoredBox(color: Italia90.primary)),
+      Expanded(child: ColoredBox(color: Colors.white)),
+      Expanded(child: ColoredBox(color: Italia90.red)),
+    ],
+  );
+}
+
+class _PosterTeamPanelClipper extends CustomClipper<Path> {
+  const _PosterTeamPanelClipper(this.team);
+
+  final ItaliaTeam team;
+
+  @override
+  Path getClip(Size size) {
+    final slant = (size.width * .1).clamp(14.0, 26.0).toDouble();
+    final path = Path();
+    if (team == ItaliaTeam.one) {
+      path
+        ..moveTo(0, slant)
+        ..lineTo(size.width, 0);
+    } else {
+      path
+        ..moveTo(0, 0)
+        ..lineTo(size.width, slant);
+    }
+    path
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    return path;
   }
+
+  @override
+  bool shouldReclip(_PosterTeamPanelClipper oldClipper) =>
+      oldClipper.team != team;
 }
 
 class _LiveMatchActions extends StatelessWidget {
   const _LiveMatchActions({
-    required this.first,
-    required this.second,
+    required this.undoEnabled,
+    required this.onUndo,
     required this.isSaving,
     required this.onSave,
   });
 
-  final TeamScorePanel first;
-  final TeamScorePanel second;
+  final bool undoEnabled;
+  final VoidCallback? onUndo;
   final bool isSaving;
   final VoidCallback? onSave;
 
@@ -371,7 +500,10 @@ class _LiveMatchActions extends StatelessWidget {
     builder: (context, constraints) {
       final largeText = MediaQuery.textScalerOf(context).scale(16) > 22;
       final stack = largeText || constraints.maxWidth < 340;
-      final undo = ItaliaSharedUndoAction(first: first, second: second);
+      final undo = ItaliaSharedUndoAction(
+        enabled: undoEnabled,
+        onPressed: onUndo,
+      );
       final save = _ResultButton(isSaving: isSaving, onSave: onSave);
       if (stack) {
         return Column(

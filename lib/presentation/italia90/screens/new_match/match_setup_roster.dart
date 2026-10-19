@@ -224,9 +224,11 @@ class MatchRosterSummary extends StatelessWidget {
       ),
       Container(
         decoration: BoxDecoration(
-          color: AppColors.surface.withValues(alpha: .32),
+          // Keep the explanatory copy on a stable surface instead of letting
+          // the poster artwork reduce its contrast behind the text.
+          color: AppColors.surface.withValues(alpha: .94),
           borderRadius: BorderRadius.circular(AppRadius.panel),
-          border: Border.all(color: AppColors.divider),
+          border: Border.all(color: AppColors.outline.withValues(alpha: .28)),
         ),
         child: Column(
           children: [
@@ -238,15 +240,21 @@ class MatchRosterSummary extends StatelessWidget {
                   children: [
                     Text(
                       neededMessage,
-                      style: AppType.caption.copyWith(
-                        color: AppColors.textSecondary,
+                      style: AppType.body.copyWith(
+                        color: AppColors.ink,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       'Vai su Giocatori e segna chi è presente.',
-                      style: AppType.caption.copyWith(
-                        color: AppColors.textSecondary,
+                      style: AppType.body.copyWith(
+                        color: AppColors.ink,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        height: 1.3,
                       ),
                     ),
                   ],

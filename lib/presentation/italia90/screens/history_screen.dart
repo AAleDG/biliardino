@@ -1580,7 +1580,7 @@ class _MatchScoreRail extends StatelessWidget {
           _ScoreCell(
             key: ValueKey('history-score-$matchId-team-1'),
             value: score1,
-            background: Italia90.blueContainer,
+            background: Italia90.petrolContainer,
             foreground: Italia90.teamOne,
           ),
           const SizedBox(height: 4),

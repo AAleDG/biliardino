@@ -11,8 +11,8 @@ abstract final class AppColors {
   static const primary = Italia90.primary;
   static const onPrimary = Colors.white;
   static const primaryPressed = Color(0xFF7B2A21);
-  static const homeAction = Italia90.teamOne;
-  static const homeActionPressed = Color(0xFF0035A1);
+  static const homeAction = Italia90.green;
+  static const homeActionPressed = successPressed;
   static const background = Italia90.surface;
   static const surface = Italia90.panel;
   static const ink = Italia90.ink;
@@ -27,13 +27,13 @@ abstract final class AppColors {
   static const error = Italia90.error;
   static const errorContainer = Color(0xFFFBE9E7);
   static const teamOne = Italia90.teamOne;
-  static const teamOneContainer = Italia90.blueContainer;
+  static const teamOneContainer = Italia90.petrolContainer;
   static const teamTwo = Italia90.teamTwo;
   static const teamTwoContainer = Italia90.teamTwoContainer;
   static const disabledContainer = Italia90.subtle;
   static const disabledContent = Italia90.muted;
 
-  static Color onTeam(Color team) => team == teamTwo ? ink : onPrimary;
+  static Color onTeam(Color team) => onPrimary;
 
   static Color teamContainer(Color team) =>
       team == teamTwo ? teamTwoContainer : teamOneContainer;

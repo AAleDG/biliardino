@@ -256,6 +256,7 @@ class _NewMatchViewState extends State<_NewMatchView> {
                               ),
                               score1: state.score1,
                               score2: state.score2,
+                              lastScoringTeam: state.lastScoringTeam,
                               isSaving: state.isSaving,
                               awaitingConfirmation:
                                   state.pendingVictory != null,

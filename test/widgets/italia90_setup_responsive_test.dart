@@ -1,7 +1,10 @@
 import 'package:biliardino/cubits/home/home_cubit.dart';
 import 'package:biliardino/cubits/new_match/new_match_cubit.dart';
 import 'package:biliardino/models/app_style.dart';
+import 'package:biliardino/models/player.dart';
 import 'package:biliardino/presentation/italia90/theme/app_theme.dart';
+import 'package:biliardino/presentation/italia90/theme/design_tokens.dart';
+import 'package:biliardino/presentation/italia90/screens/new_match/match_setup_roster.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -70,6 +73,13 @@ void main() {
 
     final available = find.text('POSTO DISPONIBILE');
     expect(available, findsNWidgets(4));
+    final kickoff = tester.widget<ElevatedButton>(
+      find.byKey(const ValueKey('setup-kickoff-action')),
+    );
+    expect(
+      kickoff.style?.backgroundColor?.resolve(const <WidgetState>{}),
+      AppColors.homeAction,
+    );
     final availableTeamTwo = find.descendant(
       of: find.byKey(const ValueKey('team-2-empty-0')),
       matching: find.text('POSTO DISPONIBILE'),
@@ -92,6 +102,41 @@ void main() {
     expect(completeTeamTwo, findsOneWidget);
     expect(tester.widget<Text>(completeTeamTwo).style?.color, AppColors.ink);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('puts availability guidance on an opaque high-contrast surface', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(402, 874);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: MatchRosterSummary(
+            players: <Player>[],
+            totalCount: 0,
+            assignment: <String, int>{},
+            enoughPlayers: false,
+            neededMessage:
+                'Servono almeno 4 giocatori presenti per una partita 2 VS 2.',
+            onShowAll: null,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final guidance = find.text(
+      'Servono almeno 4 giocatori presenti per una partita 2 VS 2.',
+    );
+    expect(guidance, findsOneWidget);
+    expect(tester.widget<Text>(guidance).style?.color, AppColors.ink);
+    final card = find.ancestor(of: guidance, matching: find.byType(Container));
+    expect(card, findsOneWidget);
+    final decoration =
+        tester.widget<Container>(card).decoration! as BoxDecoration;
+    expect(decoration.color, AppColors.surface.withValues(alpha: .94));
   });
 
   testWidgets('300 percent setup scrolls its growing kickoff action', (

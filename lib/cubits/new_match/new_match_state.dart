@@ -114,6 +114,14 @@ class NewMatchState extends Equatable {
 
   List<String> get team1 => team(1);
   List<String> get team2 => team(2);
+  int? get lastScoringTeam {
+    if (scorerIds.isEmpty) return null;
+    final lastScorerId = scorerIds.last;
+    if (team1.contains(lastScorerId)) return 1;
+    if (team2.contains(lastScorerId)) return 2;
+    return null;
+  }
+
   int get requiredPlayers => mode.teamSize * 2;
 
   bool get teamsValid {

@@ -13,6 +13,11 @@
       "date": "2026-09-19",
       "response": "Implementa questa, la settima schermata generata, nella Home.",
       "scope": "Home-only edge-ribbon background derived from the selected seventh Home proposal; the native Flutter Home UI remains unchanged."
+    },
+    "working_palette_revision_approval": {
+      "date": "2026-10-14",
+      "response": "La numero 4 va bene, mi piace quello che hai generato. Usa questo background e questi colori.",
+      "scope": "Concept 4 petrol/amaranto direction applied to Giocatori, Partita, Classifica and Altro; Home background remains unchanged and its Inizia partita action uses the approved green."
     }
   },
   "assets": [
@@ -51,7 +56,7 @@
       "name": "Portrait poster backdrop proposal 2",
       "version": "v1",
       "master": "backdrop-proposal-2.png",
-      "usage": "Decorative runtime backdrop; full on Home and transient entrance surfaces, reduced on working screens and near-neutral during live scoring",
+      "usage": "Retained bootstrap/splash fallback and donor reference; active Home uses the Home-only backdrop and working/live screens use the petrol/amaranto revision",
       "sha256": "798820b6c5fcda3982f2594e5b4cad91bd2ded3f0ec86fe7e27ef15c8745389b",
       "status": "approved-and-promoted",
       "production_path": "assets/italia90/backdrop-proposal-2.png",
@@ -81,6 +86,18 @@
       "production_path": "assets/italia90/live-poster-editoriale.png",
       "dimensions": "941x1672",
       "generation": "User-provided Italia '90 live-match reference selected for implementation on 2026-10-11"
+    },
+    {
+      "id": "ASSET-7",
+      "name": "Working-screen petrol and amaranto backdrop",
+      "version": "v1",
+      "master": "backdrop-working-petrol-amaranto.png",
+      "usage": "Decorative runtime backdrop for Giocatori, Partita, Classifica and Altro; Home background remains on ASSET-5",
+      "sha256": "9ccc85e0df9ff8b217ea7d8afbf44acc2e2a975e5e7de5ed05aed2fa9b594080",
+      "status": "approved-and-promoted",
+      "production_path": "assets/italia90/backdrop-working-petrol-amaranto.png",
+      "dimensions": "851x1847",
+      "generation": "Built-in image generation tool; clean background derived from the user-approved concept 4 petrol/amaranto prototype and refined to remove residual blue on 2026-10-14"
     }
   ],
   "football_source": {

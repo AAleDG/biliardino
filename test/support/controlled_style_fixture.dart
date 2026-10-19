@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:biliardino/main.dart';
+import 'package:biliardino/models/app_style.dart';
 import 'package:biliardino/repositories/app_style_repository.dart';
 import 'package:flutter/material.dart';
 import 'design_fixture.dart';
@@ -20,7 +21,10 @@ class ControlledStyleDatabase extends FakeDatabaseHelper {
 
 class ControlledStyleFixture extends DesignFixture {
   ControlledStyleFixture(ControlledStyleDatabase database)
-    : repository = AppStyleRepository(database);
+    : repository = AppStyleRepository(database) {
+    database.settings[AppStyleRepository.storageKey] =
+        AppStyle.southAfrica2010.storageValue;
+  }
   final AppStyleRepository repository;
   @override
   Future<void> load() async {

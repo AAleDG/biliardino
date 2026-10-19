@@ -3,12 +3,17 @@ import 'package:flutter/material.dart';
 /// Typed implementation of the approved DESIGN.md baseline.
 abstract final class Italia90 {
   static const primary = Color(0xFFA83A2D);
-  static const teamOne = Color(0xFF0047D8);
+
+  /// Petrol team accent from the approved concept 4 direction.
+  static const petrol = Color(0xFF17656B);
+  static const teamOne = petrol;
 
   /// Neutral identity color for players outside an explicit team or rank.
   static const avatarNeutral = primary;
   static const green = Color(0xFF00834D);
-  static const red = Color(0xFFE31331);
+
+  /// Muted amaranto accent used instead of the saturated fire-red accent.
+  static const red = Color(0xFFB94A3A);
   static const surface = Color(0xFFFFFCF5);
   static const panel = Colors.white;
   static const ink = Colors.black;
@@ -17,10 +22,16 @@ abstract final class Italia90 {
   static const outline = Color(0xFF737873);
   static const success = Color(0xFF006F46);
   static const error = Color(0xFFB42318);
-  static const teamTwo = Color(0xFFF2C94C);
-  static const blueContainer = Color(0xFFDCE8FF);
+
+  /// Amaranto replaces the previous yellow team accent.
+  static const teamTwo = primary;
+  static const petrolContainer = Color(0xFFDDEBEA);
+
+  /// Kept as a source-compatible alias for older consumers.
+  @Deprecated('Use petrolContainer instead.')
+  static const blueContainer = petrolContainer;
   static const brickContainer = Color(0xFFF3DAD5);
-  static const teamTwoContainer = Color(0xFFFFF3CC);
+  static const teamTwoContainer = brickContainer;
   static const scrim = Color(0x66000000);
 
   static const xs = 4.0;
@@ -98,9 +109,9 @@ enum ItaliaTeam {
 
   Color get color => this == one ? Italia90.teamOne : Italia90.teamTwo;
   Color get container =>
-      this == one ? Italia90.blueContainer : Italia90.teamTwoContainer;
-  Color get onColor => this == one ? Colors.white : Italia90.ink;
-  Color get onNeutralSurface => this == one ? color : Italia90.ink;
+      this == one ? Italia90.petrolContainer : Italia90.teamTwoContainer;
+  Color get onColor => Colors.white;
+  Color get onNeutralSurface => color;
   int get number => this == one ? 1 : 2;
   String get label => 'Squadra $number';
 }

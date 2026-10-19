@@ -49,95 +49,95 @@ class MatchSetupView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
-        builder: (context, constraints) {
-          final requiredPlayers = mode.teamSize * 2;
-          final enoughPlayers = present.length >= requiredPlayers;
-          final textScaler = MediaQuery.textScalerOf(context);
-          final verticalKickoff = textScaler.scale(28) > 56;
-          final kickoffHeight = _kickoffButtonHeight(
-            context,
-            constraints.maxWidth,
-            verticalLayout: verticalKickoff,
-          );
-          final scrollKickoff = _shouldScrollKickoff(constraints);
-          final content = <Widget>[
-            const MatchSetupHeader(),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-              child: MatchModeSelector(
-                selectedMode: mode,
-                onChanged: isPersistingRules ? null : onModeChanged,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: MatchOptionsSummary(
-                rules: rules,
-                isRivalry: isRivalry,
-                onPressed: onOptionsPressed,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
-              child: MatchRosterSummary(
-                players: present.take(4).toList(growable: false),
-                totalCount: present.length,
-                assignment: assignment,
-                enoughPlayers: enoughPlayers,
-                neededMessage:
-                    'Servono almeno $requiredPlayers giocatori presenti per '
-                    'una partita ${matchModeTitle(mode)}.',
-                onShowAll: present.length > 4 ? onShowAllPlayers : null,
-              ),
-            ),
-            const SizedBox(height: 6),
-            MatchTeamStage(
-              players: players,
-              team1: team1,
-              team2: team2,
-              capacity: mode.teamSize,
-              enabled: enoughPlayers && !isPersistingRules,
-              onAdd: onAddPlayer,
-              onEdit: onEditPlayer,
-            ),
-            if (scrollKickoff)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                child: _KickoffButton(
-                  minHeight: kickoffHeight,
-                  verticalLayout: verticalKickoff,
-                  onPressed: onKickoff,
-                ),
-              ),
-          ];
-
-          return Stack(
-            children: [
-              SafeArea(
-                bottom: false,
-                child: ListView(
-                  key: const ValueKey('setup-scroll-view'),
-                  padding: EdgeInsets.only(
-                    bottom: scrollKickoff ? 56 : kickoffHeight + 56,
-                  ),
-                  children: content,
-                ),
-              ),
-              if (!scrollKickoff)
-                Positioned(
-                  left: 16,
-                  right: 16,
-                  bottom: 12,
-                  child: _KickoffButton(
-                    minHeight: kickoffHeight,
-                    verticalLayout: verticalKickoff,
-                    onPressed: onKickoff,
-                  ),
-                ),
-            ],
-          );
-        },
+    builder: (context, constraints) {
+      final requiredPlayers = mode.teamSize * 2;
+      final enoughPlayers = present.length >= requiredPlayers;
+      final textScaler = MediaQuery.textScalerOf(context);
+      final verticalKickoff = textScaler.scale(28) > 56;
+      final kickoffHeight = _kickoffButtonHeight(
+        context,
+        constraints.maxWidth,
+        verticalLayout: verticalKickoff,
       );
+      final scrollKickoff = _shouldScrollKickoff(constraints);
+      final content = <Widget>[
+        const MatchSetupHeader(),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+          child: MatchModeSelector(
+            selectedMode: mode,
+            onChanged: isPersistingRules ? null : onModeChanged,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: MatchOptionsSummary(
+            rules: rules,
+            isRivalry: isRivalry,
+            onPressed: onOptionsPressed,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 10, 24, 0),
+          child: MatchRosterSummary(
+            players: present.take(4).toList(growable: false),
+            totalCount: present.length,
+            assignment: assignment,
+            enoughPlayers: enoughPlayers,
+            neededMessage:
+                'Servono almeno $requiredPlayers giocatori presenti per '
+                'una partita ${matchModeTitle(mode)}.',
+            onShowAll: present.length > 4 ? onShowAllPlayers : null,
+          ),
+        ),
+        const SizedBox(height: 6),
+        MatchTeamStage(
+          players: players,
+          team1: team1,
+          team2: team2,
+          capacity: mode.teamSize,
+          enabled: enoughPlayers && !isPersistingRules,
+          onAdd: onAddPlayer,
+          onEdit: onEditPlayer,
+        ),
+        if (scrollKickoff)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            child: _KickoffButton(
+              minHeight: kickoffHeight,
+              verticalLayout: verticalKickoff,
+              onPressed: onKickoff,
+            ),
+          ),
+      ];
+
+      return Stack(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: ListView(
+              key: const ValueKey('setup-scroll-view'),
+              padding: EdgeInsets.only(
+                bottom: scrollKickoff ? 56 : kickoffHeight + 56,
+              ),
+              children: content,
+            ),
+          ),
+          if (!scrollKickoff)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 12,
+              child: _KickoffButton(
+                minHeight: kickoffHeight,
+                verticalLayout: verticalKickoff,
+                onPressed: onKickoff,
+              ),
+            ),
+        ],
+      );
+    },
+  );
 }
 
 bool _shouldScrollKickoff(BoxConstraints constraints) {
@@ -187,21 +187,22 @@ class _KickoffButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = AppTheme.primaryButton(
-      background: AppColors.success,
-      foreground: AppColors.onPrimary,
-      pressed: AppColors.successPressed,
-    ).copyWith(
-      padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      ),
-      shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-      ),
-      textStyle: WidgetStatePropertyAll(
-        AppType.action.copyWith(fontSize: 28),
-      ),
-    );
+    final style =
+        AppTheme.primaryButton(
+          background: AppColors.homeAction,
+          foreground: AppColors.onPrimary,
+          pressed: AppColors.homeActionPressed,
+        ).copyWith(
+          padding: const WidgetStatePropertyAll(
+            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
+          shape: WidgetStatePropertyAll(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          ),
+          textStyle: WidgetStatePropertyAll(
+            AppType.action.copyWith(fontSize: 28),
+          ),
+        );
     final content = verticalLayout
         ? const Column(
             mainAxisSize: MainAxisSize.min,

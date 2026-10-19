@@ -44,8 +44,8 @@ class _ItaliaBackdropArtwork extends StatelessWidget {
   Widget build(BuildContext context) {
     final opacity = switch (variant) {
       ItaliaBackdropVariant.home || ItaliaBackdropVariant.homeDashboard => 0.92,
-      ItaliaBackdropVariant.working => 0.58,
-      ItaliaBackdropVariant.live => 0.12,
+      ItaliaBackdropVariant.working => 0.84,
+      ItaliaBackdropVariant.live => 0.18,
     };
     final alignment = switch (variant) {
       ItaliaBackdropVariant.home ||
@@ -56,7 +56,9 @@ class _ItaliaBackdropArtwork extends StatelessWidget {
     final assetPath = switch (variant) {
       ItaliaBackdropVariant.homeDashboard =>
         'assets/italia90/backdrop-home-proposal-7.png',
-      _ => 'assets/italia90/backdrop-proposal-2.png',
+      ItaliaBackdropVariant.home => 'assets/italia90/backdrop-proposal-2.png',
+      ItaliaBackdropVariant.working || ItaliaBackdropVariant.live =>
+        'assets/italia90/backdrop-working-petrol-amaranto.png',
     };
 
     return ColoredBox(

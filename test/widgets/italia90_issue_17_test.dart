@@ -112,14 +112,8 @@ void main() {
             await tester.pump();
             expect(cubit.state.score1 + cubit.state.score2, 1);
             expect(find.text('1'), findsOneWidget);
-            final undo = find.byKey(ValueKey('score-undo-team-$team'));
-            final bounds = tester.getRect(undo);
-            // Tap the opposite side from the scoring team's former half.
-            await tester.tapAt(
-              team == 1
-                  ? bounds.centerRight - const Offset(8, 0)
-                  : bounds.centerLeft + const Offset(8, 0),
-            );
+            final undo = find.byKey(const ValueKey('score-undo-action'));
+            await tester.tap(undo);
             await tester.pump();
 
             expect(cubit.state.score1, 0);
@@ -143,6 +137,48 @@ void main() {
     }
   }
 
+  testWidgets('generic undo follows the latest scoring team', (tester) async {
+    tester.view.physicalSize = const Size(402, 874);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final fixture = DesignFixture();
+    await fixture.load();
+    await fixture.styleRepository.save(AppStyle.italia90);
+    addTearDown(() async {
+      await tester.pumpWidget(const SizedBox.shrink());
+      await fixture.dispose();
+    });
+    await tester.pumpWidget(fixture.app);
+    await tester.pumpAndSettle();
+
+    final context = tester.element(find.byType(NavigationBar));
+    final cubit = context.read<NewMatchCubit>();
+    cubit.setMatchMode(MatchMode.oneVsOne);
+    cubit.setTeam('p0', 1);
+    cubit.setTeam('p3', 2);
+    context.read<HomeCubit>().select(HomeDestination.match);
+    cubit.kickoff();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('score-add-team-1')));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('score-add-team-2')));
+    await tester.pump();
+    expect(cubit.state.score1, 1);
+    expect(cubit.state.score2, 1);
+
+    await tester.tap(find.byKey(const ValueKey('score-undo-action')));
+    await tester.pump();
+    expect(cubit.state.score1, 1);
+    expect(cubit.state.score2, 0);
+
+    await tester.tap(find.byKey(const ValueKey('score-undo-action')));
+    await tester.pump();
+    expect(cubit.state.score1, 0);
+    expect(cubit.state.score2, 0);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('uses one live panel per team with accessible team context', (
     tester,
   ) async {
@@ -160,24 +196,16 @@ void main() {
     expect(find.byType(TeamScorePanel), findsNWidgets(2));
     expect(find.byKey(const ValueKey('live-team-panel-1')), findsOneWidget);
     expect(find.byKey(const ValueKey('live-team-panel-2')), findsOneWidget);
-    expect(find.text('SQUADRA 1'), findsNWidgets(2));
-    expect(find.text('SQUADRA 2'), findsNWidgets(2));
+    expect(find.text('SQUADRA 1'), findsOneWidget);
+    expect(find.text('SQUADRA 2'), findsOneWidget);
     expect(find.text('DIVERTITI, GIOCA LEALE, SEMPRE'), findsNothing);
     expect(find.text('PUNTEGGIO LIBERO'), findsNothing);
-    expect(find.text('ANNULLA'), findsNWidgets(2));
+    expect(find.text('ANNULLA'), findsOneWidget);
+    final undo = find.byKey(const ValueKey('score-undo-action'));
+    expect(undo, findsOneWidget);
     expect(
-      find.descendant(
-        of: find.byKey(const ValueKey('score-undo-team-1')),
-        matching: find.text('SQUADRA 1'),
-      ),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(
-        of: find.byKey(const ValueKey('score-undo-team-2')),
-        matching: find.text('SQUADRA 2'),
-      ),
-      findsOneWidget,
+      tester.getCenter(find.text('ANNULLA')).dx,
+      closeTo(tester.getCenter(undo).dx, 0.1),
     );
     expect(
       find.descendant(
@@ -238,18 +266,18 @@ void main() {
         matching: find.text('SQUADRA 2'),
       ),
     );
-    expect(teamTwoHeading.style?.color, Italia90.ink);
+    expect(teamTwoHeading.style?.color, Colors.white);
     expect(
-      _contrastRatio(Italia90.ink, Italia90.teamTwo),
+      _contrastRatio(Colors.white, Italia90.teamTwo),
       greaterThanOrEqualTo(4.5),
     );
 
     await tester.tap(find.byKey(const ValueKey('score-add-team-2')));
     await tester.pump();
-    await tester.tap(find.byKey(const ValueKey('score-undo-team-1')));
+    await tester.tap(find.byKey(const ValueKey('score-undo-action')));
     await tester.pump();
     expect(addedGoals, ['2:team2-0']);
-    expect(removedTeams, [1]);
+    expect(removedTeams, [2]);
     expect(tester.takeException(), isNull);
   });
 
@@ -266,10 +294,15 @@ void main() {
     );
     expect(
       tester
-          .getSemantics(find.byKey(const ValueKey('score-undo-team-1')))
+          .getSemantics(find.byKey(const ValueKey('score-undo-action')))
           .getSemanticsData()
           .hasAction(SemanticsAction.tap),
       isFalse,
+    );
+    final undo = find.byKey(const ValueKey('score-undo-action'));
+    expect(
+      tester.getCenter(find.text('ANNULLA')).dx,
+      closeTo(tester.getCenter(undo).dx, 0.1),
     );
     expect(
       tester
@@ -299,7 +332,9 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('grows split undo controls at very large text', (tester) async {
+  testWidgets('grows the generic undo control at very large text', (
+    tester,
+  ) async {
     await _pumpLiveMatch(
       tester,
       size: const Size(320, 568),
@@ -314,11 +349,7 @@ void main() {
       greaterThan(64),
     );
     expect(
-      tester.getSize(find.byKey(const ValueKey('score-undo-team-1'))).height,
-      greaterThan(64),
-    );
-    expect(
-      tester.getSize(find.byKey(const ValueKey('score-undo-team-2'))).height,
+      tester.getSize(find.byKey(const ValueKey('score-undo-action'))).height,
       greaterThan(64),
     );
     expect(tester.takeException(), isNull);
@@ -339,7 +370,7 @@ void main() {
       greaterThan(64),
     );
     expect(
-      tester.getSize(find.byKey(const ValueKey('score-undo-team-2'))).height,
+      tester.getSize(find.byKey(const ValueKey('score-undo-action'))).height,
       greaterThan(64),
     );
     expect(tester.takeException(), isNull);
@@ -389,6 +420,54 @@ void main() {
     expect(find.text('2'), findsOneWidget);
   });
 
+  testWidgets('keeps poster team headers and scores on one color token', (
+    tester,
+  ) async {
+    await _pumpLiveMatch(
+      tester,
+      score1: 1,
+      score2: 2,
+      showInteractivePanel: false,
+    );
+
+    for (final (team, color) in [
+      (1, Italia90.teamOne),
+      (2, Italia90.teamTwo),
+    ]) {
+      final panel = find.byKey(ValueKey('live-poster-team-panel-$team'));
+      expect(panel, findsOneWidget);
+      final surface = find.descendant(
+        of: panel,
+        matching: find.byType(ColoredBox),
+      );
+      expect(surface, findsOneWidget);
+      expect(tester.widget<ColoredBox>(surface).color, color);
+
+      final heading = find.descendant(
+        of: panel,
+        matching: find.text('SQUADRA $team'),
+      );
+      expect(heading, findsOneWidget);
+      expect(tester.widget<Text>(heading).style?.color, Colors.white);
+    }
+
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('live-roster-team-1')),
+        matching: find.byType(Image),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('live-roster-team-2')),
+        matching: find.byType(Image),
+      ),
+      findsNothing,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('centres one real player per team without covering actions', (
     tester,
   ) async {
@@ -407,7 +486,7 @@ void main() {
     expect(find.text('Luca'), findsNothing);
     expect(find.text('Marco'), findsNothing);
     expect(find.text('+1 GOAL'), findsNWidgets(2));
-    expect(find.text('ANNULLA'), findsNWidgets(2));
+    expect(find.text('ANNULLA'), findsOneWidget);
     expect(find.text('REGISTRA RISULTATO'), findsOneWidget);
     for (final (team, name) in [(1, 'Alex'), (2, 'Maruzzo')]) {
       final roster = find.byKey(ValueKey('live-roster-team-$team'));
@@ -465,7 +544,7 @@ void main() {
     await expectLater(
       find.byType(Scaffold),
       matchesGoldenFile(
-        '../goldens/integrated-reference-corrections/live-1v1.png',
+        '../goldens/italia90-palette-2026-reference/live-1v1.png',
       ),
     );
   });
@@ -490,7 +569,7 @@ void main() {
     await expectLater(
       find.byType(Scaffold),
       matchesGoldenFile(
-        '../goldens/integrated-reference-corrections/live-1v1-2-0.png',
+        '../goldens/italia90-palette-2026-reference/live-1v1-2-0.png',
       ),
     );
   });
@@ -540,8 +619,7 @@ void main() {
     for (final key in [
       'score-add-team-1',
       'score-add-team-2',
-      'score-undo-team-1',
-      'score-undo-team-2',
+      'score-undo-action',
       'live-save-action',
     ]) {
       final action = find.byKey(ValueKey(key));
@@ -612,16 +690,21 @@ void main() {
       isNull,
     );
     for (final team in [1, 2]) {
-      for (final prefix in ['score-add-team-', 'score-undo-team-']) {
-        expect(
-          tester
-              .getSemantics(find.byKey(ValueKey('$prefix$team')))
-              .getSemanticsData()
-              .hasAction(SemanticsAction.tap),
-          isFalse,
-        );
-      }
+      expect(
+        tester
+            .getSemantics(find.byKey(ValueKey('score-add-team-$team')))
+            .getSemanticsData()
+            .hasAction(SemanticsAction.tap),
+        isFalse,
+      );
     }
+    expect(
+      tester
+          .getSemantics(find.byKey(const ValueKey('score-undo-action')))
+          .getSemanticsData()
+          .hasAction(SemanticsAction.tap),
+      isFalse,
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -651,14 +734,17 @@ void main() {
     );
     expect(find.byKey(const ValueKey('live-match-scroll')), findsOneWidget);
     for (final team in [1, 2]) {
-      for (final prefix in ['score-add-team-', 'score-undo-team-']) {
-        final control = find.byKey(ValueKey('$prefix$team'));
-        await tester.ensureVisible(control);
-        await tester.pumpAndSettle();
-        expect(control.hitTestable(), findsOneWidget);
-        expect(tester.getSize(control).shortestSide, greaterThanOrEqualTo(48));
-      }
+      final control = find.byKey(ValueKey('score-add-team-$team'));
+      await tester.ensureVisible(control);
+      await tester.pumpAndSettle();
+      expect(control.hitTestable(), findsOneWidget);
+      expect(tester.getSize(control).shortestSide, greaterThanOrEqualTo(48));
     }
+    final undo = find.byKey(const ValueKey('score-undo-action'));
+    await tester.ensureVisible(undo);
+    await tester.pumpAndSettle();
+    expect(undo.hitTestable(), findsOneWidget);
+    expect(tester.getSize(undo).shortestSide, greaterThanOrEqualTo(48));
     expect(tester.takeException(), isNull);
   });
 }
@@ -672,6 +758,7 @@ Future<void> _pumpLiveMatch(
   int score2 = 5,
   List<String> team1Names = const ['Andrea', 'Luca'],
   List<String> team2Names = const ['Marco', 'Paolo'],
+  int? lastScoringTeam,
   bool? canRegisterResult,
   bool isSaving = false,
   bool awaitingConfirmation = false,
@@ -706,6 +793,13 @@ Future<void> _pumpLiveMatch(
           team2Players: _testPlayers('team2', team2Names),
           score1: score1,
           score2: score2,
+          lastScoringTeam:
+              lastScoringTeam ??
+              (score2 > 0
+                  ? 2
+                  : score1 > 0
+                  ? 1
+                  : null),
           isSaving: isSaving,
           awaitingConfirmation: awaitingConfirmation,
           canRegisterResult:
